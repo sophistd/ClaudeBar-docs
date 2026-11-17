@@ -9,6 +9,11 @@ evidence: "已核对源码"
 sidebar: {"order": 1}
 ---
 
+import DocFigure from '../../../../components/DocFigure.astro';
+
+<DocFigure src="/ClaudeBar-docs/diagrams/architecture-zh.svg" alt="三层分别处理配置意图、观测证据和连接控制。" caption="三层分别处理配置意图、观测证据和连接控制。" width={780} height={340} kind="diagram" lang="zh" />
+
+
 ## 从选档案到放行连接
 
 1. 你选中一个配置档案（Profile）。ClaudeBar 读取这次启动要用的设置。

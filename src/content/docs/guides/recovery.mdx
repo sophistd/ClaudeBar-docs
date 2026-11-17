@@ -8,6 +8,11 @@ outcome: "Apply a justified repair and confirm its verification result."
 sidebar: {"order": 3}
 ---
 
+import DocFigure from '../../../components/DocFigure.astro';
+
+<DocFigure src="/ClaudeBar-docs/diagrams/recovery-en.svg" alt="Recovery can reuse an old baseline when there is no observation and no recorded rejection. Isolation requires reverification." caption="Recovery can reuse an old baseline when there is no observation and no recorded rejection. Isolation requires reverification." width={780} height={330} kind="diagram" lang="en" />
+
+
 ## Identify the state
 
 A brief hold can recover if route identity still matches within the configured window. If the window contains only missing observations and no recovery-probe rejection, the current runtime resumes using its prior baseline. Expiry after a recorded rejection isolates instead. Returning to armed in the observation-gap case is not fresh proof of the route. Isolation means that waiting or simply reopening the destination is not enough: review the incident and obtain fresh verification.

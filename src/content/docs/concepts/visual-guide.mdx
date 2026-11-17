@@ -1,0 +1,85 @@
+---
+title: "ClaudeBar visual guide"
+description: "Follow the system layers, compare browser routes, and find the controls in the macOS app."
+kind: "Explanation"
+audience: "New users and developers"
+prerequisites: "None. The diagrams and app images can be read without a running proxy."
+outcome: "Identify what ClaudeBar controls, when a managed connection resumes, and where to see those states in the app."
+evidence: "Source reviewed; native SwiftUI views rendered with demo data"
+sidebar: {"order": 5}
+---
+
+import DocFigure from '../../../components/DocFigure.astro';
+
+Start with what each part does. Then follow a browser connection and see what changes when the upstream proxy drops. The app images at the end show where to look for each part.
+
+## What each part does
+
+Think through one launch. A **profile** holds your settings. Probes check the current conditions and establish an **egress baseline**. The **gate** uses the verified baseline when admitting and recovering managed connections.
+
+<DocFigure src="/ClaudeBar-docs/diagrams/architecture-en.svg" alt="System layers from profile and storage through observation and decisions to runtime control and managed connections." caption="The profile supplies settings, probes supply evidence, and runtime control handles admission." width={780} height={340} />
+
+<details>
+<summary>How the work is divided</summary>
+
+The macOS interface coordinates the layers. Some operations can also run through the CLI. The configured upstream proxy carries connections that enter the loopback gate. Optional system controls have their own deployment and permissions. See [architecture](/ClaudeBar-docs/concepts/architecture/) and [security boundaries](/ClaudeBar-docs/concepts/security/).
+
+</details>
+
+## Which route the browser takes
+
+Both routes can start with an egress check. The difference comes after that check. A **guarded sandbox** starts a supported browser instance with its own data directory and the gate proxy configured. A **native session** opens the existing browser with its existing network configuration.
+
+<DocFigure src="/ClaudeBar-docs/diagrams/routes-en.svg" alt="The guarded browser is configured to use the loopback gate. The native browser follows its existing route after an egress comparison." caption="The solid route goes through the gate. The dashed route is the native browser’s existing network path." width={780} height={326} />
+
+<details>
+<summary>What a matching egress check establishes</summary>
+
+Before opening a native session, ClaudeBar compares the host and gate egress. A match tells you what the check observed at that moment. It does not establish the route of later browser traffic. ClaudeBar does not inject the gate proxy into the native browser, so closing the gate alone does not establish that the browser is offline. See [session isolation](/ClaudeBar-docs/concepts/sessions/).
+
+</details>
+
+## What happens after an interruption
+
+Read from left to right. Once the gate is armed, a short interruption can start a **grace window**. New handshakes wait while the gate checks whether it can resume.
+
+<DocFigure src="/ClaudeBar-docs/diagrams/recovery-en.svg" alt="An armed gate enters a grace window. Matching egress resumes admission, drift isolates immediately, and expiry depends on whether a probe was rejected." caption="Follow the result of the recovery check, then read the expiry branches separately." width={780} height={330} />
+
+- A matching observation resumes admission. Measured drift isolates the current gate without waiting for expiry.
+- With no fresh observation and no recorded probe rejection, expiry resumes admission using the **existing baseline**. No fresh verification took place.
+- With a recorded rejection and no subsequent recovery, expiry isolates the current gate.
+
+<details>
+<summary>What happens to new and existing connections</summary>
+
+A profile defaults to a four-second grace window. The wait applies to new handshakes. Existing tunnels can close immediately for some interruptions, such as sleep or a network switch. An ordinary upstream interruption can leave existing tunnels in place. Use the [interactive gate model](/ClaudeBar-docs/concepts/network-egress/) to compare the outcomes.
+
+</details>
+
+## Where to look in the macOS app
+
+These images show the real SwiftUI views rendered offscreen with demo data. The Overview lists browser application names from the render machine. No personal identity is shown, and the images did not involve a real account session or live network verification. The visible controls use the app’s Chinese labels.
+
+### Menu bar panel
+
+Use **嗅探** (discover) to look for local proxy settings. **主工作台** opens the workbench.
+
+<DocFigure src="/ClaudeBar-docs/screenshots/menu-panel-firstrun-light.png" alt="First-run menu bar panel with the Discover button at top right and the workbench entry along the bottom." caption="First-run panel. The egress illustration and readouts use demo data." width={712} height={660} kind="screenshot" />
+
+### Overview
+
+Open **总览** to see the selected profile and the gate’s egress status. Check **正在跑** to see how the app classifies each running instance.
+
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-overview-light.png" alt="Overview with the selected profile, egress state, separate browser launch button and a list of unmanaged browser instances." caption="The egress state and the running-instance list answer different questions. A listed browser can still be unmanaged." width={2080} height={1360} kind="screenshot" />
+
+### Checks and repair
+
+Open **检查与修复**. Read the summaries along the top, then use the risk map on the left and the individual check results on the right to investigate. See [how to read diagnostics](/ClaudeBar-docs/guides/diagnostics/).
+
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-topology-light.png" alt="Checks and repair workbench with an egress summary, a risk map and an individual check results list." caption="A demo interruption illustrates the relationship between a risk and the checks used to examine it." width={2080} height={1360} kind="screenshot" />
+
+### Content preflight
+
+**内容预检** examines supplied text. This is a different preflight from the network checks used to arm the gate. The workbench shows text analysis stages, highlighted input and risk categories. A configured cloud stage may send supplied text to a model provider.
+
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-preflight-light.png" alt="Content preflight with analysis stages across the top, sample text on the left and risk categories on the right." caption="The sample input, risk scores, cloud stage and timings are fixtures, with no live model run." width={2080} height={1360} kind="screenshot" />

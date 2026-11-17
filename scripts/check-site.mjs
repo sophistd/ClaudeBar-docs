@@ -25,7 +25,8 @@ for (const file of html) {
   if (chinese) {
     for (const anchor of $('.sl-markdown-content a[href]').toArray()) {
       const href = $(anchor).attr('href');
-      if (href?.startsWith(`${base}/`) && !href.startsWith(`${base}/zh/`)) errors.push(`${file}: Chinese body links to English ${href}`);
+      const sharedImage = /\/(?:diagrams|screenshots)\/[^?#]+\.(?:svg|png)(?:[?#]|$)/.test(href ?? '');
+      if (href?.startsWith(`${base}/`) && !href.startsWith(`${base}/zh/`) && !sharedImage) errors.push(`${file}: Chinese body links to English ${href}`);
     }
   }
   const current = new URL(`${base}/${path.relative(root, file).replace(/index\.html$/, '')}`, 'https://sophistd.github.io');
@@ -59,7 +60,7 @@ for (const file of new Set([...englishPages, ...chinesePages])) {
   if (!englishPages.includes(file) || !chinesePages.includes(file)) errors.push(`Missing language counterpart: ${file}`);
 }
 const forbidden = [/\/Users\//, /TeamIdentifier=[A-Z0-9]{10}/, /BEGIN (?:RSA |OPENSSH )?PRIVATE KEY/, /gh[pousr]_[A-Za-z0-9]{20,}/, /sk-[A-Za-z0-9]{20,}/, /ref-[a-z-]*(?:ban|fingerprint)[a-z-]*report/, /\.claude\/scratch/];
-for (const file of all.filter((f) => /\.(?:html|md|txt|json|js|css)$/.test(f))) {
+for (const file of all.filter((f) => /\.(?:html|md|txt|json|js|css|svg)$/.test(f))) {
   const source = await readFile(file, 'utf8');
   for (const pattern of forbidden) if (pattern.test(source)) errors.push(`${file}: forbidden pattern ${pattern}`);
 }

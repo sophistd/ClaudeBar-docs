@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="348" viewBox="0 0 780 348" xml:lang="en" role="img" aria-labelledby="architecture-en-title architecture-en-desc">
+  <!-- [INPUT]: diagram-source.mjs 的双语标注与机制形元。
+       [OUTPUT]: architecture 的 en 静态图解。
+       [POS]: 文档站 public/diagrams 的生成资源。
+       [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md -->
+  <title id="architecture-en-title">Three cooperating layers</title>
+  <desc id="architecture-en-desc">A profile informs the egress probe. Verified evidence controls the gate. Managed traffic passes through the loopback gate to the upstream proxy.</desc>
+  <defs>
+    <marker id="architecture-en-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path fill="#252422" d="M0 0l10 5-10 5Z"/>
+    </marker>
+    <marker id="architecture-en-control" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path fill="none" stroke="#496478" stroke-width="1.4" d="m1 1 8 4-8 4"/>
+    </marker>
+  </defs>
+  <style>
+    text { font: 15px -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif; fill: #252422; }
+    path { stroke-linejoin: round; stroke-linecap: round; }
+    .bold { font-size: 16px; font-weight: 650; }
+    .secondary { fill: #5f5a54; }
+    .center { text-anchor: middle; }
+    .end { text-anchor: end; }
+    .layer { fill: #f2efe8; stroke: #d4cec2; stroke-width: 1; }
+    .rule { fill: none; stroke: #c5bdb1; stroke-width: 1; }
+    .object, .hinge { fill: #fcfbf8; stroke: #252422; stroke-width: 1.7; }
+    .detail { fill: none; stroke: #6d675e; stroke-width: 1.2; }
+    .control { fill: none; stroke: #496478; stroke-width: 1.6; }
+    .traffic { fill: none; stroke: #252422; stroke-width: 2.25; }
+    .transition { fill: none; stroke: #252422; stroke-width: 1.5; }
+    .port { fill: #252422; }
+    .seal { fill: #dbe5ea; stroke: #496478; }
+    .unknown, .unknown-end { fill: none; stroke: #66625c; stroke-width: 1.6; }
+    .unknown { stroke-dasharray: 6 6; }
+    .door { fill: none; stroke: #3b604c; stroke-width: 4; }
+    .panel { stroke: #736347; }
+    .queue { stroke: #736347; stroke-width: 2.5; }
+    .block, .cut { fill: none; stroke: #a3442d; }
+    .cut { stroke-width: 1.5; }
+  </style>
+  <rect x=".5" y=".5" width="779" height="347" fill="#fcfbf8" stroke="#d4cec2"/>
+  <path class="layer" d="M186 25H726L738 37v64H186Z M186 113H726L738 125v79H186Z M186 216H726L738 228v95H186Z"/>
+  <path class="rule" d="M166 25v298m-9-298h9m-9 82h9m-9 103h9m-9 113h9"/>
+  <text x="150" y="68" class="end bold">Configuration</text>
+  <text x="150" y="158" class="end bold">Observation</text>
+  <text x="150" y="272" class="end bold">Runtime control</text>
+  <path class="control" d="M299 63h90a12 12 0 0 1 12 12v53" marker-end="url(#architecture-en-control)"/>
+  <path class="control" d="M427 154h93" marker-end="url(#architecture-en-control)"/>
+  <path class="control" d="M550 178v34a14 14 0 0 1-14 14h-47a14 14 0 0 0-14 14v4" marker-end="url(#architecture-en-control)"/>
+  <path class="traffic" d="M319 272h150m33 0h126" marker-end="url(#architecture-en-ink)"/>
+  <g transform="translate(272 61)">
+  <path class="object" d="M-18-24H5L18-11V24H-18Z M5-24v13h13"/>
+  <path class="detail" d="M-10-5h18 M-10 2h15 M-10 9h10"/>
+  </g>
+  <g transform="translate(401 152)">
+  <circle class="object" cx="-3" cy="-4" r="17"/>
+  <path class="detail" d="M-14-4a11 11 0 0 1 11-11 M-12 1l5 2 4-9 5 6 5-2"/>
+  <path class="object" d="m8 9 5-5 13 13a3.5 3.5 0 0 1-5 5Z"/></g>
+  <g transform="translate(550 154)">
+  <path class="object" d="M-18-24H5L18-11V24H-18Z M5-24v13h13"/>
+  <path class="detail" d="M-10-5h18 M-10 2h15 M-10 9h10"/>
+  <circle class="seal" cx="9" cy="14" r="6"/><path class="control" d="m6 14 2 2 4-4"/></g>
+  <g transform="translate(276 268)">
+  <rect class="object" x="-43" y="-25" width="86" height="50" rx="4"/>
+  <path class="detail" d="M-42-11h84"/>
+  <path class="object" d="M-34-18h1m5 0h1m5 0h1"/>
+  <path class="detail" d="M-27 0h54v14h-54Z M-20 7h19"/></g>
+  <g transform="translate(475 268)">
+  <path class="object" d="M-27-24h54v7h-54Z M-27 18h54v6h-54Z"/>
+  <path class="door" d="M2-24 23-13"/><path class="traffic" d="M-27 4H27"/>
+  <circle class="hinge" cx="2" cy="-24" r="3"/></g>
+  <g transform="translate(663 272)">
+  <path class="object" d="M-31-21h62v17h-62Z M-31 1h62v17h-62Z"/>
+  <path class="detail" d="M-22-12h20 M-22 10h20"/>
+  <circle class="port" cx="21" cy="-12" r="2"/>
+  <circle class="port" cx="21" cy="10" r="2"/></g>
+  <text x="316" y="53" class="">Profile</text>
+  <text x="401" y="189" class="center">Egress probe</text>
+  <text x="575" y="160" class="">Verified baseline</text>
+  <text x="565" y="242" class="secondary">Control signal</text>
+  <text x="386" y="258" class="center secondary">Tunnel traffic</text>
+  <text x="276" y="312" class="center">Managed app</text>
+  <text x="475" y="312" class="center">Loopback gate</text>
+  <text x="663" y="312" class="center">Upstream proxy</text>
+  
+</svg>

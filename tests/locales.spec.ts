@@ -64,7 +64,8 @@ test('Chinese Markdown and agent index match the visible language', async ({ pag
   const index = await request.get(`${base}zh/llms.txt`);
   expect(index.ok()).toBe(true);
   expect(await index.text()).toContain('# ClaudeBar 中文文档');
-  expect((await index.text()).match(/^- \[/gm)).toHaveLength(21);
+  expect((await index.text()).match(/^- \[/gm)).toHaveLength(22);
+  expect(await index.text()).toContain('/markdown/zh/concepts/visual-guide.md');
 });
 test('Chinese code tabs retain runnable commands and copy labels', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);

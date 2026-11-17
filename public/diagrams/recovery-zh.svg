@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="330" viewBox="0 0 780 330" xml:lang="zh-CN" role="img" aria-labelledby="recovery-zh-title recovery-zh-desc">
+  <!-- [INPUT]: diagram-source.mjs 的双语标注与机制形元。
+       [OUTPUT]: recovery 的 zh 静态图解。
+       [POS]: 文档站 public/diagrams 的生成资源。
+       [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md -->
+  <title id="recovery-zh-title">门禁进入宽限期后的判断</title>
+  <desc id="recovery-zh-desc">链路中断后，新握手等待。观测到的出口身份匹配时恢复放行。到期时若无新观测且无探测拒绝，沿用旧基线恢复，本次没有重新核验。实测出口漂移会立即隔离，记录探测拒绝后到期也会隔离。</desc>
+  <defs>
+    <marker id="recovery-zh-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path fill="#252422" d="M0 0l10 5-10 5Z"/>
+    </marker>
+    <marker id="recovery-zh-control" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path fill="none" stroke="#496478" stroke-width="1.4" d="m1 1 8 4-8 4"/>
+    </marker>
+  </defs>
+  <style>
+    text { font: 15px -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif; fill: #252422; }
+    path { stroke-linejoin: round; stroke-linecap: round; }
+    .bold { font-size: 16px; font-weight: 650; }
+    .secondary { fill: #5f5a54; }
+    .center { text-anchor: middle; }
+    .end { text-anchor: end; }
+    .layer { fill: #f2efe8; stroke: #d4cec2; stroke-width: 1; }
+    .rule { fill: none; stroke: #c5bdb1; stroke-width: 1; }
+    .object, .hinge { fill: #fcfbf8; stroke: #252422; stroke-width: 1.7; }
+    .detail { fill: none; stroke: #6d675e; stroke-width: 1.2; }
+    .control { fill: none; stroke: #496478; stroke-width: 1.6; }
+    .traffic { fill: none; stroke: #252422; stroke-width: 2.25; }
+    .transition { fill: none; stroke: #252422; stroke-width: 1.5; }
+    .port { fill: #252422; }
+    .seal { fill: #dbe5ea; stroke: #496478; }
+    .unknown, .unknown-end { fill: none; stroke: #66625c; stroke-width: 1.6; }
+    .unknown { stroke-dasharray: 6 6; }
+    .door { fill: none; stroke: #3b604c; stroke-width: 4; }
+    .panel { stroke: #736347; }
+    .queue { stroke: #736347; stroke-width: 2.5; }
+    .block, .cut { fill: none; stroke: #a3442d; }
+    .cut { stroke-width: 1.5; }
+  </style>
+  <rect x=".5" y=".5" width="779" height="329" fill="#fcfbf8" stroke="#d4cec2"/>
+  <path class="transition" d="M112 146h77" marker-end="url(#recovery-zh-ink)"/>
+  <path class="transition" d="M259 146h61m0-96v250 M320 50h258q12 0 12 12v22 M320 124h258q12 0 12-12V84 M590 84h43" marker-end="url(#recovery-zh-ink)"/>
+  <path class="transition" d="M320 226h258q12 0 12 12v22 M320 300h258q12 0 12-12v-28 M590 260h43" marker-end="url(#recovery-zh-ink)"/>
+  <path class="port" d="m548 46 8 4-8 4Z m0 74 8 4-8 4Z m0 102 8 4-8 4Z m0 74 8 4-8 4Z"/>
+  <circle class="port" cx="320" cy="146" r="3"/>
+  <circle class="port" cx="590" cy="84" r="3"/>
+  <circle class="port" cx="590" cy="260" r="3"/>
+  <g transform="translate(77 171)">
+  <path class="object" d="M-27-24h54v7h-54Z M-27 18h54v6h-54Z"/>
+  <path class="door" d="M2-24 23-13"/><path class="traffic" d="M-27 4H27"/>
+  <circle class="hinge" cx="2" cy="-24" r="3"/></g>
+  <g transform="translate(225 171)">
+  <path class="object" d="M-27-24h54v7h-54Z M-27 18h54v6h-54Z"/>
+  <path class="door panel" d="M2-24 9 12"/><path class="queue" d="M-23 4h1m5 0h1m5 0h1 M-3-3v14"/>
+  <circle class="hinge" cx="2" cy="-24" r="3"/></g>
+  <g transform="translate(668 80)">
+  <path class="object" d="M-27-24h54v7h-54Z M-27 18h54v6h-54Z"/>
+  <path class="door" d="M2-24 23-13"/><path class="traffic" d="M-27 4H27"/>
+  <circle class="hinge" cx="2" cy="-24" r="3"/></g>
+  <g transform="translate(668 256)">
+  <path class="object" d="M-27-24h54v7h-54Z M-27 18h54v6h-54Z"/>
+  <path class="door block" d="M2-24V22"/><path class="traffic" d="M-27 4H-10"/><path class="cut" d="m15-2 8 12m0-12-8 12"/>
+  <circle class="hinge" cx="2" cy="-24" r="3"/></g>
+  <text x="77" y="218" class="center bold">放行</text>
+  <text x="226" y="218" class="center bold">新握手等待</text>
+  <text x="668" y="129" class="center bold">放行</text>
+  <text x="668" y="304" class="center bold">隔离</text>
+  <text x="151" y="134" class="center secondary">链路中断</text>
+  <text x="342" y="40" class="">出口身份匹配</text>
+  <text x="342" y="114" class="">无新观测、无拒绝</text>
+  <text x="342" y="147" class="secondary">到期沿用旧基线</text>
+  <text x="342" y="216" class="">实测出口漂移</text>
+  <text x="342" y="290" class="">宽限到期仍被拒</text>
+  
+</svg>

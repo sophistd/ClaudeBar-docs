@@ -14,6 +14,10 @@ export const GET: APIRoute = ({ props }) => {
   const zh = entry.id === 'zh' || entry.id.startsWith('zh/');
   const body = (entry.body ?? '')
     .replace(/^import .+;\s*$/gm, '')
+    .replace(/<DocFigure\b([^>]*?)\/>/gs, (_: string, attrs: string) => {
+      const value = (key: string) => attrs.match(new RegExp(`${key}="([^"]*)"`))?.[1] ?? '';
+      return `![${value('alt')}](${value('src')})\n\n${value('caption')}`;
+    })
     .replace(/<GateExplorer\s*\/>/g, zh
       ? '*网页版提供可操作的门禁教学模拟，不会连接真实网络。下方状态表说明了相同的变化过程。*'
       : '*The web version includes an explicitly labeled lifecycle simulation. The state table below is its text equivalent.*')
