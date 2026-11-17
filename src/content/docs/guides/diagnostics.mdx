@@ -1,0 +1,47 @@
+---
+title: "Read diagnostics"
+description: "Separate the observation, its verdict, and the decision it supports."
+kind: "How-to"
+audience: "Operators"
+prerequisites: "A configured profile and a completed or blocked diagnostic attempt."
+outcome: "Identify a blocking condition and choose the next check."
+sidebar: {"order": 2}
+---
+
+## Collect a current observation
+
+Open **Checks & repair** (**检查与修复**) in the workbench. Review the active profile before rerunning checks. The CLI equivalent is:
+
+```sh
+swift run claudebar-cli probe --json
+```
+
+This is a live operation: it can contact network endpoints, access profile credentials, and update local diagnostic records. Run it intentionally in your configured environment. It is not the offline setup check.
+
+## Interpret the status
+
+| Status | Meaning | Next action |
+| --- | --- | --- |
+| PASS | The observed check met its predicate | Continue, within that check's scope |
+| MITIGATED | A compensating control covers the finding | Read which control provides coverage |
+| FAIL | An observed condition did not meet the predicate | Fix the stated cause and rerun |
+| UNOBSERVED | Evidence was not obtained | Resolve reachability or collection problems |
+| SKIPPED_BLOCKED | A prerequisite blocked execution | Address the prerequisite first |
+
+Severity is separate from status. A critical failure or an uncovered critical observation gap can block the gate. **MITIGATED does not mean the original condition disappeared.**
+
+## Trace cause before changing settings
+
+Read the expected condition and the actual observation. Check whether you are looking at the current profile, a historical incident, or a session outside the managed launch path. Then inspect the proposed repair and its scope.
+
+The diagnostic pipeline orders prerequisite checks before downstream provider checks. A skipped downstream check is not proof that the provider is healthy or unreachable.
+
+## Share evidence carefully
+
+The export command produces an agent-oriented diagnostic bundle:
+
+```sh
+swift run claudebar-cli export-bundle ./diagnostics.claudeguard.zip
+```
+
+Export also performs live evaluation. The exporter applies redaction, but you must inspect the archive before sharing it. Do not upload raw account information, proxy credentials, or private session content. See [security boundaries](/ClaudeBar-docs/concepts/security/).

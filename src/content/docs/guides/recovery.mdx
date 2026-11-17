@@ -1,0 +1,41 @@
+---
+title: "Recover a session"
+description: "Use the incident evidence to choose a reversible corrective action."
+kind: "How-to"
+audience: "Operators"
+prerequisites: "A blocked, held, or isolated managed session."
+outcome: "Apply a justified repair and confirm its verification result."
+sidebar: {"order": 3}
+---
+
+## Identify the state
+
+A brief hold can recover if route identity still matches within the configured window. If the window contains only missing observations and no recovery-probe rejection, the current runtime resumes using its prior baseline. Expiry after a recorded rejection isolates instead. Returning to armed in the observation-gap case is not fresh proof of the route. Isolation means that waiting or simply reopening the destination is not enough: review the incident and obtain fresh verification.
+
+Open **复盘** (incident review) and **检查与修复** (checks and repair). Confirm the active profile, the first failing observation, and whether the problem is reachability, route drift, a session collision, or a configuration issue.
+
+## Preview proposed repairs
+
+```sh
+swift run claudebar-cli fix --dry-run --json
+```
+
+A dry run evaluates the live environment and lists plans without applying a selected remediation. It may still contact endpoints, read credentials, and initialize diagnostic stores. Inspect the selected operator's effects and required privileges.
+
+## Apply only the relevant operator
+
+The command form is `claudebar-cli fix --apply Rxx --json`, where `Rxx` must be an actual operator ID from the current preview. It is not a literal operator to copy blindly. Privileged tiers require separate opt-in; do not add that option merely to bypass a failure.
+
+The remediation engine records a journal snapshot, performs the action, and reruns relevant checks. Failed verification can trigger rollback. Read the returned status; an attempted repair is not necessarily a verified repair.
+
+## Undo an eligible change
+
+```sh
+swift run claudebar-cli undo --latest --json
+```
+
+This mutates local state by restoring an eligible journal snapshot. Confirm the transaction you intend to undo; use its UUID for a specific entry. A journal cannot reverse arbitrary external changes or actions outside its captured scope.
+
+## Confirm recovery
+
+Rerun the applicable checks and rearm through the verified path. Confirm the selected profile and managed session. If a finding persists, preserve its redacted evidence and investigate rather than repeatedly applying repairs.

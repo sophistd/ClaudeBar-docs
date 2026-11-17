@@ -1,0 +1,74 @@
+/* [INPUT]: Starlight 语义主题变量与文档组件。
+ * [OUTPUT]: 原生字体、中性表面、单强调色与响应式阅读布局。
+ * [POS]: 文档站唯一视觉覆盖层，不修改框架行为。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+:root {
+  --sl-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --sl-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sl-color-accent-low: #39231d;
+  --sl-color-accent: #da8b72;
+  --sl-color-accent-high: #f4c4b4;
+  --sl-color-bg: #171819;
+  --sl-color-bg-nav: #171819;
+  --sl-color-bg-sidebar: #171819;
+  --sl-content-width: 49rem;
+  --sl-sidebar-width: 17rem;
+  --sl-text-h1: 2.7rem;
+  --sl-text-h2: 1.65rem;
+  --sl-text-h3: 1.22rem;
+  --sl-line-height: 1.7;
+}
+:root[data-theme='light'] {
+  --sl-color-accent-low: #f6eae5;
+  --sl-color-accent: #a3442d;
+  --sl-color-accent-high: #843421;
+  --sl-color-bg: #fff;
+  --sl-color-bg-nav: #fff;
+  --sl-color-bg-sidebar: #fff;
+}
+html { scroll-behavior: smooth; }
+body { -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { letter-spacing: -.025em; }
+.site-title { font-size: 1.35rem; letter-spacing: -.035em; color: var(--sl-color-white); }
+.sidebar-content a { font-size: .9rem; padding-block: .35rem; }
+.sidebar-content a[aria-current='page'] { background: var(--sl-color-accent-low); color: var(--sl-color-accent-high); font-weight: 600; border-radius: 4px; }
+.sidebar-content .top-level > li + li { margin-block-start: 1.3rem; }
+.breadcrumb { display: flex; gap: .75rem; font-size: .85rem; margin-block-end: 1.25rem; }
+.breadcrumb a { color: var(--sl-color-text-accent); text-decoration: none; }
+.page-description { font-size: 1.2rem; line-height: 1.6; max-width: 45rem; color: var(--sl-color-gray-2); }
+.page-meta { display: flex; flex-wrap: wrap; gap: .5rem 1rem; font-size: .8rem; margin-block: 1rem; color: var(--sl-color-gray-2); }
+.page-meta span + span::before { content: '·'; margin-right: 1rem; }
+.page-contract { font-size: .85rem; color: var(--sl-color-gray-2); }
+.page-contract summary { cursor: pointer; }
+.page-contract p { margin-block: .5rem; }
+.sl-markdown-content table { width: 100%; font-size: .9rem; }
+.sl-markdown-content td, .sl-markdown-content th { min-width: 7rem; vertical-align: top; }
+.sl-markdown-content :is(h2,h3) { scroll-margin-top: 6rem; }
+.flow { display: flex; align-items: center; gap: .8rem; margin-block: 1.75rem; }
+.flow > span { flex: 1; padding: 1rem .75rem; border: 1px solid var(--sl-color-gray-4); border-radius: 6px; text-align: center; font-size: .95rem; }
+.flow > b { font-weight: 400; color: var(--sl-color-gray-2); }
+.simulation-label { color: var(--sl-color-gray-2); font-size: .9rem; }
+.gate-explorer { display: block; border: 1px solid var(--sl-color-gray-4); border-radius: 8px; padding: 1.25rem; margin-block: 1rem 2rem; }
+.gate-states { list-style: none; display: grid; grid-template-columns: repeat(4,1fr); padding: 0 !important; margin: 0 !important; border-bottom: 1px solid var(--sl-color-gray-5); }
+.gate-states li { text-align: center; padding: .5rem .2rem; margin: 0 !important; font-size: .9rem; border-bottom: 2px solid transparent; }
+.gate-states [aria-current] { color: var(--sl-color-text-accent); font-weight: 600; border-color: currentColor; }
+.gate-status { margin-block: 1.25rem; min-height: 6rem; }
+.gate-status code { font-size: .75rem; }
+.gate-status p { margin-top: .65rem; }
+.gate-actions { display: flex; flex-wrap: wrap; gap: .65rem; }
+.gate-actions button { font: 500 .9rem var(--sl-font); padding: .65rem .9rem; color: var(--sl-color-white); background: var(--sl-color-bg); border: 1px solid var(--sl-color-gray-4); border-radius: 5px; cursor: pointer; min-height: 44px; }
+.gate-actions button:first-child { background: var(--sl-color-text-accent); color: var(--sl-color-bg); border-color: transparent; }
+:focus-visible { outline: 3px solid var(--sl-color-text-accent); outline-offset: 4px; }
+.path-list { list-style: none; padding: 0 !important; }
+.path-list li { padding: 1rem 0; border-bottom: 1px solid var(--sl-color-hairline); }
+.path-list a { font-size: 1.15rem; font-weight: 600; text-decoration: none; }
+.path-list p { margin-top: .3rem; color: var(--sl-color-gray-2); }
+@media (max-width: 50rem) {
+  :root { --sl-text-h1: 2.1rem; }
+  .page-description { font-size: 1.05rem; }
+  .flow { flex-direction: column; align-items: stretch; }
+  .flow > b { text-align: center; transform: rotate(90deg); }
+  .gate-explorer { padding: .85rem; }
+  .gate-states li { font-size: .8rem; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

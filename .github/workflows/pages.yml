@@ -1,0 +1,52 @@
+# [INPUT]: 独立文档仓库 main 的经批准内容、锁定依赖与 GitHub Pages。
+# [OUTPUT]: 验证后的静态站点部署，不访问私有应用仓库。
+# [POS]: 独立仓库唯一发布入口，仓库身份条件避免在应用仓库运行。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+name: Documentation
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  ASTRO_TELEMETRY_DISABLED: '1'
+jobs:
+  build:
+    if: github.repository == 'sophistd/ClaudeBar-docs'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: dist
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

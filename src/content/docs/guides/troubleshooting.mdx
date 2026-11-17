@@ -1,0 +1,29 @@
+---
+title: "Troubleshooting"
+description: "Use a symptom to choose the next observation."
+kind: "How-to"
+audience: "Operators"
+prerequisites: "A reproducible symptom and the active profile name."
+outcome: "Narrow a failure without changing unrelated controls."
+sidebar: {"order": 4}
+---
+
+## Connection and session symptoms
+
+| Symptom | Inspect | Next action |
+| --- | --- | --- |
+| Gate will not arm | Critical failures and uncovered UNOBSERVED checks | Fix prerequisites and rerun preflight |
+| Proxy parses but cannot connect | Import disposition and transport | Configure a supported local bridge if required |
+| Existing browser is signed into another account | Session mode and container binding | Choose a separate supported container; do not assume profile selection logged you out |
+| Native browser egress differs from the gate | Host/gate comparison | Reconcile the intended network setup before launch |
+| Session pauses during a network change | GRACE_HOLD and incident timeline | Wait for matching recovery or investigate isolation |
+| Provider rejects a request | Target response versus upstream reachability | Investigate the request/provider separately from the route |
+| System extension is unavailable | Signing, entitlements, activation and OS approval | Follow the authorized build's deployment instructions |
+
+## Source build fails
+
+Record the exact source revision, toolchain, command, and first compiler error. A successful documentation-site build does not prove the application builds. The [baseline status](/ClaudeBar-docs/project/status/) distinguishes the product build and selected tests actually run from broader release validation.
+
+## Escalate with useful evidence
+
+Record the app/build version, macOS version, intended workflow, observed state, and reproduction steps. Review any diagnostic export before sharing. Keep credentials and account/session data out of a public issue.

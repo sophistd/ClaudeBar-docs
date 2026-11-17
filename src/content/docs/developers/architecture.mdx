@@ -1,0 +1,33 @@
+---
+title: "Repository architecture"
+description: "A dependency map for authorized contributors."
+kind: "Reference"
+audience: "Developers"
+prerequisites: "Authorized source access."
+outcome: "Find the owning module without publishing internal engineering notes."
+sidebar: {"order": 2}
+---
+
+## Package boundaries
+
+| Target | Responsibility | Depends on |
+| --- | --- | --- |
+| `ClaudeBarCore` | Models, parsing, probes, storage, diagnostic export and remediation | Apple platform facilities |
+| `ClaudeBarGate` | Loopback listeners, tunnel transport and gate state | Core |
+| `ClaudeBarAppKit` | Native UI, coordinators and managed-session runtime | Core, Gate |
+| `ClaudeBarMain` | App executable entry | AppKit target |
+| `ClaudeBarCLI` | Terminal workflows | Core, Gate |
+| `ClaudeBarWatchdog` | Companion process supervision | Platform facilities |
+| `ClaudeBarSysExt` | System-extension executable | Core, platform extensions |
+
+The package exports three libraries and four executables. Test targets cover Core, Gate, and AppKit behavior.
+
+## Keep documentation close to behavior
+
+When a user-facing behavior changes, update the relevant concept, procedure, or reference and its evidence status. Do not copy private engineering reports into the public site. Document observed constraints instead of promoting planning language into a guarantee.
+
+## Documentation architecture
+
+Public content lives in one MDX collection. The HTML pages, raw Markdown endpoints, and `llms.txt` share that collection. A small pure JavaScript state model powers the teaching diagram; it never connects to the app or the local network.
+
+The documentation has no server, telemetry dashboard, model-powered chatbot, MCP endpoint, or semantic search service. Its search is a static client-side index.

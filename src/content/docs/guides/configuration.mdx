@@ -1,0 +1,36 @@
+---
+title: "Configure a profile"
+description: "Bind a route and a session deliberately, then verify both."
+kind: "How-to"
+audience: "Operators"
+prerequisites: "An authorized build and an upstream configuration you control."
+outcome: "A selected profile with a supported transport and browser mode."
+sidebar: {"order": 1}
+---
+
+## Open the profile settings
+
+In **档案与设置** (Profiles & settings), select the intended profile. Use a descriptive local name. Do not treat a profile name as proof of the account currently signed into a browser.
+
+## Import the upstream
+
+Use the proxy import UI for your endpoint or supported share format. The parser distinguishes two outcomes:
+
+- A direct HTTP CONNECT or SOCKS5 route can be used by the gate.
+- HTTPS upstream proxies and encrypted share protocols need an appropriate local core bridge. Import the protocol into your authorized local core, then select its supported loopback proxy listener.
+
+Parsing is not connectivity verification. A recognized URI can still require a bridge or fail preflight. See [compatibility](/ClaudeBar-docs/reference/compatibility/).
+
+## Choose session behavior
+
+Open **浏览器** (Browser), select an installed application, then choose the allowed session mode. When a native browser exposes supported subprofiles, choose the intended **子容器** (subprofile). Resolve any collision warning.
+
+## Review the controls
+
+Keep strict IP pinning unless your operating requirements justify a different recovery predicate. The default grace window is four seconds; it is a hold window, not a promise that every request survives an interruption.
+
+Telemetry options affect the managed path. The enterprise-cloud mode is represented in configuration, but its enum label alone does not prove a complete provider integration. See [configuration reference](/ClaudeBar-docs/reference/configuration/).
+
+## Verify the result
+
+Run the current profile's checks, inspect unresolved findings, and use the verified launch action. Confirm the resulting managed session rather than relying on a pre-existing browser window.

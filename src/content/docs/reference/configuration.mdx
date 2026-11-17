@@ -1,0 +1,43 @@
+---
+title: "Configuration reference"
+description: "Values and defaults in the reviewed profile model."
+kind: "Reference"
+audience: "Operators and developers"
+prerequisites: "Understand profiles and browser session modes."
+outcome: "Interpret settings without assuming a stable external JSON API."
+sidebar: {"order": 2}
+---
+
+## Profile fields
+
+This is a model reference, not a supported instruction to hand-edit storage while the app is running. Prefer the app or documented CLI operations.
+
+| Field | Default / constraint | Meaning |
+| --- | --- | --- |
+| `name` | Required | Human-readable profile label |
+| `proxyConfig` | Required | Normalized upstream settings |
+| `strictIPPinning` | `true` | Require the baseline IP during recovery |
+| `graceDurationMs` | `4000`; profile clamps to `1000–10000` | Recovery hold window in milliseconds |
+| `telemetryMode` | `proxiedPassThrough` | Managed telemetry behavior |
+| `browserBinding` | Derived from selected browser if omitted | Bundle, session mode, optional subprofile |
+| `freezeProcessGroupDuringGrace` | `false` | Optional process-group hold behavior |
+| `isolateClaudeConfigDir` | `false` in the value-model initializer | Whether to use profile-specific CLI configuration; creation workflows may set it differently |
+| `configRevision` | At least `1` | Revision used to distinguish configuration changes |
+
+The lower-level gate API accepts a wider grace range starting at 200 ms. That is not the profile UI contract.
+
+## Proxy configuration
+
+The normalized model includes transport, upstream host/port, optional username, a Keychain credential reference, optional pinned country/IP, and locale/timezone settings. The initializer uses `America/Los_Angeles` and `en-US` when not specified. Set values appropriate to the intended environment; defaults are not observations of your machine.
+
+Sensitive protocol metadata is filtered by the model. Use supported credential flows rather than placing passwords into configuration JSON. A recognized transport must still pass [runtime compatibility checks](/ClaudeBar-docs/reference/compatibility/).
+
+## Telemetry modes
+
+| Value | Implemented behavior and limit |
+| --- | --- |
+| `proxiedPassThrough` | Default; no privacy environment flags injected by this enum |
+| `officialPrivacyFlags` | Adds privacy-related environment flags and blocks configured third-party telemetry suffixes at the gate |
+| `enterpriseCloudProvider` | Configuration value exists; the enum injects no additional environment flags; end-to-end cloud-provider behavior is not verified here |
+
+These settings are not a statement about provider account outcomes. See [security boundaries](/ClaudeBar-docs/concepts/security/).

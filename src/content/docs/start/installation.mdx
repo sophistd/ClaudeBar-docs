@@ -1,0 +1,34 @@
+---
+title: "Installation and access"
+description: "Choose an authorized build path and check its requirements."
+kind: "How-to"
+audience: "Operators and developers"
+prerequisites: "macOS 14 or later; source access for developer builds."
+outcome: "Understand how to obtain a build and what has not been verified."
+sidebar: {"order": 2}
+---
+
+## Availability
+
+The application source repository is private. This documentation site does not grant access to it and does not distribute an application binary. A public download channel has not been established by this documentation release. Obtain an authorized build from the project maintainer.
+
+A DMG and release automation exist in the source baseline. Their existence is not evidence that a particular download is current, notarized, or suitable for your machine.
+
+## System requirements
+
+- macOS 14 or later, as declared by the Swift package.
+- Swift 6.2 or a compatible toolchain for source builds.
+- A reachable upstream proxy for managed network operation.
+- A supported installed browser for the selected browser mode.
+
+System-extension features additionally depend on appropriate entitlements, signing, provisioning, macOS approval, and the running deployment. An ordinary SwiftPM build does not establish those conditions.
+
+## If you received a DMG
+
+Confirm its origin and release instructions with the maintainer. Open the disk image, place the application in Applications as directed, and launch it. Follow macOS's security checks; do not disable them to force an unverified build to run.
+
+Then continue to [first successful setup](/ClaudeBar-docs/start/first-setup/).
+
+## If you have source access
+
+Follow [build and test](/ClaudeBar-docs/developers/build/). The CLI product and selected fixture tests were verified on the local Swift 6.4.2 toolchain. A full release/package and installation matrix were not verified. See [verification status](/ClaudeBar-docs/project/status/) for the exact boundary.

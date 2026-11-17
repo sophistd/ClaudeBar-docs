@@ -1,0 +1,71 @@
+---
+title: "CLI reference"
+description: "Command syntax, outputs, and side effects for the SwiftPM executable."
+kind: "Reference"
+audience: "Operators and developers"
+prerequisites: "An authorized source checkout and a built claudebar-cli executable."
+outcome: "Choose a command with a clear understanding of its effects."
+sidebar: {"order": 1}
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Executable name
+
+SwiftPM builds **claudebar-cli**. The current help text abbreviates it as `claudebar`; these docs use the actual product name. No global executable installation is assumed.
+
+<Tabs>
+<TabItem label="Built binary">
+
+```sh
+BIN_DIR="$(swift build --show-bin-path)"
+"$BIN_DIR/claudebar-cli" --help
+```
+
+</TabItem>
+<TabItem label="SwiftPM">
+
+```sh
+swift run claudebar-cli --help
+```
+
+</TabItem>
+</Tabs>
+
+## Command inventory
+
+| Command | Options / operands | Behavior and effects |
+| --- | --- | --- |
+| `parse` | proxy text or `-` for stdin | Parse to normalized JSON; no proxy connection |
+| `sniff` | `--json`, `--apply` | Discover local proxy configuration; apply writes the active profile |
+| `probe` | `--json` | Live diagnostics; may read credentials and write local records |
+| `browser list` | `--json` | Inspect installed/known browsers and bindings; store initialization may write defaults |
+| `browser bind` | `--browser`, `--mode sandbox\|native`, `--profile-dir` | Write the active profile's browser binding |
+| `browser verify-homology` | `--json` | Compare observed host and gate egress; live network access |
+| `gate` | `--grace 4.0` | Verify upstream, then run loopback listeners until stopped |
+| `fix` | `--dry-run`, `--apply Rxx`, `--json`, `--probe`, `--edge`, `--allow-tier3` | Evaluate live environment; preview or execute a repair |
+| `undo` | transaction UUID or `--latest`, `--json` | Restore an eligible journal snapshot |
+| `audit-telemetry` | `--quarantine` | Inspect local identity/telemetry state; quarantine moves queued files |
+| `export-bundle` | output ZIP path | Run live evaluation and write a redacted diagnostic archive |
+| `lint-prompt` | `--text`, `--stdin`, `--rewrite`, `--json`, `--claude-hook` | Inspect supplied text; configured cloud stages may send text to a model provider |
+| `prompt-hook` | `install`, `uninstall`, `status`, `--global` | Inspect or modify Claude Code hook configuration |
+
+`--help` is handled at the top level. Do not assume every subcommand implements a harmless `--help` flag. Advanced model configuration options are not a stable general configuration API; inspect the current source before using them.
+
+## Offline parsing example
+
+The CLI product build, top-level help, and this loopback parsing example were executed successfully during documentation verification. This does not verify a live proxy connection.
+
+```sh
+printf '%s\n' 'http://127.0.0.1:7890' | swift run claudebar-cli parse -
+```
+
+This loopback address is an **illustrative input**, not a promise that a proxy listens there. Parsing demonstrates syntax acceptance; it does not verify connectivity. Do not put real credentials in shell history.
+
+## Exit behavior
+
+Top-level help exits with `0`; an unknown top-level command exits with `64`; uncaught command errors exit with `1`. Some commands return additional domain-specific codes. For example, browser binding can return `2` for unsupported mode, `3` for a binding collision, or `64` for invalid input. Probe output must be inspected: a process exit code alone is not the complete health verdict.
+
+## Before applying a repair
+
+Use [the recovery guide](/ClaudeBar-docs/guides/recovery/). A dry run does not apply the selected repair, but its live evaluation can still contact the network and initialize local stores.

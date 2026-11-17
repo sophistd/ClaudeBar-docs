@@ -1,0 +1,35 @@
+---
+title: "Contribute to the docs"
+description: "Make a change that another reader can verify."
+kind: "How-to"
+audience: "Documentation contributors"
+prerequisites: "A local documentation checkout and Node.js 22 or later."
+outcome: "Submit a focused change with reproducible evidence."
+sidebar: {"order": 3}
+---
+
+## Choose the right page type
+
+- **Tutorial:** a learning path with a clear success condition.
+- **How-to:** a specific task and its prerequisites.
+- **Reference:** exact values, syntax, and effects.
+- **Explanation:** why the system behaves as it does.
+
+Every page declares its audience, prerequisites, expected outcome, and evidence status in frontmatter. Keep future translations in the same content model; English is currently the only published locale.
+
+## Verify the change
+
+```sh
+npm ci
+npm run verify
+npx playwright install chromium
+npm run test:browser
+```
+
+Build before checking search. Check the GitHub Pages base path, internal anchors, small screens, both themes, and keyboard operation. A browser accessibility scan complements manual checks; it does not certify full WCAG compliance.
+
+## Review publication scope
+
+Only deliberately authored documentation and site implementation belong in this repository. Do not add application source, internal plans, release binaries, real diagnostic archives, personal paths, account information, or credentials. Update the publication manifest before releasing new material.
+
+When reporting a product behavior, include reproducible evidence through an appropriate private maintainer channel. Public documentation issues should contain only public-safe information.

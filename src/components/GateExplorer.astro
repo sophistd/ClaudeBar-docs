@@ -1,0 +1,50 @@
+---
+/**
+ * [INPUT]: lib/gate 的教学状态与动作表。
+ * [OUTPUT]: 可键盘操作、明确标注模拟性质的门禁解释器。
+ * [POS]: 概念页的渐进增强组件，禁用脚本时保留文字说明。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+ */
+import { states } from '../lib/gate.mjs';
+---
+<p class="simulation-label">Deterministic simulation. No live network access.</p>
+<gate-explorer class="gate-explorer">
+  <ol class="gate-states" aria-label="Gate lifecycle states">
+    {Object.entries(states).map(([key, state]) => <li data-state={key} aria-current={key === 'armed' ? 'step' : undefined}>{state.label}</li>)}
+  </ol>
+  <div role="status" aria-live="polite" aria-atomic="true" class="gate-status">
+    <code data-code>ARMED_OPEN</code>
+    <p data-detail>{states.armed.detail}</p>
+  </div>
+  <div class="gate-actions" data-actions></div>
+  <noscript>Enable JavaScript to explore transitions. Read the state table below for the same explanation.</noscript>
+</gate-explorer>
+<script>
+  import { states, transitions, transition } from '../lib/gate.mjs';
+  class GateExplorer extends HTMLElement {
+    state: keyof typeof states = 'armed';
+    connectedCallback() { this.render(); }
+    render() {
+      this.querySelectorAll<HTMLElement>('[data-state]').forEach((item) => {
+        if (item.dataset.state === this.state) item.setAttribute('aria-current', 'step');
+        else item.removeAttribute('aria-current');
+      });
+      this.querySelector('[data-code]')!.textContent = states[this.state].code;
+      this.querySelector('[data-detail]')!.textContent = states[this.state].detail;
+      const actions = this.querySelector('[data-actions]')!;
+      actions.replaceChildren();
+      for (const action of transitions[this.state]) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = action.label;
+        button.addEventListener('click', () => {
+          this.state = transition(this.state, action.event) as keyof typeof states;
+          this.render();
+          this.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
+        });
+        actions.append(button);
+      }
+    }
+  }
+  if (!customElements.get('gate-explorer')) customElements.define('gate-explorer', GateExplorer);
+</script>

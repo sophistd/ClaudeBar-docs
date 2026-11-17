@@ -1,0 +1,38 @@
+---
+title: "Architecture"
+description: "Configuration, evidence, and connection control have different responsibilities."
+kind: "Explanation"
+audience: "Operators and developers"
+prerequisites: "Read the introduction."
+outcome: "Locate an observation or action in the correct layer."
+sidebar: {"order": 1}
+---
+
+## Three cooperating layers
+
+| Layer | Responsibility | Typical output |
+| --- | --- | --- |
+| Configuration and storage | Keep profile settings, credential references, session bindings, and history | A versioned profile and local records |
+| Observation and decisions | Parse configuration, run probes, evaluate relationships, plan repairs | A report, a baseline, or a repair plan |
+| Runtime control | Admit or hold connections, supervise managed launches, handle interruption | A gate state and session lifecycle |
+
+The native interface coordinates these layers. The command-line companion exposes selected workflows without requiring the workbench.
+
+## Trace one operation
+
+1. You select a profile.
+2. Preflight gathers the evidence needed by the launch path.
+3. A verified baseline enables the gate.
+4. The managed process receives the route configuration.
+5. A change in upstream conditions can hold or isolate the connection.
+6. Incident and diagnostic evidence inform the next action.
+
+See [network egress](/ClaudeBar-docs/concepts/network-egress/) for an interactive explanation.
+
+## Optional system controls
+
+The application includes system-extension and packet-filter integration paths. They are separate from the ordinary loopback proxy path and require their own deployment and privilege checks. Do not infer that they are active because the application is running.
+
+## Developer boundary
+
+The package separates core domain logic, a gate library, the native interface, and executable entry points. Consult [repository architecture](/ClaudeBar-docs/developers/architecture/) when changing behavior. Public docs describe supported operating concepts; internal engineering plans are not part of this site.

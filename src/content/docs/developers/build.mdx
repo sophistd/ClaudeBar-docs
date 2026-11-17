@@ -1,0 +1,60 @@
+---
+title: "Build and test"
+description: "Reproduce a build from an authorized source checkout."
+kind: "How-to"
+audience: "Developers"
+prerequisites: "Private source access, macOS 14+, and a Swift 6.2-compatible toolchain."
+outcome: "Build the intended product and interpret test outcomes accurately."
+sidebar: {"order": 1}
+---
+
+## Check your toolchain
+
+Run these commands from the application repository root, not the documentation repository:
+
+```sh
+swift --version
+swift package describe
+```
+
+The package uses Apple frameworks and is not a Linux application. The reviewed package manifest declares Swift tools version 6.2.
+
+## Build a specific product
+
+```sh
+swift build --product claudebar-cli
+swift run claudebar-cli --help
+```
+
+For a full package build:
+
+```sh
+swift build
+```
+
+The CLI product and 25 selected fixture tests passed on the final reviewed baseline. The complete test suite, release packaging, and system-extension activation were not validated in this documentation task. See [verification status](/ClaudeBar-docs/project/status/).
+
+## Run tests
+
+```sh
+swift test
+swift test --filter GraceBufferTests
+```
+
+SwiftPM may compile other test dependencies even when a filter narrows execution. A compile failure means those tests did not run. Existing tests cover domains such as parsing, gate interruption, browser bindings, remediation, and interface contracts; coverage in source is not a fresh passing result.
+
+## Package the native app
+
+The authorized source repository includes `Scripts/package_app.sh`. Packaging, installing, signing, notarizing, and activating a system extension are different operations. Inspect the script and your release configuration before invoking it; signing may access the Keychain. The docs build never executes the application packaging scripts.
+
+## Build this documentation
+
+From the independent documentation repository:
+
+```sh
+npm ci
+npm run verify
+npm run preview
+```
+
+The site is a static Astro/Starlight build. Search is indexed during production build. The repository-specific base path is `/ClaudeBar-docs/`.

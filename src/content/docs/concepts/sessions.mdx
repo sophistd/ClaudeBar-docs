@@ -1,0 +1,36 @@
+---
+title: "Session isolation"
+description: "Separate browser data and process ownership without overstating the boundary."
+kind: "Explanation"
+audience: "Operators"
+prerequisites: "A profile and an installed browser."
+outcome: "Choose a supported session mode and recognize unmanaged sessions."
+sidebar: {"order": 3}
+---
+
+## Guarded sandbox and native session
+
+| Mode | Data and launch behavior | Boundary |
+| --- | --- | --- |
+| Guarded sandbox | Launches a supported Chromium browser with an isolated data directory and gate configuration | Applies to the managed instance and its configured path |
+| Native app session | Uses an existing browser application/session; binding may identify a supported subprofile | Does not inject the gate proxy configuration; checks host/gate egress assumptions before opening the existing app |
+
+“Sandbox” is the product's session-isolation term. It does not mean a virtual machine, a separate OS user, or proof of complete operating-system containment.
+
+**Native-session egress matching is an observation, not a routing guarantee.** A matching exit does not establish that native-browser traffic traverses the loopback gate. Isolating that gate alone therefore does not establish that native-browser traffic has been cut off. Separate system controls, if deployed, have their own scope.
+
+## Browser capability is detected
+
+The implementation distinguishes pure Chromium browsers, wrapped Chromium shells, and WebKit. Pure Chromium can support both modes. Wrapped shells and Safari use native sessions. Known names alone are insufficient: the scanner examines the installed application and can restrict capabilities.
+
+For a concrete matrix, see [compatibility](/ClaudeBar-docs/reference/compatibility/).
+
+## Avoid shared-container collisions
+
+Two profiles pointing at the same native browser container may share account state. The binding workflow detects conflicts and exposes a warning; do not ignore it. Use a distinct supported subprofile or a separate managed sandbox as appropriate.
+
+## Existing sessions are observations
+
+The session inventory can classify managed browser processes, managed desktop processes, existing logins, and unmanaged processes. Account labels and masking help inspect that inventory; a label does not turn an existing process into a managed session.
+
+Changing the selected profile is not proof that every open window changed its identity or network route. Verify the specific launch and instance you intend to use.

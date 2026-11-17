@@ -1,0 +1,43 @@
+---
+title: "First successful setup"
+description: "Build confidence in one profile before adding more sessions."
+kind: "Tutorial"
+audience: "Operators"
+prerequisites: "An authorized ClaudeBar build, macOS 14 or later, and a working upstream proxy."
+outcome: "A managed session with a reviewed route and no unexplained blocking diagnostics."
+sidebar: {"order": 3}
+---
+
+## 1. Open the workbench
+
+Launch your authorized build and open the menu bar panel. Open **Profiles & settings** (the current app label is **档案与设置**). The app currently uses Chinese interface labels; these docs provide English explanations alongside the labels you need.
+
+## 2. Configure one profile
+
+Choose an existing profile or use **New isolated profile** (**新建隔离档案**). Give it a recognizable local name. Configure its upstream through the application's proxy import controls. Use a proxy you are authorized to operate. Do not paste production credentials into issue reports or screenshots.
+
+See [configure a profile](/ClaudeBar-docs/guides/configuration/) for the difference between a proxy endpoint and a protocol that needs a local core.
+
+## 3. Select a browser and session mode
+
+In **Browser** (**浏览器**), select an installed browser and a supported session mode. A guarded sandbox uses a separate browser data directory. A native session opens the browser's existing session without injecting gate proxy settings; matching observed egress is not proof that its traffic traverses the gate. Clear any shared-container collision warning before continuing.
+
+## 4. Verify, then launch
+
+Use **Verify egress** (**核验出口**) and inspect the result. **Verify then open login** (**核验后打开登录**) runs the check before opening the browser flow. Do not interpret an unobserved result as success. Go to **Checks & repair** (**检查与修复**) for the observation behind a blocking result.
+
+## 5. Check the outcome
+
+Confirm all three:
+
+- The intended profile and browser binding are selected.
+- The gate reports **ARMED_OPEN** (**出口已放行**) for the managed route.
+- No unresolved critical failure or uncovered observation gap blocks the launch path.
+
+For native mode, the armed state describes the gate, not proof of that browser's routing or network isolation.
+
+An existing browser window may belong to a different session. Its mere presence does not prove ClaudeBar manages it. See [session isolation](/ClaudeBar-docs/concepts/sessions/).
+
+## If setup does not succeed
+
+Keep the session stopped or isolated while investigating. Start with [reading diagnostics](/ClaudeBar-docs/guides/diagnostics/), then [recovery](/ClaudeBar-docs/guides/recovery/). Do not weaken a check simply to obtain a green label.

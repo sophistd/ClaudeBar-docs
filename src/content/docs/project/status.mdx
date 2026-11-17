@@ -1,0 +1,38 @@
+---
+title: "Baseline and verification"
+description: "What this documentation release establishes, and what it does not."
+kind: "Reference"
+audience: "All readers"
+prerequisites: "None."
+outcome: "Judge claims against their actual evidence."
+sidebar: {"order": 1}
+---
+
+## Documentation baseline
+
+This site describes the application source baseline reviewed on **November 17, 2026**. It is not a versioned application release announcement. Source review covered the Swift package, CLI dispatch, gate lifecycle, profile and browser models, diagnostic/export paths, UI labels, and existing tests.
+
+## Evidence ledger
+
+| Area | Evidence | Limit |
+| --- | --- | --- |
+| Platform and package targets | Manifest inspected | Not a tested OS/architecture matrix |
+| Gate lifecycle and recovery | State-machine code and test cases inspected | 12 selected gate and tunnel tests passed; not full-system validation |
+| Browser modes and bindings | Models, scanner and CLI inspected | 6 browser-isolation model tests passed; real browser/account sessions not exercised |
+| CLI build, help and offline parsing | CLI product built; help and a credential-free loopback parse succeeded | No live proxy credentials or routing changes tested |
+| Diagnostic and repair commands | Implementations inspected | Live diagnostics and state-changing commands not run |
+| System extension and packaging | Source and scripts exist | Activation, signing and notarization not tested here |
+
+## Executed application checks
+
+On the final reviewed local source baseline, Swift 6.4.2 successfully built the CLI product. Top-level help and a credential-free loopback parse succeeded. A filtered Swift test run passed **25 tests across four suites**: gate recovery, transparent tunnels, browser isolation, and proxy parsing. These tests use controlled fixtures; they do not establish behavior for real account sessions, every network topology, or the complete application test suite.
+
+An earlier source snapshot failed compilation during this work. A separate concurrent application commit resolved that condition and changed recovery behavior. The final docs and lifecycle simulation follow the updated source, including observation-gap expiry reusing the existing baseline. The documentation task itself did not change application code.
+
+## Planned or unverified
+
+Public application downloads, a supported release matrix, Chinese translation, and independent full-system security validation are not established by this site. They are not shipped features merely because they would be useful.
+
+## Documentation changes
+
+This initial documentation edition introduces task-oriented guides, a source-grounded CLI/configuration reference, a labeled lifecycle simulation, static search, and generated Markdown/agent indexes. Deployment status belongs to the actual Pages run, not to the existence of a workflow file.

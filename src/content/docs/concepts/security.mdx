@@ -1,0 +1,41 @@
+---
+title: "Security boundaries"
+description: "Understand the scope of each control before relying on it."
+kind: "Explanation"
+audience: "All users"
+prerequisites: "None."
+outcome: "Distinguish intended controls from independently proven guarantees."
+sidebar: {"order": 4}
+---
+
+## What the implementation is designed to do
+
+The loopback gate controls admission to its managed connection path, records a verified egress baseline, and can hold or isolate connections when evidence changes. Profiles separate configuration and session data in supported workflows. Diagnostic exports apply redaction before producing an archive.
+
+These are implementation descriptions. They are not a security certification.
+
+## What this documentation does not establish
+
+- Complete capture or protection of every process and packet on the machine.
+- Prevention of every possible network leak under every system configuration.
+- Provider account safety, eligibility, or immunity from suspension.
+- Correct signing, notarization, or activation of a particular installed system extension.
+- Browser compatibility beyond the observed installation and supported mode.
+
+ClaudeBar is intended for legitimate network configuration, session management, and diagnostics. Provider terms and account rules still apply.
+
+## Local data and exports
+
+Profiles contain settings and credential references. Secrets are intended to be stored through the system Keychain path rather than directly in normalized proxy configuration. Local diagnostics and history can still reveal environment details.
+
+Account masking is a display aid, not encryption. Redaction reduces disclosure; it does not remove the need to inspect a diagnostic archive before sharing it. Never publish a real profile store, browser data directory, account identifiers, or signing material.
+
+## Optional prompt analysis
+
+Prompt-preflight cloud stages may transmit text to the configured provider. Check the selected provider and workflow before submitting confidential content. This documentation site has no AI chat service and does not call a model provider.
+
+## Report a concern
+
+Contact the project maintainer through the private channel used to obtain source access or the build. Do not post credentials, private diagnostics, or exploit details in a public documentation issue. A dedicated public vulnerability-reporting address has not been established in the reviewed baseline.
+
+ClaudeBar is independent and is not affiliated with or endorsed by Anthropic.

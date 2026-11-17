@@ -1,0 +1,46 @@
+---
+title: "Network egress"
+description: "A gate controls when a managed connection may use its configured upstream."
+kind: "Explanation"
+audience: "Operators"
+prerequisites: "Understand what a profile and upstream proxy are."
+outcome: "Predict admission, interruption, and recovery behavior."
+sidebar: {"order": 2}
+---
+
+import GateExplorer from '../../../components/GateExplorer.astro';
+
+## One connection, one verified route
+
+ClaudeBar's loopback gate accepts supported HTTP CONNECT and SOCKS5 connections on the local machine. A verified egress baseline records the observed route identity. Managed connections receive permission to use that route while the gate is armed.
+
+<div class="flow" role="img" aria-label="Managed app connects through the loopback gate to a configured upstream."><span>Managed app</span><b aria-hidden="true">→</b><span>Loopback gate</span><b aria-hidden="true">→</b><span>Configured upstream</span></div>
+
+The forwarding path transports tunnel bytes; it does not install a TLS interception certificate. That implementation detail does not establish whole-device traffic coverage.
+
+## Explore the gate lifecycle
+
+<GateExplorer />
+
+This teaching model starts after a successful preflight. It omits the application's transient **PREFLIGHT_PROBING** state, real timers, sockets, and probe scheduling. The default profile grace window is four seconds. Use the two explicit expiry actions to compare rejected recovery with missing observations.
+
+| State | New handshakes | What happens next |
+| --- | --- | --- |
+| STOPPED | No armed permission | Verify before arming |
+| ARMED_OPEN | May receive a permit | Interruption can enter a hold |
+| GRACE_HOLD | Wait for recovery | Matching recovery resumes; rejection expiry or drift isolates; observation-only expiry reuses the prior baseline |
+| TRIPPED_ISOLATED | Rejected | Review the incident and obtain fresh verification |
+
+## Limits that matter
+
+**Missing evidence does not always close an already-armed gate.** In the current runtime, if a grace window ends with no fresh observation and no recorded recovery-probe rejection, the gate resumes admission using the prior baseline. If a rejection was recorded, expiry isolates it. A measured identity mismatch isolates immediately. Initial preflight blocking and recovery of an already-armed gate are different decisions. This behavior is implemented; it is not a fresh verification of the route.
+
+During a hold, existing tunnels are not always treated identically. Network-change and sleep paths can request immediate tunnel shutdown; an ordinary transient upstream interruption can preserve established tunnels. Do not assume every interruption preserves an in-flight request.
+
+With strict IP pinning enabled, recovery requires the baseline IP to match. The broader recovery predicate also checks country and available ASN evidence. If usable ASN evidence is absent, the IP must still match even when strict pinning is disabled. Disabling strict pinning changes that predicate; it does not disable all validation.
+
+A passing probe is evidence about that observation, not a guarantee for every application. A request rejected by a destination is also different from the upstream itself becoming unreachable.
+
+## Next steps
+
+[Read diagnostics](/ClaudeBar-docs/guides/diagnostics/) to interpret a verdict. [Recover a session](/ClaudeBar-docs/guides/recovery/) to choose a corrective action.

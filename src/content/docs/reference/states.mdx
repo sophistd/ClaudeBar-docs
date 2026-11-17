@@ -1,0 +1,37 @@
+---
+title: "States and errors"
+description: "Keep process exit codes, diagnostic verdicts, and gate lifecycle separate."
+kind: "Reference"
+audience: "Operators and developers"
+prerequisites: "A diagnostic or command result."
+outcome: "Identify which state space a value belongs to."
+sidebar: {"order": 4}
+---
+
+## Gate lifecycle
+
+| Raw value | App label | Interpretation |
+| --- | --- | --- |
+| `STOPPED` | 还没核验 | Not armed |
+| `PREFLIGHT_PROBING` | 正在核验 | Preflight in progress |
+| `ARMED_OPEN` | 出口已放行 | Managed gate admission enabled |
+| `GRACE_HOLD` | 出口不稳，先挂起 | Recovery window; new handshakes wait |
+| `TRIPPED_ISOLATED` | 出口已经断开 | Current epoch isolated |
+
+Explore the [lifecycle model](/ClaudeBar-docs/concepts/network-egress/).
+
+## Gate errors
+
+| Error family | Meaning |
+| --- | --- |
+| `gateNotArmed` | Connection requested without an armed gate |
+| `graceTimeoutIsolated` | Recovery window expired |
+| `recoveryIdentityDrifted` | Recovery evidence did not match the baseline |
+| `upstreamProxyUnreachable` | Upstream transport could not be reached |
+| `upstreamTargetRejected` | Upstream rejected the target request |
+| `unsupportedTransportRequiresLocalCore` | A local protocol bridge is required |
+| `malformedClientHandshake` | Incoming proxy handshake was invalid |
+
+## Verdicts and exit codes
+
+Diagnostic statuses are listed in [read diagnostics](/ClaudeBar-docs/guides/diagnostics/). Command exits are described in [CLI reference](/ClaudeBar-docs/reference/cli/). Neither should be substituted for a gate state. A command can finish successfully while returning a report containing failed checks.

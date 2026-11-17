@@ -1,0 +1,32 @@
+---
+title: "Understand your connection."
+description: "Configure a route, separate sessions, and inspect the evidence before you act."
+kind: "Overview"
+audience: "Operators and developers"
+prerequisites: "None."
+outcome: "Choose a practical starting point."
+sidebar: {"order": 1}
+---
+
+ClaudeBar is an independent native macOS utility for **network egress control, session isolation, environment diagnostics, and recovery**. Its menu bar offers a quick status view; its workbench holds configuration, evidence, and recovery actions.
+
+## Start with a task
+
+<ul class="path-list">
+<li><a href="/ClaudeBar-docs/start/first-setup/">Set up your first managed session</a><p>Choose a profile, verify the route, then launch through ClaudeBar.</p></li>
+<li><a href="/ClaudeBar-docs/concepts/network-egress/">Understand what the gate controls</a><p>Explore interruption, recovery, and isolation with a deterministic model.</p></li>
+<li><a href="/ClaudeBar-docs/guides/diagnostics/">Find out why a check failed</a><p>Read the observation, its verdict, and the next action.</p></li>
+<li><a href="/ClaudeBar-docs/reference/cli/">Use the command-line reference</a><p>Look up syntax and side effects before running a command.</p></li>
+</ul>
+
+## How the pieces fit
+
+<div class="flow" role="img" aria-label="A profile configures a local gate; the gate controls managed sessions."><span>Profile<br/>Route and session settings</span><b aria-hidden="true">→</b><span>Local gate<br/>Verified route and lifecycle</span><b aria-hidden="true">→</b><span>Managed session<br/>App or supported browser</span></div>
+
+A profile describes the intended setup. Diagnostics collect observations. The gate uses a verified baseline to decide whether to admit managed connections. Recovery checks whether that baseline still holds.
+
+## Know the boundary
+
+A green state is evidence about a particular route and observation. It is not a guarantee for all applications, all traffic, or provider account outcomes. Read [security boundaries](/ClaudeBar-docs/concepts/security/) before relying on a configuration.
+
+These docs describe a reviewed source baseline, not a promise of public binary availability. Begin with [installation and access](/ClaudeBar-docs/start/installation/). ClaudeBar is not affiliated with or endorsed by Anthropic.
