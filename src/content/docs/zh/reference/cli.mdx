@@ -1,0 +1,78 @@
+---
+title: "CLI 命令参考"
+description: "查询命令参数、输出、退出码，以及命令可能修改的数据。"
+kind: "Reference"
+audience: "日常使用者和开发者"
+prerequisites: "有权访问应用源码，并已构建 claudebar-cli。"
+outcome: "运行命令前，能查清它是否会访问网络、读取凭据或修改本地数据。"
+evidence: "已核对源码"
+sidebar: {"order": 1}
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## 查看帮助
+
+SwiftPM 构建的可执行文件叫 **claudebar-cli**。帮助里简写为 `claudebar`，下面的命令使用完整名称，可以直接在源码仓库里运行。
+
+<Tabs>
+<TabItem label="运行已构建的文件">
+
+```sh
+BIN_DIR="$(swift build --show-bin-path)"
+"$BIN_DIR/claudebar-cli" --help
+```
+
+</TabItem>
+<TabItem label="通过 SwiftPM 运行">
+
+```sh
+swift run claudebar-cli --help
+```
+
+</TabItem>
+</Tabs>
+
+`--help` 由顶层命令处理。请用上面的写法查看帮助，子命令收到 `--help` 仍可能执行实际操作。高级模型配置暂时没有稳定的通用接口，用前请查当前源码。
+
+## 查命令和副作用
+
+| 命令 | 参数 | 会做什么 |
+| --- | --- | --- |
+| `parse` | 代理配置文本，或用 `-` 从标准输入读取 | 输出规范化 JSON，解析时不连接代理 |
+| `sniff` | `--json`、`--apply` | 查找本机代理配置。加 `--apply` 会写入当前配置档案 |
+| `probe` | `--json` | 执行实时诊断，可能读取凭据、写入本地记录 |
+| `browser list` | `--json` | 查看已安装或已知的浏览器及其绑定。首次初始化存储时可能写入默认值 |
+| `browser bind` | `--browser`、`--mode sandbox\|native`、`--profile-dir` | 写入当前配置档案的浏览器绑定 |
+| `browser verify-homology` | `--json` | 联网观测并比较宿主机出口和门禁出口 |
+| `gate` | `--grace 4.0` | 核验上游代理后，在本机回环地址开启监听，直到命令停止 |
+| `fix` | `--dry-run`、`--apply Rxx`、`--json`、`--probe`、`--edge`、`--allow-tier3` | 检查当前环境，预览或执行修复 |
+| `undo` | 事务 UUID 或 `--latest`，可加 `--json` | 从符合恢复条件的日志快照还原 |
+| `audit-telemetry` | `--quarantine` | 检查本地身份和遥测状态。加 `--quarantine` 会移走队列中的文件 |
+| `export-bundle` | 输出 ZIP 路径 | 执行实时检查，生成脱敏后的诊断包 |
+| `lint-prompt` | `--text`、`--stdin`、`--rewrite`、`--json`、`--claude-hook` | 检查输入文本。已配置的云端处理环节可能把文本发给模型服务商 |
+| `prompt-hook` | `install`、`uninstall`、`status`、`--global` | 查看或修改 Claude Code 的钩子配置 |
+
+## 离线试一次解析
+
+```sh
+printf '%s\n' 'http://127.0.0.1:7890' | swift run claudebar-cli parse -
+```
+
+编写文档时，已成功构建 CLI、运行顶层帮助，并执行上述解析示例。示例用回环地址演示输入格式，即使该端口没有代理服务，解析也可以成功。验证代理能否连通需要另做探测。请勿在命令中填入真实凭据，以免它进入 Shell 历史记录。
+
+## 看退出码
+
+| 退出码 | 场景 |
+| --- | --- |
+| `0` | 成功显示顶层帮助 |
+| `64` | 顶层命令未知，或浏览器绑定收到无效输入 |
+| `1` | 命令遇到未捕获的错误 |
+| `2` | 浏览器绑定不支持指定的模式 |
+| `3` | 浏览器绑定发生冲突 |
+
+部分命令有自己的退出码。执行 `probe` 后还要阅读报告里的各项检查结果，进程成功退出时，报告里仍可能有失败项。
+
+## 修复前先确认影响
+
+按[恢复指南](/ClaudeBar-docs/zh/guides/recovery/)操作。`fix --dry-run` 只预览所选修复，评估当前环境时仍可能联网并初始化本地存储。

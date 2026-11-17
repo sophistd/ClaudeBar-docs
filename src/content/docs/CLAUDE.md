@@ -10,5 +10,6 @@ index.mdx: Understand your connection.：带受众、前提、成果与证据状
 project/: 证据范围、项目访问与许可说明。
 reference/: 命令、配置、兼容性与错误契约。
 start/: 访问前提、认知对象和首个会话学习路径。
+zh/: 与英文逐页对应的中文内容，按中文读者的疑问与操作顺序组织。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

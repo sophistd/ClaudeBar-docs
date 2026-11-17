@@ -1,6 +1,6 @@
 # ClaudeBar documentation
 
-An English, static documentation site for ClaudeBar's macOS network egress,
+A bilingual English and Simplified Chinese documentation site for ClaudeBar's macOS network egress,
 session isolation, diagnostics, and recovery workflows. ClaudeBar is independent
 and is not affiliated with or endorsed by Anthropic.
 
@@ -34,7 +34,10 @@ automated accessibility rules. Automated tests do not certify full WCAG complian
 `src/content/docs/` is the canonical MDX source. Each page declares audience,
 purpose/type, prerequisites, expected outcome, and evidence status. Raw Markdown
 and `llms.txt` are generated from the same collection. English is the root locale;
-future translations can use Starlight's locale model.
+Simplified Chinese lives at `/zh/`, with a dedicated `/zh/llms.txt` index.
+The language picker preserves the current article. Search uses the current language.
+Keep both versions aligned when changing product behavior, commands, or limitations;
+`npm run verify` rejects missing language counterparts and Chinese body links to English pages.
 
 ## Publish
 

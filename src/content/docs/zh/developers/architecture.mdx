@@ -1,0 +1,36 @@
+---
+title: "仓库架构"
+description: "按 Swift 软件包目标和文档站内容来源查找代码归属。"
+kind: "Reference"
+audience: "开发者"
+prerequisites: "有权访问应用源码。"
+outcome: "知道某项行为由哪个目标负责，改动后该更新哪份文档。"
+evidence: "已核对源码"
+sidebar: {"order": 2}
+---
+
+## 应用代码在哪里
+
+软件包提供三个库和四个可执行文件。定位问题时，可以先查负责该行为的目标，再沿依赖找到实现。
+
+| 目标 | 负责什么 | 依赖 |
+| --- | --- | --- |
+| `ClaudeBarCore` | 数据模型、解析、探测、存储、诊断导出和修复 | Apple 平台能力 |
+| `ClaudeBarGate` | 回环监听、隧道传输和门禁状态 | `ClaudeBarCore` |
+| `ClaudeBarAppKit` | 原生界面、流程协调和受管会话运行 | `ClaudeBarCore`、`ClaudeBarGate` |
+| `ClaudeBarMain` | 应用可执行文件入口 | `ClaudeBarAppKit` |
+| `ClaudeBarCLI` | 命令行操作流程 | `ClaudeBarCore`、`ClaudeBarGate` |
+| `ClaudeBarWatchdog` | 伴随进程的监督 | 平台能力 |
+| `ClaudeBarSysExt` | 系统扩展可执行文件 | `ClaudeBarCore`、平台扩展能力 |
+
+测试目标覆盖 Core、Gate 和 AppKit 的行为。
+
+## 文档如何生成
+
+同一份 MDX 内容集合供 HTML 页面、原始 Markdown 路由和 `llms.txt` 使用。交互示意图由独立的 JavaScript 状态模型驱动，不连接应用或本机网络。
+
+页面和搜索索引均在构建时生成，搜索在浏览器内运行。站点没有后端服务、遥测看板、模型聊天助手、MCP 端点或语义搜索服务。
+
+## 行为变更后更新哪里
+
+用户能感知的行为变了，就更新相应的概念说明、操作指南或参考页面，并重查证据状态。文档应写清楚已观察到的条件和限制，计划中的功能标为计划。私有工程报告留在内部渠道。

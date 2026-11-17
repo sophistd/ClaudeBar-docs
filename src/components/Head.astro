@@ -1,0 +1,13 @@
+---
+/**
+ * [INPUT]: Starlight 为当前路由生成的完整 head 元数据。
+ * [OUTPUT]: 正常页面的语言互链；404 不发布不存在的各语言路径。
+ * [POS]: 仅修正静态错误页的索引提示，其余元数据沿用框架。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+ */
+const { head, entry } = Astro.locals.starlightRoute;
+const notFound = entry.id === '404';
+const tags = head.filter(({ tag, attrs }) => !(notFound && tag === 'link' && ['canonical', 'alternate'].includes(String(attrs?.rel))));
+---
+{tags.map(({ tag: Tag, attrs, content }) => <Tag {...attrs} set:html={content} />)}
+{notFound && <meta name="robots" content="noindex" />}

@@ -1,0 +1,38 @@
+---
+title: "状态与错误"
+description: "按门禁状态、连接错误、诊断结果和退出码排查问题。"
+kind: "Reference"
+audience: "日常使用者和开发者"
+prerequisites: "已看到界面状态、诊断结果或命令输出。"
+outcome: "从看到的状态或错误找到对应环节。"
+evidence: "已核对源码"
+sidebar: {"order": 4}
+---
+
+## 门禁现在处于什么状态
+
+| 状态值 | 界面显示 | 此时会发生什么 |
+| --- | --- | --- |
+| `STOPPED` | 还没核验 | 门禁尚未启用 |
+| `PREFLIGHT_PROBING` | 正在核验 | 正在做启用前的探测 |
+| `ARMED_OPEN` | 出口已放行 | 门禁可以接收受管连接 |
+| `GRACE_HOLD` | 出口不稳，先挂起 | 进入恢复宽限期，新的握手请求等待处理 |
+| `TRIPPED_ISOLATED` | 出口已经断开 | 本轮放行周期已被隔离 |
+
+状态何时切换，见[出口门禁的状态变化](/ClaudeBar-docs/zh/concepts/network-egress/)。
+
+## 连接报错发生在哪一环
+
+| 错误 | 含义 |
+| --- | --- |
+| `gateNotArmed` | 收到连接请求时，门禁尚未启用 |
+| `graceTimeoutIsolated` | 恢复宽限期已过，连接已被隔离 |
+| `recoveryIdentityDrifted` | 恢复阶段的出口观测结果与基线不符 |
+| `upstreamProxyUnreachable` | 连不上上游代理 |
+| `upstreamTargetRejected` | 上游代理拒绝了对目标地址的请求 |
+| `unsupportedTransportRequiresLocalCore` | 该协议需要本地代理内核做桥接 |
+| `malformedClientHandshake` | 收到的代理握手格式有误 |
+
+## 命令退出后看哪里
+
+退出码说明命令的执行情况，诊断报告说明每一项检查的结果，门禁状态说明当前是否放行受管连接。命令成功退出时，报告里仍可能有失败项。查看[诊断结果](/ClaudeBar-docs/zh/guides/diagnostics/)和 [CLI 退出码](/ClaudeBar-docs/zh/reference/cli/)时，请先认清手上的值属于哪一种。

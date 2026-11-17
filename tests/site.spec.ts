@@ -17,6 +17,7 @@ function routes(dir: string, prefix = ''): string[] {
 }
 for (const route of routes('src/content/docs')) {
   test(`page, themes, accessibility and overflow: ${route || 'home'}`, async ({ page }) => {
+    const menuName = route.startsWith('zh/') ? '菜单' : 'Menu';
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     const response = await page.goto(`${base}${route}`);
@@ -25,9 +26,9 @@ for (const route of routes('src/content/docs')) {
     for (const theme of ['light', 'dark']) {
       // Use the desktop picker or reveal the actual mobile navigation picker.
       const picker = page.locator('starlight-theme-select select:visible').first();
-      if (!await picker.count()) await page.getByRole('button', { name: 'Menu', exact: true }).click();
+      if (!await picker.count()) await page.getByRole('button', { name: menuName, exact: true }).click();
       await page.locator('starlight-theme-select select:visible').first().selectOption(theme);
-      const menu = page.getByRole('button', { name: 'Menu', exact: true });
+      const menu = page.getByRole('button', { name: menuName, exact: true });
       if (await menu.isVisible() && await page.locator('#starlight__sidebar').evaluate((node) => node.matches(':popover-open'))) await menu.click();
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
       // Expressive Code adds focusability after its debounced ResizeObserver runs.

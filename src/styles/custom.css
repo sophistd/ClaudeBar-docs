@@ -1,5 +1,5 @@
 /* [INPUT]: Starlight 语义主题变量与文档组件。
- * [OUTPUT]: 原生字体、中性表面、单强调色与响应式阅读布局。
+ * [OUTPUT]: 中英文系统字体、中文行距、中性表面与响应式阅读布局。
  * [POS]: 文档站唯一视觉覆盖层，不修改框架行为。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 :root {
@@ -29,6 +29,9 @@
 html { scroll-behavior: smooth; }
 body { -webkit-font-smoothing: antialiased; }
 h1, h2, h3 { letter-spacing: -.025em; }
+html:lang(zh-CN) { --sl-font: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+html:lang(zh-CN) :is(h1,h2,h3) { letter-spacing: 0; }
+html:lang(zh-CN) .sl-markdown-content { line-height: 1.85; }
 .site-title { font-size: 1.35rem; letter-spacing: -.035em; color: var(--sl-color-white); }
 .sidebar-content a { font-size: .9rem; padding-block: .35rem; }
 .sidebar-content a[aria-current='page'] { background: var(--sl-color-accent-low); color: var(--sl-color-accent-high); font-weight: 600; border-radius: 4px; }

@@ -1,0 +1,31 @@
+---
+title: "看清你的网络出口"
+description: "核验连接从哪里出去，为不同会话划分边界，遇到异常时查到原因。"
+kind: "Overview"
+audience: "ClaudeBar 使用者和开发者"
+prerequisites: "无。"
+outcome: "找到适合当前任务的操作入口。"
+evidence: "已核对源码"
+sidebar: {"order": 1}
+---
+
+ClaudeBar 是一款独立的 macOS 原生工具。它能控制受管连接的网络出口、隔离会话、检查运行环境，也能在连接异常后帮助你恢复。想看当前状态，打开菜单栏面板。要改配置、查检查结果或尝试恢复，进入工作台。
+
+## 你现在要做什么？
+
+<ul class="path-list">
+<li><a href="/ClaudeBar-docs/zh/start/first-setup/">第一次启动受管会话</a><p>选好配置档案，核验出口，再从 ClaudeBar 启动。</p></li>
+<li><a href="/ClaudeBar-docs/zh/concepts/network-egress/">搞清楚门禁管哪段连接</a><p>用交互演示看看连接中断后，门禁何时等待、恢复或隔离。</p></li>
+<li><a href="/ClaudeBar-docs/zh/guides/diagnostics/">查一项检查为什么没过</a><p>找到实际观测结果、判定和下一步要查的地方。</p></li>
+<li><a href="/ClaudeBar-docs/zh/reference/cli/">查命令怎么用</a><p>运行前先核对参数，看看命令会读取或改动什么。</p></li>
+</ul>
+
+## 从选档案到放行
+
+<div class="flow" role="img" aria-label="先选择配置档案，再由本地门禁控制受管连接。"><span>配置档案<br/>网络出口与会话设置</span><b aria-hidden="true">→</b><span>本地门禁<br/>根据出口基线决定是否放行</span><b aria-hidden="true">→</b><span>受管会话<br/>应用或受支持的浏览器</span></div>
+
+你在配置档案里指定想用的线路和会话。诊断收集实际观测结果，门禁依据核验过的出口基线决定是否放行受管连接。线路发生变化时，恢复流程会检查基线是否仍然成立。
+
+绿色状态表示门禁当前允许连接，可能沿用此前核验的出口基线。有没有取得新的观测，要看检查记录。使用前可以查看[安全边界](/ClaudeBar-docs/zh/concepts/security/)，了解门禁覆盖哪些流量，以及账号结果由谁决定。
+
+文档以已核对的源码为准。获取应用的方式见[安装与获取](/ClaudeBar-docs/zh/start/installation/)。ClaudeBar 独立于 Anthropic，未获 Anthropic 背书。

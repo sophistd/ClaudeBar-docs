@@ -1,6 +1,6 @@
 # ClaudeBar Docs
 
-Astro 7 + Starlight + MDX + Pagefind + TypeScript + Playwright。独立静态文档站，应用源代码不进入发布包。
+Astro 7 + Starlight + MDX + Pagefind + TypeScript + Playwright。中英文独立静态文档站，应用源代码不进入发布包。
 
 成员清单
 public/: 单字母站点 favicon 静态资源；不含产品截图。
@@ -9,7 +9,7 @@ public/: 单字母站点 favicon 静态资源；不含产品截图。
 .nvmrc: 建议使用的 Node 主版本。
 AGENTS.md: 贡献者的事实、隐私与验证执行契约。
 README.md: 站点构建、维护、发布和权利边界。
-astro.config.mjs: 静态生成、项目 base path、导航与页面组件覆盖的唯一配置。
+astro.config.mjs: 静态生成、项目 base path、双语导航与页面组件覆盖的唯一配置。
 package.json: 开发、构建、模型/浏览器验收命令与依赖声明。
 package-lock.json: 锁定生产与验收依赖的公共 registry 版本。
 playwright.config.ts: 桌面/触控 Chromium 与生产预览服务编排。

@@ -1,0 +1,63 @@
+---
+title: "构建与测试"
+description: "从有权访问的应用源码构建 CLI、运行测试，并查阅打包入口。"
+kind: "How-to"
+audience: "开发者"
+prerequisites: "有权访问私有源码，使用 macOS 14 或更高版本和兼容 Swift 6.2 的工具链。"
+outcome: "能构建所需产物，读懂测试结果覆盖了哪些行为。"
+evidence: "已核对源码"
+sidebar: {"order": 1}
+---
+
+## 在应用仓库检查工具链
+
+进入**应用源码仓库根目录**后执行：
+
+```sh
+swift --version
+swift package describe
+```
+
+软件包清单声明 Swift tools version 为 6.2。应用依赖 Apple 框架，构建与运行面向 macOS。
+
+## 构建 CLI 或整个软件包
+
+先单独构建 CLI，再运行顶层帮助检查可执行文件：
+
+```sh
+swift build --product claudebar-cli
+swift run claudebar-cli --help
+```
+
+需要构建整个软件包时，运行：
+
+```sh
+swift build
+```
+
+编写文档时，最终审阅的源码成功构建了 CLI，选取的 25 项测试通过。完整测试套件、发布打包和系统扩展激活尚未在这次工作中验证。已执行的检查见[源码基准与验证范围](/ClaudeBar-docs/zh/project/status/)。
+
+## 运行测试
+
+```sh
+swift test
+swift test --filter GraceBufferTests
+```
+
+第二条命令只运行匹配的测试，SwiftPM 仍可能先编译其他测试依赖。若编译失败，测试尚未开始。仓库已有解析、门禁中断、浏览器绑定、修复操作和接口约定等测试，具体是否通过以当次运行结果为准。
+
+## 查找原生应用打包入口
+
+应用源码仓库包含 `Scripts/package_app.sh`。执行前先阅读脚本和当前发布配置，签名操作可能访问钥匙串。打包、安装、签名、公证，以及激活系统扩展各有自己的操作。构建文档站不会执行应用打包脚本。
+
+## 构建文档站
+
+进入独立的文档仓库，运行：
+
+```sh
+npm ci
+npm run verify
+npm run preview
+```
+
+文档站使用 Astro 和 Starlight 静态生成，在生产构建时建立搜索索引。站点的仓库基础路径是 `/ClaudeBar-docs/`。
