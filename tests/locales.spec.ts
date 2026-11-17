@@ -17,8 +17,8 @@ test('switching languages preserves the current article', async ({ page }) => {
   await (await revealLanguagePicker(page, 'Menu')).selectOption({ label: '简体中文' });
   await expect(page).toHaveURL(`${base}zh/concepts/network-egress/`);
   await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN');
-  await expect(page.locator('.page-meta')).toContainText('原理说明');
-  await expect(page.locator('.breadcrumb')).toContainText('理解工作原理');
+  await expect(page.locator('h1')).toHaveText('网络出口与门禁');
+  await expect(page.locator('.page-meta, .page-contract, .breadcrumb')).toHaveCount(0);
   await (await revealLanguagePicker(page, '菜单')).selectOption({ label: 'English' });
   await expect(page).toHaveURL(`${base}concepts/network-egress/`);
   await expect(page.locator('h1')).toHaveText('Network egress');
@@ -53,7 +53,6 @@ test('Chinese simulation preserves both expiry behaviors', async ({ page }) => {
 });
 test('Chinese Markdown and agent index match the visible language', async ({ page, request }) => {
   await page.goto(`${base}zh/concepts/network-egress/`);
-  await page.locator('.page-contract summary').click();
   const href = await page.getByRole('link', { name: '查看 Markdown 原文' }).getAttribute('href');
   const raw = await request.get(href!);
   expect(raw.ok()).toBe(true);

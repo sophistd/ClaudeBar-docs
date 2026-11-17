@@ -1,32 +1,31 @@
 ---
-title: "看清你的网络出口"
-description: "核验连接从哪里出去，为不同会话划分边界，遇到异常时查到原因。"
+title: "ClaudeBar"
+description: "macOS 上的网络出口控制、浏览器会话隔离与故障诊断。"
 kind: "Overview"
 audience: "ClaudeBar 使用者和开发者"
 prerequisites: "无。"
 outcome: "找到适合当前任务的操作入口。"
 evidence: "已核对源码"
 sidebar: {"order": 1}
+# [INPUT]: 既有公开文档基线与双语页面路由。
+# [OUTPUT]: 提供四个操作入口与保护范围。
+# [POS]: 文档内容集合中的规范正文，供网页与 Markdown 共用。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
-ClaudeBar 是一款独立的 macOS 原生工具。它能控制受管连接的网络出口、隔离会话、检查运行环境，也能在连接异常后帮助你恢复。想看当前状态，打开菜单栏面板。要改配置、查检查结果或尝试恢复，进入工作台。
+## 开始使用
 
-## 你现在要做什么？
+从[安装与获取](/ClaudeBar-docs/zh/start/installation/)确认版本和系统要求，再完成首次配置。
 
 <ul class="path-list">
-<li><a href="/ClaudeBar-docs/zh/concepts/visual-guide/">先看图，再对照界面</a><p>从系统分层、路由边界和恢复过程，找到界面上的下一步。</p></li>
-<li><a href="/ClaudeBar-docs/zh/start/first-setup/">第一次启动受管会话</a><p>选好配置档案，核验出口，再从 ClaudeBar 启动。</p></li>
-<li><a href="/ClaudeBar-docs/zh/concepts/network-egress/">搞清楚门禁管哪段连接</a><p>用交互演示看看连接中断后，门禁何时等待、恢复或隔离。</p></li>
-<li><a href="/ClaudeBar-docs/zh/guides/diagnostics/">查一项检查为什么没过</a><p>找到实际观测结果、判定和下一步要查的地方。</p></li>
-<li><a href="/ClaudeBar-docs/zh/reference/cli/">查命令怎么用</a><p>运行前先核对参数，看看命令会读取或改动什么。</p></li>
+<li><a href="/ClaudeBar-docs/zh/start/first-setup/">配置并启动第一个会话</a></li>
+<li><a href="/ClaudeBar-docs/zh/concepts/visual-guide/">图解工作原理与应用界面</a></li>
+<li><a href="/ClaudeBar-docs/zh/guides/troubleshooting/">排查连接与会话问题</a></li>
+<li><a href="/ClaudeBar-docs/zh/reference/cli/">查询命令行用法</a></li>
 </ul>
 
-## 从选档案到放行
+## 保护范围
 
-<div class="flow" role="img" aria-label="先选择配置档案，再由本地门禁控制受管连接。"><span>配置档案<br/>网络出口与会话设置</span><b aria-hidden="true">→</b><span>本地门禁<br/>根据出口基线决定是否放行</span><b aria-hidden="true">→</b><span>受管会话<br/>应用或受支持的浏览器</span></div>
+门禁只控制接入它的受管连接。放行状态不代表所有应用都受保护，也不保证账号安全。详见[安全边界](/ClaudeBar-docs/zh/concepts/security/)。
 
-你在配置档案里指定想用的线路和会话。诊断收集实际观测结果，门禁依据核验过的出口基线决定是否放行受管连接。线路发生变化时，恢复流程会检查基线是否仍然成立。
-
-绿色状态表示门禁当前允许连接，可能沿用此前核验的出口基线。有没有取得新的观测，要看检查记录。使用前可以查看[安全边界](/ClaudeBar-docs/zh/concepts/security/)，了解门禁覆盖哪些流量，以及账号结果由谁决定。
-
-文档以已核对的源码为准。获取应用的方式见[安装与获取](/ClaudeBar-docs/zh/start/installation/)。ClaudeBar 独立于 Anthropic，未获 Anthropic 背书。
+ClaudeBar 是独立项目，未获 Anthropic 背书。

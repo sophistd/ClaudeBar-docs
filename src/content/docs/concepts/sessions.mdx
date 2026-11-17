@@ -6,11 +6,15 @@ audience: "Operators"
 prerequisites: "A profile and an installed browser."
 outcome: "Choose a supported session mode and recognize unmanaged sessions."
 sidebar: {"order": 3}
+# [INPUT]: 既有机制说明与共享双语 SVG。
+# [OUTPUT]: 面向操作或概念的规范正文。
+# [POS]: MDX 内容源，图只承载关系，正文补充操作与边界。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 import DocFigure from '../../../components/DocFigure.astro';
 
-<DocFigure src="/ClaudeBar-docs/diagrams/routes-en.svg" alt="Only the configured managed route passes through the gate. The existing browser route remains unverified." caption="Only the configured managed route passes through the gate. The existing browser route remains unverified." width={780} height={326} kind="diagram" lang="en" />
+<DocFigure src="/ClaudeBar-docs/diagrams/routes-en.svg" alt="Only the configured managed route passes through the gate. The existing browser route remains unverified." width={780} height={326} kind="diagram" lang="en" />
 
 
 ## Guarded sandbox and native session

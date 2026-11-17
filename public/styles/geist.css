@@ -1,0 +1,25 @@
+/* [INPUT]: 2026-11-17 实读 Vercel Geist 官方颜色、字体、尺寸与动效标尺。
+ * [OUTPUT]: Docs 与四种静态样页共同使用的 token、字体和排版基础。
+ * [POS]: 全站设计系统的单一数据源，页面适配层只映射和组合。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
+@font-face{font-family:Geist;src:url('../fonts/Geist-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Geist Mono';src:url('../fonts/GeistMono-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+:root{
+ --ds-background-100:hsla(0,0%,100%,1);--ds-background-200:hsla(0,0%,98%,1);
+ --ds-gray-100:hsla(0,0%,95%,1);--ds-gray-200:hsla(0,0%,92%,1);--ds-gray-300:hsla(0,0%,90%,1);--ds-gray-400:hsla(0,0%,92%,1);--ds-gray-500:hsla(0,0%,79%,1);--ds-gray-600:hsla(0,0%,66%,1);--ds-gray-700:hsla(0,0%,56%,1);--ds-gray-800:hsla(0,0%,49%,1);--ds-gray-900:hsla(0,0%,30%,1);--ds-gray-1000:hsla(0,0%,9%,1);
+ --ds-blue-900:hsla(211,100%,42%,1);
+ --geist-radius:6px;--geist-marketing-radius:8px;--geist-space:4px;--geist-gap:24px;--geist-gap-half:12px;--geist-gap-quarter:8px;--geist-page-width:1200px;--geist-page-margin:24px;--geist-page-width-with-margin:calc(var(--geist-page-width) + 2 * var(--geist-page-margin));
+ --geist-motion:150ms cubic-bezier(.4,0,.2,1);
+ --font-sans:Geist,-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;--font-mono:'Geist Mono',ui-monospace,SFMono-Regular,monospace;
+ --font-weight-normal:400;--font-weight-medium:500;--font-weight-semibold:600;--font-weight-bold:700;
+ color-scheme:light;
+}
+:root[data-theme='dark']{
+ --ds-background-100:hsla(0,0%,4%,1);--ds-background-200:hsla(0,0%,0%,1);
+ --ds-gray-100:#1a1a1a;--ds-gray-200:#1f1f1f;--ds-gray-300:#292929;--ds-gray-400:#2e2e2e;--ds-gray-500:#454545;--ds-gray-600:#878787;--ds-gray-700:#8f8f8f;--ds-gray-800:#7d7d7d;--ds-gray-900:#a1a1a1;--ds-gray-1000:#ededed;--ds-blue-900:hsla(210,100%,66%,1);color-scheme:dark;
+}
+.text-heading-64{font:400 64px/64px var(--font-sans);letter-spacing:-.06em}
+.text-heading-40{font:600 40px/48px var(--font-sans);letter-spacing:-.06em}
+.text-heading-24{font:600 24px/32px var(--font-sans);letter-spacing:-.04em}
+.text-copy-16{font:400 16px/24px var(--font-sans)}
+.text-button-14{font:500 14px/20px var(--font-sans)}

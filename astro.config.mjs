@@ -27,7 +27,7 @@ export default defineConfig({
     defaultLocale: 'root',
     locales: { root: { label: 'English', lang: 'en' }, zh: { label: '简体中文', lang: 'zh-CN' } },
     customCss: ['./src/styles/custom.css'],
-    components: { Head: './src/components/Head.astro', PageTitle: './src/components/PageTitle.astro' },
+    components: { Head: './src/components/Head.astro', PageTitle: './src/components/PageTitle.astro', Footer: './src/components/Footer.astro' },
     sidebar: [
       { label: 'Overview', translations: { 'zh-CN': '文档首页' }, link: '/' },
       { label: 'Get started', translations: { 'zh-CN': '开始使用' }, items: [{ autogenerate: { directory: 'start' } }] },
@@ -37,7 +37,7 @@ export default defineConfig({
       { label: 'Developers', translations: { 'zh-CN': '参与开发' }, items: [{ autogenerate: { directory: 'developers' } }] },
       { label: 'Project', translations: { 'zh-CN': '项目说明' }, items: [{ autogenerate: { directory: 'project' } }] },
     ],
-    tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
+    tableOfContents: false,
     lastUpdated: false,
   })],
 });

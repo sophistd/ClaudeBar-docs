@@ -6,6 +6,10 @@ audience: "All readers"
 prerequisites: "None."
 outcome: "Judge claims against their actual evidence."
 sidebar: {"order": 1}
+# [INPUT]: 既有公开文档基线与双语页面路由。
+# [OUTPUT]: 记录证据基线与待验证范围，不叙述制作过程。
+# [POS]: 文档内容集合中的规范正文，供网页与 Markdown 共用。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## Documentation baseline
@@ -27,7 +31,6 @@ This site describes the application source baseline reviewed on **November 17, 2
 
 On the final reviewed local source baseline, Swift 6.4.2 successfully built the CLI product. Top-level help and a credential-free loopback parse succeeded. A filtered Swift test run passed **25 tests across four suites**: gate recovery, transparent tunnels, browser isolation, and proxy parsing. These tests use controlled fixtures; they do not establish behavior for real account sessions, every network topology, or the complete application test suite.
 
-An earlier source snapshot failed compilation during this work. A separate concurrent application commit resolved that condition and changed recovery behavior. The final docs and lifecycle simulation follow the updated source, including observation-gap expiry reusing the existing baseline. The documentation task itself did not change application code.
 
 ## Planned or unverified
 

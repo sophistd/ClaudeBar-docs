@@ -1,81 +1,34 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="780" height="326" viewBox="0 0 780 326" xml:lang="zh-CN" role="img" aria-labelledby="routes-zh-title routes-zh-desc">
-  <!-- [INPUT]: diagram-source.mjs 的双语标注与机制形元。
-       [OUTPUT]: routes 的 zh 静态图解。
-       [POS]: 文档站 public/diagrams 的生成资源。
+  <!-- [INPUT]: diagram-source.mjs 双语机制与 Geist 视觉标尺。
+       [OUTPUT]: routes 的 zh 静态机制图。
+       [POS]: public/diagrams 的生成资源。
        [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md -->
   <title id="routes-zh-title">两种浏览器启动方式</title>
   <desc id="routes-zh-desc">单独打开的浏览器使用独立数据目录，配置门禁代理。用现有登录时，浏览器沿用现有数据目录，ClaudeBar 不注入门禁代理，实际联网路径未核实。</desc>
-  <defs>
-    <marker id="routes-zh-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path fill="#252422" d="M0 0l10 5-10 5Z"/>
-    </marker>
-    <marker id="routes-zh-control" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path fill="none" stroke="#496478" stroke-width="1.4" d="m1 1 8 4-8 4"/>
-    </marker>
-  </defs>
+  <defs><marker id="routes-zh-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="arrow" d="m2 1 6 4-6 4"/></marker></defs>
   <style>
-    text { font: 15px -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif; fill: #252422; }
-    path { stroke-linejoin: round; stroke-linecap: round; }
-    .bold { font-size: 16px; font-weight: 650; }
-    .secondary { fill: #5f5a54; }
+    :root { color-scheme: light dark; --bg: #fff; --surface: #fafafa; --border: #e6e6e6; --ink: #171717; --muted: #666; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #000; --surface: #0a0a0a; --border: #333; --ink: #ededed; --muted: #a1a1a1; } }
+    text { font: 15px Geist, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: var(--ink); }
+    .small { font-size: 13px; }
+    .secondary { fill: var(--muted); }
     .center { text-anchor: middle; }
-    .end { text-anchor: end; }
-    .layer { fill: #f2efe8; stroke: #d4cec2; stroke-width: 1; }
-    .rule { fill: none; stroke: #c5bdb1; stroke-width: 1; }
-    .object, .hinge { fill: #fcfbf8; stroke: #252422; stroke-width: 1.7; }
-    .detail { fill: none; stroke: #6d675e; stroke-width: 1.2; }
-    .control { fill: none; stroke: #496478; stroke-width: 1.6; }
-    .traffic { fill: none; stroke: #252422; stroke-width: 2.25; }
-    .transition { fill: none; stroke: #252422; stroke-width: 1.5; }
-    .port { fill: #252422; }
-    .seal { fill: #dbe5ea; stroke: #496478; }
-    .unknown, .unknown-end { fill: none; stroke: #66625c; stroke-width: 1.6; }
-    .unknown { stroke-dasharray: 6 6; }
-    .door { fill: none; stroke: #3b604c; stroke-width: 4; }
-    .panel { stroke: #736347; }
-    .queue { stroke: #736347; stroke-width: 2.5; }
-    .block, .cut { fill: none; stroke: #a3442d; }
-    .cut { stroke-width: 1.5; }
+    .node { fill: var(--surface); stroke: var(--border); stroke-width: 1; }
+    .route, .control, .arrow { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
+    .control { stroke: var(--muted); stroke-dasharray: 4 4; }
+    .rule { stroke: var(--border); }
+    .endpoint { fill: var(--bg); stroke: var(--muted); stroke-width: 1.5; }
+    .junction { fill: var(--ink); }
   </style>
-  <rect x=".5" y=".5" width="779" height="325" fill="#fcfbf8" stroke="#d4cec2"/>
-  <path class="rule" d="M34 166h712"/>
-  <text x="35" y="37" class="bold">单独打开</text>
-  <text x="35" y="200" class="bold">用现有登录</text>
-  <path class="traffic" d="M222 74h191m45 0h169" marker-end="url(#routes-zh-ink)"/>
-  <path class="unknown" d="M222 237h405"/>
-  <circle class="unknown-end" cx="630" cy="237" r="5"/>
-  <path class="detail" d="M179 95v20 M179 258v20"/>
-  <g transform="translate(179 70)">
-  <rect class="object" x="-43" y="-25" width="86" height="50" rx="4"/>
-  <path class="detail" d="M-42-11h84"/>
-  <path class="object" d="M-34-18h1m5 0h1m5 0h1"/>
-  <path class="detail" d="M-27 0h54v14h-54Z M-20 7h19"/></g>
-  <g transform="translate(179 233)">
-  <rect class="object" x="-43" y="-25" width="86" height="50" rx="4"/>
-  <path class="detail" d="M-42-11h84"/>
-  <path class="object" d="M-34-18h1m5 0h1m5 0h1"/>
-  <circle class="detail" cx="0" cy="0" r="5"/><path class="detail" d="M-10 16a10 7 0 0 1 20 0Z"/></g>
-  <g transform="translate(179 130)">
-  <path class="object" d="M-25 15v-30h18l4 5h28v25Z"/>
-  <path class="detail" d="M-24-5h48"/>
-  </g>
-  <g transform="translate(179 293)">
-  <path class="object" d="M-25 15v-30h18l4 5h28v25Z"/>
-  <path class="detail" d="M-24-5h48"/>
-  <path class="detail" d="M-16 2h26 M-16 8h18"/></g>
-  <g transform="translate(436 70)">
-  <path class="object" d="M-27-24h54v7h-54Z M-27 18h54v6h-54Z"/>
-  <path class="door" d="M2-24 23-13"/><path class="traffic" d="M-27 4H27"/>
-  <circle class="hinge" cx="2" cy="-24" r="3"/></g>
-  <g transform="translate(662 74)">
-  <path class="object" d="M-31-21h62v17h-62Z M-31 1h62v17h-62Z"/>
-  <path class="detail" d="M-22-12h20 M-22 10h20"/>
-  <circle class="port" cx="21" cy="-12" r="2"/>
-  <circle class="port" cx="21" cy="10" r="2"/></g>
-  <text x="216" y="135" class="">独立数据目录</text>
-  <text x="216" y="298" class="">现有数据目录</text>
-  <text x="436" y="115" class="center">本机回环门禁</text>
-  <text x="662" y="115" class="center">上游代理</text>
-  <text x="434" y="222" class="center secondary">联网路径未核实</text>
-  
+  <rect width="780" height="326" fill="var(--bg)"/><text x="32" y="38" class="">单独打开</text>
+    <rect class="node" x="32" y="58" width="208" height="56" rx="6"/><text x="136" y="81" class="center">浏览器</text><text x="136" y="100" class="center secondary small">独立数据目录</text>
+    <rect class="node" x="310" y="58" width="188" height="56" rx="6"/><text x="404" y="91" class="center">本机回环门禁</text>
+    <rect class="node" x="568" y="58" width="180" height="56" rx="6"/><text x="658" y="91" class="center">上游代理</text>
+    <path class="route" d="M240 86H304" marker-end="url(#routes-zh-arrow)"/><path class="route" d="M498 86H562" marker-end="url(#routes-zh-arrow)"/>
+    <path class="rule" d="M32 158H748"/>
+    <text x="32" y="202" class="">用现有登录</text>
+    <rect class="node" x="32" y="222" width="208" height="56" rx="6"/><text x="136" y="245" class="center">浏览器</text><text x="136" y="264" class="center secondary small">现有数据目录</text>
+    <path class="control" d="M240 250H730"/>
+    <circle class="endpoint" cx="738" cy="250" r="5"/>
+    <text x="498" y="233" class="center secondary small">联网路径未核实</text>
 </svg>

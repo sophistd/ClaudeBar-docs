@@ -1,34 +1,12 @@
 ---
 /**
- * [INPUT]: Starlight 当前语言、路由与文档 frontmatter。
- * [OUTPUT]: 随当前语言显示的面包屑、标题、阅读提示与同源 Markdown 入口。
- * [POS]: 统一页面入口，保持阅读者与 Agent 使用同一内容源。
+ * [INPUT]: Starlight 当前文档标题与描述。
+ * [OUTPUT]: 唯一的页面标题和一句摘要；编辑元数据留在内容源中。
+ * [POS]: 公共页首，不重复导航或渲染编写过程。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 import Default from '@astrojs/starlight/components/PageTitle.astro';
-const { entry, locale } = Astro.locals.starlightRoute;
-const { data } = entry;
-const zh = locale === 'zh';
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const localId = zh ? entry.id.replace(/^zh\/?/, '') : entry.id;
-const section = localId.includes('/') ? localId.split('/')[0] : 'overview';
-const sectionNames: Record<string, string> = zh
-  ? { overview: '文档首页', start: '开始使用', concepts: '理解工作原理', guides: '操作指南', reference: '查询与参考', developers: '参与开发', project: '项目说明' }
-  : { overview: 'Overview', start: 'Get started', concepts: 'Concepts', guides: 'Guides', reference: 'Reference', developers: 'Developers', project: 'Project' };
-const kinds: Record<string, string> = { Overview: '概览', Tutorial: '上手教程', 'How-to': '操作指南', Reference: '参考资料', Explanation: '原理说明' };
+const { data } = Astro.locals.starlightRoute.entry;
 ---
-<nav class="breadcrumb" aria-label={zh ? '当前位置' : 'Breadcrumb'}>
-  <a href={`${base}/${zh ? 'zh/' : ''}`}>{zh ? '文档' : 'Docs'}</a><span aria-hidden="true">/</span>
-  <span>{sectionNames[section] ?? section}</span>
-</nav>
 <Default {...Astro.props} />
-<p class="page-description">{data.description}</p>
-{data.kind && <>
-<div class="page-meta"><span>{zh ? kinds[data.kind] : data.kind}</span><span>{data.audience}</span><span>{data.evidence}</span></div>
-<details class="page-contract">
-  <summary>{zh ? '阅读前需要了解什么' : 'Before you begin & page details'}</summary>
-  <p><strong>{zh ? '阅读前提：' : 'Prerequisites:'}</strong> {data.prerequisites}</p>
-  <p><strong>{zh ? '读完能做什么：' : 'Outcome:'}</strong> {data.outcome}</p>
-  <p>{zh ? '本文依据 2026 年 11 月 17 日核对的代码编写。' : 'Documentation baseline: November 17, 2026.'} <a href={`${base}/markdown/${entry.id || 'index'}.md`}>{zh ? '查看 Markdown 原文' : 'Read as Markdown'}</a></p>
-</details>
-</>}
+{data.description && <p class="page-description">{data.description}</p>}

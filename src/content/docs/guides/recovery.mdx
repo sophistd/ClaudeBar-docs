@@ -6,11 +6,15 @@ audience: "Operators"
 prerequisites: "A blocked, held, or isolated managed session."
 outcome: "Apply a justified repair and confirm its verification result."
 sidebar: {"order": 3}
+# [INPUT]: 既有机制说明与共享双语 SVG。
+# [OUTPUT]: 面向操作或概念的规范正文。
+# [POS]: MDX 内容源，图只承载关系，正文补充操作与边界。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 import DocFigure from '../../../components/DocFigure.astro';
 
-<DocFigure src="/ClaudeBar-docs/diagrams/recovery-en.svg" alt="Recovery can reuse an old baseline when there is no observation and no recorded rejection. Isolation requires reverification." caption="Recovery can reuse an old baseline when there is no observation and no recorded rejection. Isolation requires reverification." width={780} height={330} kind="diagram" lang="en" />
+<DocFigure src="/ClaudeBar-docs/diagrams/recovery-en.svg" alt="Recovery can reuse an old baseline when there is no observation and no recorded rejection. Isolation requires reverification." width={780} height={330} kind="diagram" lang="en" />
 
 
 ## Identify the state

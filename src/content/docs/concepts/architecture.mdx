@@ -6,11 +6,15 @@ audience: "Operators and developers"
 prerequisites: "Read the introduction."
 outcome: "Locate an observation or action in the correct layer."
 sidebar: {"order": 1}
+# [INPUT]: 既有机制说明与共享双语 SVG。
+# [OUTPUT]: 面向操作或概念的规范正文。
+# [POS]: MDX 内容源，图只承载关系，正文补充操作与边界。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 import DocFigure from '../../../components/DocFigure.astro';
 
-<DocFigure src="/ClaudeBar-docs/diagrams/architecture-en.svg" alt="The three layers separate stored intent, observed evidence, and runtime connection control." caption="The three layers separate stored intent, observed evidence, and runtime connection control." width={780} height={340} kind="diagram" lang="en" />
+<DocFigure src="/ClaudeBar-docs/diagrams/architecture-en.svg" alt="The three layers separate stored intent, observed evidence, and runtime connection control." width={780} height={348} kind="diagram" lang="en" />
 
 
 ## Three cooperating layers

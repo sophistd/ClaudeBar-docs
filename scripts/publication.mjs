@@ -1,14 +1,17 @@
 /**
  * [INPUT]: 明确允许的文档站源文件，不遍历父仓库。
- * [OUTPUT]: 文件大小与 SHA-256 清单，供公开披露批准和打包核对。
- * [POS]: 发布边界；默认失败关闭，新增根文件必须登记。
+ * [OUTPUT]: 公开内容的大小与 SHA-256 清单；--stage 导出同一份字节。
+ * [POS]: 发布边界；排除本地设计目录与其 npm 命令，保留本地开发工作流。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, mkdir, writeFile, lstat, realpath } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 const allowedRoots = ['.github', 'src', 'scripts', 'tests', 'public'];
-const allowedFiles = ['.gitignore', '.nvmrc', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'astro.config.mjs', 'package.json', 'package-lock.json', 'playwright.config.ts', 'tsconfig.json'];
+const allowedFiles = ['.gitignore', '.nvmrc', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'DESIGN.md', 'astro.config.mjs', 'package.json', 'package-lock.json', 'playwright.config.ts', 'tsconfig.json'];
+for (const entry of [...allowedRoots, ...allowedFiles]) {
+  if ((await lstat(entry)).isSymbolicLink()) throw new Error(`Symlink is not publishable: ${entry}`);
+}
 async function walk(dir) {
   const out = [];
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -20,9 +23,52 @@ async function walk(dir) {
   return out;
 }
 const files = [...allowedFiles, ...(await Promise.all(allowedRoots.map(walk))).flat()].sort();
+const stageIndex = process.argv.indexOf('--stage');
+const stage = stageIndex === -1 ? undefined : process.argv[stageIndex + 1];
+if (stageIndex !== -1 && !stage) throw new Error('--stage requires a destination');
+if (stage) {
+  const sourceRoot = await realpath(process.cwd());
+  const destination = path.resolve(stage);
+  if (destination === sourceRoot || destination.startsWith(sourceRoot + path.sep) || sourceRoot.startsWith(destination + path.sep)) {
+    throw new Error('Stage must not overlap the source tree or its ancestors');
+  }
+  // ---- 先检查完整路径链；不沿符号链接写入，也不覆盖已有导出内容 ----
+  let cursor = path.parse(destination).root;
+  for (const part of destination.slice(cursor.length).split(path.sep)) {
+    cursor = path.join(cursor, part);
+    try {
+      if ((await lstat(cursor)).isSymbolicLink()) throw new Error(`Stage path contains a symlink: ${cursor}`);
+    } catch (error) {
+      if (error.code === 'ENOENT') break;
+      throw error;
+    }
+  }
+  try {
+    if ((await readdir(destination)).length) throw new Error('Stage directory must be empty');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  await mkdir(destination, { recursive: true });
+}
 const entries = await Promise.all(files.map(async (file) => {
-  const bytes = await readFile(file);
-  return { path: file, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') };
+  const source = await readFile(file);
+  let bytes = source;
+  if (file === 'package.json') {
+    const pkg = JSON.parse(source.toString('utf8'));
+    for (const name of Object.keys(pkg.scripts ?? {})) {
+      if (name.startsWith('designs:')) delete pkg.scripts[name];
+    }
+    bytes = Buffer.from(JSON.stringify(pkg, null, 2) + '\n');
+  }
+  if (stage) {
+    const target = path.resolve(stage, file);
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeFile(target, bytes);
+  }
+  return {
+    path: file, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'),
+    ...(!bytes.equals(source) ? { sourceSha256: createHash('sha256').update(source).digest('hex') } : {}),
+  };
 }));
 console.log(JSON.stringify({
   proposedRepository: 'sophistd/ClaudeBar-docs',

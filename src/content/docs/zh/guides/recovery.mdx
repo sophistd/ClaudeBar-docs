@@ -7,11 +7,15 @@ prerequisites: "受管会话已被拦截、暂挂或隔离。"
 outcome: "按故障原因执行修复，并确认复查是否通过。"
 evidence: "已核对源码"
 sidebar: {"order": 3}
+# [INPUT]: 既有机制说明与共享双语 SVG。
+# [OUTPUT]: 面向操作或概念的规范正文。
+# [POS]: MDX 内容源，图只承载关系，正文补充操作与边界。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 import DocFigure from '../../../../components/DocFigure.astro';
 
-<DocFigure src="/ClaudeBar-docs/diagrams/recovery-zh.svg" alt="没有新观测且没有拒绝记录时，恢复可能沿用旧基线；隔离后需要重新核验。" caption="没有新观测且没有拒绝记录时，恢复可能沿用旧基线；隔离后需要重新核验。" width={780} height={330} kind="diagram" lang="zh" />
+<DocFigure src="/ClaudeBar-docs/diagrams/recovery-zh.svg" alt="没有新观测且没有拒绝记录时，恢复可能沿用旧基线；隔离后需要重新核验。" width={780} height={330} kind="diagram" lang="zh" />
 
 
 ## 现在可以等，还是要重新核验？

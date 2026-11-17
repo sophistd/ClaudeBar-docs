@@ -29,6 +29,10 @@ local links and anchors, publication-sensitive patterns, and browser workflows.
 Browser checks include search, copy, themes, mobile navigation, overflow, and
 automated accessibility rules. Automated tests do not certify full WCAG compliance.
 
+## Design
+
+See [DESIGN.md](DESIGN.md) for Geist sources, local font licensing, content responsibilities, and visual checks. Editorial frontmatter remains in Markdown; the page shows only its title and description.
+
 ## Content model
 
 `src/content/docs/` is the canonical MDX source. Each page declares audience,
@@ -46,6 +50,11 @@ the reviewed documentation files, never the application repository's history,
 internal notes, binaries, credentials, or local diagnostic data.
 
 Generate an exact disclosure manifest with `node scripts/publication.mjs`.
+To export the same reviewed bytes, pass `--stage <new-or-empty-directory>`.
+The destination must be separate from the source tree and its ancestors, with no
+symbolic links in its path. Existing nonempty directories are rejected, not cleaned.
+The export excludes local design prototypes and their `designs:*` npm commands;
+the manifest records the exported hash and, when different, the source hash.
 Obtain the owner's authorization for that file set before the first public push.
 Enable GitHub Pages with **GitHub Actions** as the source. The workflow validates
 pull requests and publishes approved main changes. Its repository identity check

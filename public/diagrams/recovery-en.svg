@@ -1,75 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="780" height="330" viewBox="0 0 780 330" xml:lang="en" role="img" aria-labelledby="recovery-en-title recovery-en-desc">
-  <!-- [INPUT]: diagram-source.mjs 的双语标注与机制形元。
-       [OUTPUT]: recovery 的 en 静态图解。
-       [POS]: 文档站 public/diagrams 的生成资源。
+  <!-- [INPUT]: diagram-source.mjs 双语机制与 Geist 视觉标尺。
+       [OUTPUT]: recovery 的 en 静态机制图。
+       [POS]: public/diagrams 的生成资源。
        [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md -->
   <title id="recovery-en-title">Gate decisions during a hold</title>
   <desc id="recovery-en-desc">New handshakes wait after an interruption. A matching observation resumes admission. Expiry with no new observation and no probe rejection reuses the prior baseline without reverification. Measured drift isolates immediately, and expiry after a recorded rejection also isolates.</desc>
-  <defs>
-    <marker id="recovery-en-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-      <path fill="#252422" d="M0 0l10 5-10 5Z"/>
-    </marker>
-    <marker id="recovery-en-control" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path fill="none" stroke="#496478" stroke-width="1.4" d="m1 1 8 4-8 4"/>
-    </marker>
-  </defs>
+  <defs><marker id="recovery-en-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="arrow" d="m2 1 6 4-6 4"/></marker></defs>
   <style>
-    text { font: 15px -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif; fill: #252422; }
-    path { stroke-linejoin: round; stroke-linecap: round; }
-    .bold { font-size: 16px; font-weight: 650; }
-    .secondary { fill: #5f5a54; }
+    :root { color-scheme: light dark; --bg: #fff; --surface: #fafafa; --border: #e6e6e6; --ink: #171717; --muted: #666; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #000; --surface: #0a0a0a; --border: #333; --ink: #ededed; --muted: #a1a1a1; } }
+    text { font: 15px Geist, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; fill: var(--ink); }
+    .small { font-size: 13px; }
+    .secondary { fill: var(--muted); }
     .center { text-anchor: middle; }
-    .end { text-anchor: end; }
-    .layer { fill: #f2efe8; stroke: #d4cec2; stroke-width: 1; }
-    .rule { fill: none; stroke: #c5bdb1; stroke-width: 1; }
-    .object, .hinge { fill: #fcfbf8; stroke: #252422; stroke-width: 1.7; }
-    .detail { fill: none; stroke: #6d675e; stroke-width: 1.2; }
-    .control { fill: none; stroke: #496478; stroke-width: 1.6; }
-    .traffic { fill: none; stroke: #252422; stroke-width: 2.25; }
-    .transition { fill: none; stroke: #252422; stroke-width: 1.5; }
-    .port { fill: #252422; }
-    .seal { fill: #dbe5ea; stroke: #496478; }
-    .unknown, .unknown-end { fill: none; stroke: #66625c; stroke-width: 1.6; }
-    .unknown { stroke-dasharray: 6 6; }
-    .door { fill: none; stroke: #3b604c; stroke-width: 4; }
-    .panel { stroke: #736347; }
-    .queue { stroke: #736347; stroke-width: 2.5; }
-    .block, .cut { fill: none; stroke: #a3442d; }
-    .cut { stroke-width: 1.5; }
+    .node { fill: var(--surface); stroke: var(--border); stroke-width: 1; }
+    .route, .control, .arrow { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; }
+    .control { stroke: var(--muted); stroke-dasharray: 4 4; }
+    .rule { stroke: var(--border); }
+    .endpoint { fill: var(--bg); stroke: var(--muted); stroke-width: 1.5; }
+    .junction { fill: var(--ink); }
   </style>
-  <rect x=".5" y=".5" width="779" height="329" fill="#fcfbf8" stroke="#d4cec2"/>
-  <path class="transition" d="M112 146h77" marker-end="url(#recovery-en-ink)"/>
-  <path class="transition" d="M259 146h61m0-96v250 M320 50h258q12 0 12 12v22 M320 124h258q12 0 12-12V84 M590 84h43" marker-end="url(#recovery-en-ink)"/>
-  <path class="transition" d="M320 226h258q12 0 12 12v22 M320 300h258q12 0 12-12v-28 M590 260h43" marker-end="url(#recovery-en-ink)"/>
-  <path class="port" d="m548 46 8 4-8 4Z m0 74 8 4-8 4Z m0 102 8 4-8 4Z m0 74 8 4-8 4Z"/>
-  <circle class="port" cx="320" cy="146" r="3"/>
-  <circle class="port" cx="590" cy="84" r="3"/>
-  <circle class="port" cx="590" cy="260" r="3"/>
-  <g transform="translate(77 171)">
-  <path class="object" d="M-27-24h54v7h-54Z M-27 18h54v6h-54Z"/>
-  <path class="door" d="M2-24 23-13"/><path class="traffic" d="M-27 4H27"/>
-  <circle class="hinge" cx="2" cy="-24" r="3"/></g>
-  <g transform="translate(225 171)">
-  <path class="object" d="M-27-24h54v7h-54Z M-27 18h54v6h-54Z"/>
-  <path class="door panel" d="M2-24 9 12"/><path class="queue" d="M-23 4h1m5 0h1m5 0h1 M-3-3v14"/>
-  <circle class="hinge" cx="2" cy="-24" r="3"/></g>
-  <g transform="translate(668 80)">
-  <path class="object" d="M-27-24h54v7h-54Z M-27 18h54v6h-54Z"/>
-  <path class="door" d="M2-24 23-13"/><path class="traffic" d="M-27 4H27"/>
-  <circle class="hinge" cx="2" cy="-24" r="3"/></g>
-  <g transform="translate(668 256)">
-  <path class="object" d="M-27-24h54v7h-54Z M-27 18h54v6h-54Z"/>
-  <path class="door block" d="M2-24V22"/><path class="traffic" d="M-27 4H-10"/><path class="cut" d="m15-2 8 12m0-12-8 12"/>
-  <circle class="hinge" cx="2" cy="-24" r="3"/></g>
-  <text x="77" y="218" class="center bold">Armed</text>
-  <text x="226" y="218" class="center bold">New handshakes wait</text>
-  <text x="668" y="129" class="center bold">Armed</text>
-  <text x="668" y="304" class="center bold">Isolated</text>
-  <text x="151" y="134" class="center secondary">Interruption</text>
-  <text x="342" y="40" class="">Matching observation</text>
-  <text x="342" y="114" class="">No new sample · no rejection</text>
-  <text x="342" y="147" class="secondary">Expiry · reuse prior baseline</text>
-  <text x="342" y="216" class="">Measured identity drift</text>
-  <text x="342" y="290" class="">Grace expires after rejection</text>
-  
+  <rect width="780" height="330" fill="var(--bg)"/><rect class="node" x="24" y="137" width="124" height="56" rx="6"/><text x="86" y="170" class="center">Armed</text>
+    <rect class="node" x="208" y="137" width="150" height="56" rx="6"/><text x="283" y="170" class="center">Handshakes wait</text>
+    <path class="route" d="M148 165H202" marker-end="url(#recovery-en-arrow)"/>
+    <text x="176" y="125" class="center secondary small">Interruption</text>
+    <path class="route" d="M358 165H382V54H622" marker-end="url(#recovery-en-arrow)"/>
+    <path class="route" d="M382 165V276H622" marker-end="url(#recovery-en-arrow)"/>
+    <circle class="junction" cx="382" cy="165" r="3"/>
+    <rect class="node" x="628" y="26" width="128" height="56" rx="6"/><text x="692" y="59" class="center">Armed</text>
+    <rect class="node" x="628" y="248" width="128" height="56" rx="6"/><text x="692" y="281" class="center">Isolated</text>
+    <text x="404" y="40" class="small">Matching observation</text>
+    <path class="control" d="M382 112H610V54H622" marker-end="url(#recovery-en-arrow)"/>
+    <text x="404" y="98" class="small">No new sample · no rejection</text>
+    <text x="404" y="138" class="secondary small">Expiry · reuse prior baseline</text>
+    <path class="route" d="M382 216H610V276H622" marker-end="url(#recovery-en-arrow)"/>
+    <text x="404" y="202" class="small">Measured identity drift</text>
+    <text x="404" y="262" class="small">Grace expires after rejection</text>
 </svg>

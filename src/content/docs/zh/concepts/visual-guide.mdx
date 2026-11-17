@@ -7,17 +7,20 @@ prerequisites: "无需提前配置代理。"
 outcome: "能判断 ClaudeBar 管到哪里、受管连接何时恢复，以及到哪个界面查看状态。"
 evidence: "已核对源码，原生 SwiftUI 界面使用演示数据渲染"
 sidebar: {"order": 5}
+# [INPUT]: 既有公开文档基线与双语页面路由。
+# [OUTPUT]: 用机制图解释关系，以原生截图定位操作。
+# [POS]: 文档内容集合中的规范正文，供网页与 Markdown 共用。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 import DocFigure from '../../../../components/DocFigure.astro';
 
-先看 ClaudeBar 的几部分怎么配合，再跟着浏览器的流量走一遍。看到门禁如何处理中断之后，可以对照最后的截图，在应用里找到这些状态和操作入口。
 
 ## 从一次启动看分工
 
 选好**配置档案**后，ClaudeBar 读取要用的设置。启动前检查记录当前的出口身份，核验通过后将它记为**出口基线**。**门禁**负责受管连接的放行和恢复。
 
-<DocFigure src="/ClaudeBar-docs/diagrams/architecture-zh.svg" alt="从配置与存储，经观测与决策，到控制门禁和受管连接的系统分层图。" caption="配置给出要用的设置，探测提供判断依据，运行控制负责放行。" width={780} height={340} lang="zh" />
+<DocFigure src="/ClaudeBar-docs/diagrams/architecture-zh.svg" alt="从配置与存储，经观测与决策，到控制门禁和受管连接的系统分层图。" width={780} height={348} lang="zh" />
 
 <details>
 <summary>展开看各部分的职责</summary>
@@ -30,7 +33,7 @@ macOS 界面负责协调这几层，部分流程也可从命令行运行。配�
 
 两种方式都可能先检查出口。看检查过后发生了什么。「**单独打开**」会为受支持的浏览器启动一个独立实例，使用单独的数据目录和门禁代理配置。「**用现有登录**」打开已有浏览器，由它按原有设置联网。
 
-<DocFigure src="/ClaudeBar-docs/diagrams/routes-zh.svg" alt="受控沙箱通过回环门禁联网。原生浏览器在出口对照后沿自己的既有路径联网。" caption="实线经过门禁，虚线表示原生浏览器沿用的网络路径。" width={780} height={326} lang="zh" />
+<DocFigure src="/ClaudeBar-docs/diagrams/routes-zh.svg" alt="受控沙箱通过回环门禁联网。原生浏览器在出口对照后沿自己的既有路径联网。" width={780} height={326} lang="zh" />
 
 <details>
 <summary>两边出口一致，能说明什么？</summary>
@@ -41,13 +44,11 @@ macOS 界面负责协调这几层，部分流程也可从命令行运行。配�
 
 ## 上游中断后，门禁怎么决定是否恢复
 
-从左往右看。门禁已放行时，如果上游短时中断，可以进入**宽限期**。新的握手先等一等，门禁根据恢复探测的结果决定下一步。
+门禁已放行时，如果上游短时中断，可以进入**宽限期**。新的握手先等一等，门禁根据恢复探测的结果决定下一步。
 
-<DocFigure src="/ClaudeBar-docs/diagrams/recovery-zh.svg" alt="已放行门禁进入宽限期。出口匹配则恢复，观测到漂移则立即隔离，到期按是否记录到探测拒绝处理。" caption="先看宽限期内有结果时怎么走，再看等到到期时的两个分支。" width={780} height={330} lang="zh" />
+<DocFigure src="/ClaudeBar-docs/diagrams/recovery-zh.svg" alt="已放行门禁进入宽限期。出口匹配则恢复，观测到漂移则立即隔离，到期按是否记录到探测拒绝处理。" width={780} height={330} lang="zh" />
 
-- **观测结果和出口基线匹配**，恢复放行。**观测到出口漂移**，立即隔离，无需等到期。
-- **到期时没有新观测，也没记录到探测被拒绝**，沿用旧基线恢复放行。这次没有重新核验出口。
-- **记录到探测被拒绝，到期仍未恢复**，本轮门禁进入隔离。
+到期时若无新观测、也无探测拒绝，门禁会沿用旧基线恢复放行；这次恢复没有重新核验出口。
 
 <details>
 <summary>等待的是新连接还是旧连接？</summary>
@@ -58,28 +59,28 @@ macOS 界面负责协调这几层，部分流程也可从命令行运行。配�
 
 ## 去 macOS 界面里找入口
 
-以下图片由实际的 SwiftUI 界面离屏渲染，状态和数值使用测试数据。「总览」的浏览器名称来自渲染机器的运行列表。图中没有个人身份信息，渲染过程未使用真实账号会话，也未做实时网络核验。
+以下为应用界面截图，使用演示数据，不代表实时网络状态。
 
 ### 菜单栏面板
 
 点右上角的「嗅探」查找本机代理设置。点底部「主工作台」进入完整界面。
 
-<DocFigure src="/ClaudeBar-docs/screenshots/menu-panel-firstrun-light.png" alt="首次使用时的菜单栏面板，右上有嗅探按钮，底部有主工作台入口。" caption="首次使用时的面板。出口示意和数值均为演示数据。" width={712} height={660} kind="screenshot" lang="zh" />
+<DocFigure src="/ClaudeBar-docs/screenshots/menu-panel-firstrun-light.png" alt="首次使用时的菜单栏面板，右上有嗅探按钮，底部有主工作台入口。" width={712} height={660} kind="screenshot" lang="zh" />
 
 ### 总览
 
 在「总览」先确认当前配置档案与出口状态。再看「正在跑」里的每个实例，确认是否受管。
 
-<DocFigure src="/ClaudeBar-docs/screenshots/workbench-overview-light.png" alt="总览显示当前配置档案、出口放行状态、打开独立浏览器的入口和未受控浏览器列表。" caption="出口已放行时，运行清单里仍可能有未受控的浏览器。" width={2080} height={1360} kind="screenshot" lang="zh" />
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-overview-light.png" alt="总览显示当前配置档案、出口放行状态、打开独立浏览器的入口和未受控浏览器列表。" width={2080} height={1360} kind="screenshot" lang="zh" />
 
 ### 检查与修复
 
 先读顶部汇总，再从左边的风险关系找到右侧对应的检查项。具体怎么读，见[诊断结果](/ClaudeBar-docs/zh/guides/diagnostics/)。
 
-<DocFigure src="/ClaudeBar-docs/screenshots/workbench-topology-light.png" alt="检查与修复页面顶部为出口与风险汇总，左侧为风险关系，右侧为各项检查结果。" caption="这个中断场景用演示数据标出风险，并展示可以查哪些检查项。" width={2080} height={1360} kind="screenshot" lang="zh" />
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-topology-light.png" alt="检查与修复页面顶部为出口与风险汇总，左侧为风险关系，右侧为各项检查结果。" width={2080} height={1360} kind="screenshot" lang="zh" />
 
 ### 内容预检
 
 「内容预检」检查的是输入文本。用工作台看文本经过哪些分析阶段，哪些词被标记，以及它们关联到哪类风险。启用了云端阶段时，输入文本可能会发送给模型服务商。
 
-<DocFigure src="/ClaudeBar-docs/screenshots/workbench-preflight-light.png" alt="内容预检页面上方为分析阶段，左侧为示例原文，右侧为风险类别。" caption="示例文本、风险分数、云端阶段和耗时都是测试数据，未调用真实模型。" width={2080} height={1360} kind="screenshot" lang="zh" />
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-preflight-light.png" alt="内容预检页面上方为分析阶段，左侧为示例原文，右侧为风险类别。" width={2080} height={1360} kind="screenshot" lang="zh" />

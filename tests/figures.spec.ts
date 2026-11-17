@@ -16,7 +16,7 @@ for (const locale of ['', 'zh/']) {
       await img.scrollIntoViewIfNeeded();
       await expect.poll(() => img.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)).toBe(true);
       expect(await img.getAttribute('alt')).toBeTruthy();
-      await expect(figure.locator('figcaption')).not.toBeEmpty();
+      await expect(figure.locator('a')).toHaveCount(1);
       const source = await img.getAttribute('src');
       expect((await request.get(source!)).ok()).toBe(true);
       await expect(figure.locator(`a[href="${source}"]`).first()).toBeVisible();

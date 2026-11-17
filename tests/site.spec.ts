@@ -87,7 +87,6 @@ test('navigation and Markdown representation work', async ({ page, isMobile, req
   }
   await page.locator('#starlight__sidebar').getByRole('link', { name: 'First successful setup', exact: true }).click();
   await expect(page.locator('h1')).toHaveText('First successful setup');
-  await page.locator('.page-contract summary').click();
   const rawLink = page.getByRole('link', { name: 'Read as Markdown' });
   const raw = await request.get((await rawLink.getAttribute('href'))!);
   expect(raw.ok()).toBe(true);

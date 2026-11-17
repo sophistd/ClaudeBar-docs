@@ -1,6 +1,6 @@
 ---
 /**
- * [INPUT]: 双语 MDX 提供图像路径、原始尺寸、替代文字和图注。
+ * [INPUT]: 双语 MDX 提供图像与语义；共享 ui-kit.css 提供截图表面的高度 token。
  * [OUTPUT]: 可打开原图的响应式图像，以及窄屏时可用键盘滚动的图面。
  * [POS]: 双语图解导读共用的静态图像组件，继承 Starlight 的配色与焦点样式。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -8,7 +8,7 @@
 interface Props {
   src: string;
   alt: string;
-  caption: string;
+  caption?: string;
   width: number;
   height: number;
   displayWidth?: number;
@@ -22,17 +22,13 @@ const scrollLabel = lang === 'zh' ? '图像区域，可横向滚动' : 'Image ar
 const frameWidth = displayWidth ?? (kind === 'diagram' ? width : width / 2);
 const minWidth = Math.min(frameWidth, 600);
 ---
-<figure class="doc-figure" style={`--figure-width: ${frameWidth}px; --figure-min-width: ${minWidth}px`}>
+<figure class:list={['doc-figure', kind]} style={`--figure-width: ${frameWidth}px; --figure-min-width: ${minWidth}px`}>
   <div class="image-frame" role="group" aria-label={scrollLabel} tabindex="0">
     <a class="image-link" href={src} aria-label={`${openLabel} · ${alt}`}>
       <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
     </a>
   </div>
-  <figcaption>
-    {minWidth >= 600 && <span class="scroll-hint">{lang === 'zh' ? '左右滑动看全图，或打开原图。' : 'Swipe across the image, or open it full size.'}</span>}
-    <span>{caption}</span>
-    <a href={src} aria-label={`${openLabel} · ${alt}`}>{openLabel}</a>
-  </figcaption>
+  {caption && <figcaption>{caption}</figcaption>}
 </figure>
 
 <style>
@@ -46,7 +42,12 @@ const minWidth = Math.min(frameWidth, 600);
     max-width: 100%;
     overflow-x: auto;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--geist-radius);
+  }
+
+  .screenshot .image-frame {
+    border-radius: 12px;
+    box-shadow: var(--cb-floating);
   }
 
   .image-frame:focus-visible,
@@ -75,12 +76,6 @@ const minWidth = Math.min(frameWidth, 600);
     font-size: var(--sl-text-sm);
   }
 
-  figcaption a {
-    white-space: nowrap;
-  }
 
-  .scroll-hint { display: none; }
-  @media (max-width: 40rem) {
-    .scroll-hint { display: block; flex-basis: 100%; }
-  }
+
 </style>

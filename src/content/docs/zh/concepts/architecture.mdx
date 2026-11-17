@@ -7,11 +7,15 @@ prerequisites: "已读入门介绍。"
 outcome: "能判断一项设置、一次观测或一个操作归哪一层处理。"
 evidence: "已核对源码"
 sidebar: {"order": 1}
+# [INPUT]: 既有机制说明与共享双语 SVG。
+# [OUTPUT]: 面向操作或概念的规范正文。
+# [POS]: MDX 内容源，图只承载关系，正文补充操作与边界。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 import DocFigure from '../../../../components/DocFigure.astro';
 
-<DocFigure src="/ClaudeBar-docs/diagrams/architecture-zh.svg" alt="三层分别处理配置意图、观测证据和连接控制。" caption="三层分别处理配置意图、观测证据和连接控制。" width={780} height={340} kind="diagram" lang="zh" />
+<DocFigure src="/ClaudeBar-docs/diagrams/architecture-zh.svg" alt="三层分别处理配置意图、观测证据和连接控制。" width={780} height={348} kind="diagram" lang="zh" />
 
 
 ## 从选档案到放行连接
