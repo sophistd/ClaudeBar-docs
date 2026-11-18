@@ -1,6 +1,6 @@
 /**
  * [INPUT]: dist 生成的 HTML、静态资源及 Markdown。
- * [OUTPUT]: 双语覆盖、语言内导航、页内锚点、资源与敏感串检查报告。
+ * [OUTPUT]: 双语覆盖、旧英文正文/规范链接一致性、锚点、资源与敏感串检查报告。
  * [POS]: 发布前静态门禁，不以首页通过代替全站链接检查。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -21,7 +21,7 @@ for (const file of html) {
   const source = await readFile(file, 'utf8');
   const $ = load(source);
   const relative = path.relative(root, file);
-  const showcase = relative.startsWith('designs/');
+  const showcase = relative.startsWith('designs/') || relative === 'index.html';
   const chinese = relative.startsWith('zh/') || showcase;
   if ($('html').attr('lang') !== (chinese ? 'zh-CN' : 'en')) errors.push(`${file}: incorrect document language`);
   if (chinese) {
@@ -56,10 +56,17 @@ for (const file of html) {
 }
 const contentRoot = path.resolve('src/content/docs');
 const contentFiles = (await files(contentRoot)).filter((file) => file.endsWith('.mdx')).map((file) => path.relative(contentRoot, file));
-const englishPages = contentFiles.filter((file) => !file.startsWith('zh/'));
+const englishPages = contentFiles.filter((file) => file.startsWith('en/')).map((file) => file.slice(3));
 const chinesePages = contentFiles.filter((file) => file.startsWith('zh/')).map((file) => file.slice(3));
 for (const file of new Set([...englishPages, ...chinesePages])) {
   if (!englishPages.includes(file) || !chinesePages.includes(file)) errors.push(`Missing language counterpart: ${file}`);
+}
+for (const file of englishPages.filter(file => file !== 'index.mdx')) {
+  const route = file.replace(/\.mdx$/, '/index.html');
+  const oldPage = load(await readFile(path.join(root, route), 'utf8'));
+  const canonicalPage = load(await readFile(path.join(root, 'en', route), 'utf8'));
+  if (oldPage('.sl-markdown-content').html() !== canonicalPage('.sl-markdown-content').html()) errors.push(`Legacy content changed: ${route}`);
+  if (oldPage('link[rel=canonical]').attr('href') !== canonicalPage('link[rel=canonical]').attr('href')) errors.push(`Legacy canonical mismatch: ${route}`);
 }
 const forbidden = [/\/Users\//, /TeamIdentifier=[A-Z0-9]{10}/, /BEGIN (?:RSA |OPENSSH )?PRIVATE KEY/, /gh[pousr]_[A-Za-z0-9]{20,}/, /sk-[A-Za-z0-9]{20,}/, /ref-[a-z-]*(?:ban|fingerprint)[a-z-]*report/, /\.claude\/scratch/];
 for (const file of all.filter((f) => /\.(?:html|md|txt|json|m?js|css|svg)$/.test(f))) {

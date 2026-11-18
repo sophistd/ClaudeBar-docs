@@ -1,13 +1,13 @@
 /**
  * [INPUT]: 同一 docs 内容集合的正文与 frontmatter。
- * [OUTPUT]: 双语 Markdown 端点，沿用网页摘要显示契约并替换浏览器专用交互。
+ * [OUTPUT]: 稳定的双语 Markdown 地址；英文 en 路由映射回原端点，沿用摘要契约。
  * [POS]: Agent 阅读接口，不另维护一份文档正文。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 import { getCollection } from 'astro:content';
 import type { APIRoute } from 'astro';
 export async function getStaticPaths() {
-  return (await getCollection('docs')).map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+  return (await getCollection('docs')).map((entry) => ({ params: { slug: entry.id === 'en' ? 'index' : entry.id.replace(/^en\//, '') }, props: { entry } }));
 }
 export const GET: APIRoute = ({ props }) => {
   const { entry } = props;

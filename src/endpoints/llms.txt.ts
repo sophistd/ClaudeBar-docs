@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 文档集合的稳定路由、标题、描述。
- * [OUTPUT]: 双语总索引与中文专用 llms.txt，无聊天与检索服务。
+ * [OUTPUT]: 双语总索引与中文 llms.txt；英文 en 路由仍链接既有 Markdown 地址。
  * [POS]: Agent 入口，从同源文档生成并保留证据边界。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -12,7 +12,7 @@ export const GET: APIRoute = async ({ site, url }) => {
   const zhOnly = url.pathname.endsWith('/zh/llms.txt');
   const chinese = docs.filter((entry) => entry.id === 'zh' || entry.id.startsWith('zh/'));
   const english = docs.filter((entry) => !chinese.includes(entry));
-  const links = (entries: typeof docs) => entries.map((entry) => `- [${entry.data.title}](${base}/markdown/${entry.id}.md): ${entry.data.description}`);
+  const links = (entries: typeof docs) => entries.map((entry) => `- [${entry.data.title}](${base}/markdown/${entry.id === 'en' ? 'index' : entry.id.replace(/^en\//, '')}.md): ${entry.data.description}`);
   if (zhOnly) return new Response([
     '# ClaudeBar 中文文档',
     '> macOS 网络出口控制、会话隔离、环境诊断与故障恢复工具。',

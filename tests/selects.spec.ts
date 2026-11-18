@@ -57,6 +57,6 @@ test('shared selectors: open states, Escape, keyboard and language navigation', 
   await page.emulateMedia({colorScheme:'dark'});await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
   await page.emulateMedia({colorScheme:'light'});await expect(page.locator('html')).toHaveAttribute('data-theme','light');
   await language.click();await language.getByRole('option',{name:'English',exact:true}).click();
-  await expect(page).toHaveURL(`${base}concepts/network-egress/`);
+  await expect(page).toHaveURL(`${base}en/concepts/network-egress/`);
   await expect(page.locator('h1')).toHaveText('Network egress');
 });

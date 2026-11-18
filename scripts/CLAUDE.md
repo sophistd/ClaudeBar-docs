@@ -3,7 +3,7 @@
 > L2 | 父级: ../CLAUDE.md
 
 成员清单
-check-site.mjs: 检查双语覆盖、语言内导航、资源/锚点/base path 与敏感模式。
+check-site.mjs: 检查双语覆盖、旧英文别名正文/规范链接一致性、语言内导航、资源/锚点/base path 与敏感模式。
 diagram-source.mjs: 共用 Geist 灰阶节点、坐标和双语标注，生成架构、路由和恢复机制图。
 publication.mjs: 导出允许的公开内容并生成同源 SHA-256 清单；包含 designs 明确允许文件，不改变 package.json 字节。
 

@@ -62,7 +62,7 @@ for (const route of [...routes('src/content/docs'),'404.html']) {
   });
 }
 test('search keyboard shortcut returns a real deep link', async ({ page }) => {
-  await page.goto(base);
+  await page.goto(`${base}en/`);
   await expect(page.locator('button[data-open-modal]')).toBeEnabled();
   await page.keyboard.press('Control+k');
   await expect(page.locator('dialog[open]')).toBeVisible();
@@ -99,7 +99,7 @@ test('code tabs and copy use the visible command', async ({ page, context }) => 
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('swift run claudebar-cli --help');
 });
 test('navigation and Markdown representation work', async ({ page, isMobile, request }) => {
-  await page.goto(base);
+  await page.goto(`${base}en/`);
   if (isMobile) {
     await page.getByRole('button', { name: 'Menu', exact: true }).tap();
     await expect(page.locator('#starlight__sidebar')).toBeVisible();
@@ -117,7 +117,7 @@ test('navigation and Markdown representation work', async ({ page, isMobile, req
 });
 test('keyboard skip link and reduced motion remain available', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto(base);
+  await page.goto(`${base}en/`);
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
   await page.keyboard.press('Enter');
