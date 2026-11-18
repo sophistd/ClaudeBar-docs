@@ -1,11 +1,16 @@
 ---
 title: "Compatibility"
 description: "Separate supported representations from verified runtime behavior."
+showDescription: false
 kind: "Reference"
 audience: "Operators and developers"
 prerequisites: "Know your browser, operating system, and upstream transport."
 outcome: "Choose a supported combination and identify missing evidence."
 sidebar: {"order": 3}
+# [INPUT]: 既有 Compatibility 文档事实与双语路由。
+# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## Platform
@@ -24,13 +29,15 @@ This table describes code-supported modes. It is not a certification of every cu
 
 ## Proxy import versus transport
 
-| Input | Parsing support | Direct gate use |
-| --- | --- | --- |
-| HTTP CONNECT | Yes | Supported after verification |
-| SOCKS5 / SOCKS5H | Yes | Supported through the SOCKS path |
-| HTTPS upstream proxy | Yes | Requires a local bridge; no silent TLS downgrade |
-| Shadowsocks, VMess, VLESS, Trojan, Hysteria2, TUIC share formats | Yes | Encrypted remote transport requires a local core bridge |
-| Supported Clash YAML entries | Yes | Depends on the resulting transport |
+The following formats can be parsed; runtime use depends on the transport requirements.
+
+| Input | Direct gate use |
+| --- | --- |
+| HTTP CONNECT | Supported after verification |
+| SOCKS5 / SOCKS5H | Supported through the SOCKS path |
+| HTTPS upstream proxy | Requires a local bridge; no silent TLS downgrade |
+| Shadowsocks, VMess, VLESS, Trojan, Hysteria2, TUIC share formats | Encrypted remote transport requires a local core bridge |
+| Supported Clash YAML entries | Depends on the resulting transport |
 
 A loopback bridge must itself be configured and running. ClaudeBar's parser does not install a third-party network core.
 

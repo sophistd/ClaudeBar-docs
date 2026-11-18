@@ -3,7 +3,7 @@
 Astro 7 + Starlight + MDX + Pagefind + TypeScript + Playwright。中英文独立静态文档站，应用源代码不进入发布包。
 
 成员清单
-public/: 官方 Geist 字体及许可、站点图标、原创双语 SVG 与使用演示数据渲染的原生界面截图。
+public/: 共享 token、组件状态与静态页控件行为，官方 Geist 字体及许可、站点图标、双语 SVG 与演示界面截图。
 .github/: 独立仓库自动化，不访问私有源码。
 .gitignore: 隔离依赖、生成物和浏览器测试输出。
 .nvmrc: 建议使用的 Node 主版本。

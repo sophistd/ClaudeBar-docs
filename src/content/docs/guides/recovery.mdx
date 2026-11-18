@@ -1,6 +1,7 @@
 ---
 title: "Recover a session"
 description: "Use the incident evidence to choose a reversible corrective action."
+showDescription: false
 kind: "How-to"
 audience: "Operators"
 prerequisites: "A blocked, held, or isolated managed session."
@@ -17,11 +18,11 @@ import DocFigure from '../../../components/DocFigure.astro';
 <DocFigure src="/ClaudeBar-docs/diagrams/recovery-en.svg" alt="Recovery can reuse an old baseline when there is no observation and no recorded rejection. Isolation requires reverification." width={780} height={330} kind="diagram" lang="en" />
 
 
-## Identify the state
+## Find the first failed observation
 
-A brief hold can recover if route identity still matches within the configured window. If the window contains only missing observations and no recovery-probe rejection, the current runtime resumes using its prior baseline. Expiry after a recorded rejection isolates instead. Returning to armed in the observation-gap case is not fresh proof of the route. Isolation means that waiting or simply reopening the destination is not enough: review the incident and obtain fresh verification.
+Reusing the prior baseline in the diagram is not fresh verification. Once isolated, waiting or reopening the destination is insufficient: obtain fresh verification.
 
-Open **复盘** (incident review) and **检查与修复** (checks and repair). Confirm the active profile, the first failing observation, and whether the problem is reachability, route drift, a session collision, or a configuration issue.
+Open **复盘** (incident review) and **检查与修复** (checks and repair). Confirm the active profile and first failed observation, then distinguish reachability, route drift, a session collision, or a configuration issue.
 
 ## Preview proposed repairs
 

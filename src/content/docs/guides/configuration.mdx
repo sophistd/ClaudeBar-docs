@@ -1,11 +1,16 @@
 ---
 title: "Configure a profile"
 description: "Bind a route and a session deliberately, then verify both."
+showDescription: false
 kind: "How-to"
 audience: "Operators"
 prerequisites: "An authorized build and an upstream configuration you control."
 outcome: "A selected profile with a supported transport and browser mode."
 sidebar: {"order": 1}
+# [INPUT]: 既有 Configure a profile 文档事实与双语路由。
+# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## Open the profile settings
@@ -19,7 +24,7 @@ Use the proxy import UI for your endpoint or supported share format. The parser 
 - A direct HTTP CONNECT or SOCKS5 route can be used by the gate.
 - HTTPS upstream proxies and encrypted share protocols need an appropriate local core bridge. Import the protocol into your authorized local core, then select its supported loopback proxy listener.
 
-Parsing is not connectivity verification. A recognized URI can still require a bridge or fail preflight. See [compatibility](/ClaudeBar-docs/reference/compatibility/).
+After import, the route must still pass preflight. See [compatibility](/ClaudeBar-docs/reference/compatibility/).
 
 ## Choose session behavior
 

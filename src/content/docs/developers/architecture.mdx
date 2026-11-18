@@ -1,11 +1,16 @@
 ---
 title: "Repository architecture"
 description: "A dependency map for authorized contributors."
+showDescription: false
 kind: "Reference"
 audience: "Developers"
 prerequisites: "Authorized source access."
 outcome: "Find the owning module without publishing internal engineering notes."
 sidebar: {"order": 2}
+# [INPUT]: 既有 Repository architecture 文档事实与双语路由。
+# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## Package boundaries
@@ -20,7 +25,7 @@ sidebar: {"order": 2}
 | `ClaudeBarWatchdog` | Companion process supervision | Platform facilities |
 | `ClaudeBarSysExt` | System-extension executable | Core, platform extensions |
 
-The package exports three libraries and four executables. Test targets cover Core, Gate, and AppKit behavior.
+Test targets cover Core, Gate, and AppKit behavior.
 
 ## Keep documentation close to behavior
 
@@ -30,4 +35,4 @@ When a user-facing behavior changes, update the relevant concept, procedure, or 
 
 Public content lives in one MDX collection. The HTML pages, raw Markdown endpoints, and `llms.txt` share that collection. A small pure JavaScript state model powers the teaching diagram; it never connects to the app or the local network.
 
-The documentation has no server, telemetry dashboard, model-powered chatbot, MCP endpoint, or semantic search service. Its search is a static client-side index.
+Pages and the search index are generated at build time; search runs in the browser.

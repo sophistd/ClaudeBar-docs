@@ -6,23 +6,30 @@ audience: "Operators"
 prerequisites: "Understand what a profile and upstream proxy are."
 outcome: "Predict admission, interruption, and recovery behavior."
 sidebar: {"order": 2}
+# [INPUT]: 门禁教学模型与既有网络行为说明。
+# [OUTPUT]: 单一状态演示、可展开状态速查及恢复边界。
+# [POS]: 概念正文，细节按需展开，网页与 Markdown 共用。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 import GateExplorer from '../../../components/GateExplorer.astro';
 
 ## One connection, one verified route
 
-ClaudeBar's loopback gate accepts supported HTTP CONNECT and SOCKS5 connections on the local machine. A verified egress baseline records the observed route identity. Managed connections receive permission to use that route while the gate is armed.
+ClaudeBar's loopback gate accepts supported HTTP CONNECT and SOCKS5 connections on the local machine. A verified egress baseline records the observed route identity.
 
 <div class="flow" role="img" aria-label="Managed app connects through the loopback gate to a configured upstream."><span>Managed app</span><b aria-hidden="true">→</b><span>Loopback gate</span><b aria-hidden="true">→</b><span>Configured upstream</span></div>
 
 The forwarding path transports tunnel bytes; it does not install a TLS interception certificate. That implementation detail does not establish whole-device traffic coverage.
 
-## Explore the gate lifecycle
+## Try an interruption
 
 <GateExplorer />
 
 This teaching model starts after a successful preflight. It omits the application's transient **PREFLIGHT_PROBING** state, real timers, sockets, and probe scheduling. The default profile grace window is four seconds. Use the two explicit expiry actions to compare rejected recovery with missing observations.
+
+<details>
+<summary>State reference</summary>
 
 | State | New handshakes | What happens next |
 | --- | --- | --- |
@@ -30,6 +37,8 @@ This teaching model starts after a successful preflight. It omits the applicatio
 | ARMED_OPEN | May receive a permit | Interruption can enter a hold |
 | GRACE_HOLD | Wait for recovery | Matching recovery resumes; rejection expiry or drift isolates; observation-only expiry reuses the prior baseline |
 | TRIPPED_ISOLATED | Rejected | Review the incident and obtain fresh verification |
+
+</details>
 
 ## Limits that matter
 

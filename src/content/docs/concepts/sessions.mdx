@@ -1,6 +1,7 @@
 ---
 title: "Session isolation"
 description: "Separate browser data and process ownership without overstating the boundary."
+showDescription: false
 kind: "Explanation"
 audience: "Operators"
 prerequisites: "A profile and an installed browser."
@@ -17,12 +18,9 @@ import DocFigure from '../../../components/DocFigure.astro';
 <DocFigure src="/ClaudeBar-docs/diagrams/routes-en.svg" alt="Only the configured managed route passes through the gate. The existing browser route remains unverified." width={780} height={326} kind="diagram" lang="en" />
 
 
-## Guarded sandbox and native session
+## Mode requirements
 
-| Mode | Data and launch behavior | Boundary |
-| --- | --- | --- |
-| Guarded sandbox | Launches a supported Chromium browser with an isolated data directory and gate configuration | Applies to the managed instance and its configured path |
-| Native app session | Uses an existing browser application/session; binding may identify a supported subprofile | Does not inject the gate proxy configuration; checks host/gate egress assumptions before opening the existing app |
+A separate instance requires a supported Chromium browser. For an existing sign-in, a binding may identify a supported subprofile; the launch checks host/gate egress assumptions before opening the app.
 
 “Sandbox” is the product's session-isolation term. It does not mean a virtual machine, a separate OS user, or proof of complete operating-system containment.
 

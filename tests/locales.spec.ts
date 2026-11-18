@@ -42,13 +42,13 @@ test('Chinese simulation preserves both expiry behaviors', async ({ page }) => {
   const gate = page.locator('gate-explorer');
   await gate.getByRole('button', { name: '模拟上游中断', exact: true }).click();
   await gate.getByRole('button', { name: '未取得新观测，等待到期', exact: true }).click();
-  await expect(gate.locator('[data-code]')).toHaveText('ARMED_OPEN');
+  await expect(gate.locator('[data-label]')).toHaveText('允许连接');
   await gate.getByRole('button', { name: '模拟上游中断', exact: true }).click();
   await gate.getByRole('button', { name: '探测未通过，等待到期', exact: true }).click();
-  await expect(gate.locator('[data-code]')).toHaveText('TRIPPED_ISOLATED');
+  await expect(gate.locator('[data-label]')).toHaveText('已隔离');
   await expect(gate.getByRole('button', { name: '重新验证并启用', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
-  await expect(gate.locator('[data-code]')).toHaveText('ARMED_OPEN');
+  await expect(gate.locator('[data-label]')).toHaveText('允许连接');
   for (const label of await gate.getByRole('button').allTextContents()) expect(label).toMatch(/[\p{Script=Han}]/u);
 });
 test('Chinese Markdown and agent index match the visible language', async ({ page, request }) => {

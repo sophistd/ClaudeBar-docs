@@ -1,12 +1,17 @@
 ---
 title: "CLI 命令参考"
 description: "查询命令参数、输出、退出码，以及命令可能修改的数据。"
+showDescription: false
 kind: "Reference"
 audience: "日常使用者和开发者"
 prerequisites: "有权访问应用源码，并已构建 claudebar-cli。"
 outcome: "运行命令前，能查清它是否会访问网络、读取凭据或修改本地数据。"
 evidence: "已核对源码"
 sidebar: {"order": 1}
+# [INPUT]: 既有 CLI 命令参考 文档事实与双语路由。
+# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';

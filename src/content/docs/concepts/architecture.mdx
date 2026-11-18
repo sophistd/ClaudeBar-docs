@@ -1,6 +1,7 @@
 ---
 title: "Architecture"
 description: "Configuration, evidence, and connection control have different responsibilities."
+showDescription: false
 kind: "Explanation"
 audience: "Operators and developers"
 prerequisites: "Read the introduction."
@@ -17,26 +18,13 @@ import DocFigure from '../../../components/DocFigure.astro';
 <DocFigure src="/ClaudeBar-docs/diagrams/architecture-en.svg" alt="The three layers separate stored intent, observed evidence, and runtime connection control." width={780} height={348} kind="diagram" lang="en" />
 
 
-## Three cooperating layers
+## Launch and interruption
 
-| Layer | Responsibility | Typical output |
-| --- | --- | --- |
-| Configuration and storage | Keep profile settings, credential references, session bindings, and history | A versioned profile and local records |
-| Observation and decisions | Parse configuration, run probes, evaluate relationships, plan repairs | A report, a baseline, or a repair plan |
-| Runtime control | Admit or hold connections, supervise managed launches, handle interruption | A gate state and session lifecycle |
+Preflight gathers evidence for the selected launch path. Once verified, ClaudeBar gives the managed process its route configuration. When upstream conditions change, incident and diagnostic evidence inform the next action. Use the [gate model](/ClaudeBar-docs/concepts/network-egress/) to compare holding, recovery, and isolation.
 
-The native interface coordinates these layers. The command-line companion exposes selected workflows without requiring the workbench.
+## Data and entry points
 
-## Trace one operation
-
-1. You select a profile.
-2. Preflight gathers the evidence needed by the launch path.
-3. A verified baseline enables the gate.
-4. The managed process receives the route configuration.
-5. A change in upstream conditions can hold or isolate the connection.
-6. Incident and diagnostic evidence inform the next action.
-
-See [network egress](/ClaudeBar-docs/concepts/network-egress/) for an interactive explanation.
+Versioned profiles retain settings, credential references, session bindings, and history. Observations inform diagnostic reports and repair plans. The native interface coordinates these operations; the CLI exposes selected workflows without requiring the workbench.
 
 ## Optional system controls
 

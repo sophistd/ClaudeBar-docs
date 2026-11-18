@@ -1,17 +1,20 @@
 ---
 title: "仓库架构"
 description: "按 Swift 软件包目标和文档站内容来源查找代码归属。"
+showDescription: false
 kind: "Reference"
 audience: "开发者"
 prerequisites: "有权访问应用源码。"
 outcome: "知道某项行为由哪个目标负责，改动后该更新哪份文档。"
 evidence: "已核对源码"
 sidebar: {"order": 2}
+# [INPUT]: 既有 仓库架构 文档事实与双语路由。
+# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## 应用代码在哪里
-
-软件包提供三个库和四个可执行文件。定位问题时，可以先查负责该行为的目标，再沿依赖找到实现。
 
 | 目标 | 负责什么 | 依赖 |
 | --- | --- | --- |
@@ -29,7 +32,7 @@ sidebar: {"order": 2}
 
 同一份 MDX 内容集合供 HTML 页面、原始 Markdown 路由和 `llms.txt` 使用。交互示意图由独立的 JavaScript 状态模型驱动，不连接应用或本机网络。
 
-页面和搜索索引均在构建时生成，搜索在浏览器内运行。站点没有后端服务、遥测看板、模型聊天助手、MCP 端点或语义搜索服务。
+页面和搜索索引均在构建时生成，搜索在浏览器内运行。
 
 ## 行为变更后更新哪里
 
