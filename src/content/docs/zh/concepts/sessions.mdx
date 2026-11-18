@@ -1,6 +1,7 @@
 ---
 title: "浏览器会话隔离"
 description: "按登录数据和网络路径，选择「单独打开」或「用现有登录」。"
+showDescription: false
 kind: "Explanation"
 audience: "ClaudeBar 使用者"
 prerequisites: "已有配置档案，并已安装浏览器。"
@@ -18,12 +19,9 @@ import DocFigure from '../../../../components/DocFigure.astro';
 <DocFigure src="/ClaudeBar-docs/diagrams/routes-zh.svg" alt="受管路径明确经过门禁；已有浏览器沿原设置联网，实际路径仍需核实。" width={780} height={326} kind="diagram" lang="zh" />
 
 
-## 要开一套独立登录，还是继续用当前账号？
+## 模式的适用条件
 
-| 界面选项 | 浏览器怎么打开 | ClaudeBar 管到哪里 |
-| --- | --- | --- |
-| 单独打开 | 用独立的数据目录和门禁代理配置，启动一个受支持的 Chromium 浏览器实例 | 管理这次启动的实例及其配置所指向的连接路径 |
-| 用现有登录 | 打开已有浏览器，继续使用现有会话。浏览器支持时，可绑定到特定的浏览器子配置档案 | 打开前检查本机和门禁的出口身份是否匹配。浏览器继续按现有设置联网，ClaudeBar 不向它注入门禁代理配置 |
+独立实例需要受支持的 Chromium 浏览器。使用现有登录时，浏览器若支持子配置档案，可绑定到指定档案；打开前会比较本机与门禁的出口身份。
 
 「单独打开」也叫**受控沙箱**。这里的隔离发生在浏览器数据目录和受管实例这一层，不涉及创建虚拟机或独立的系统用户。现有证据也未验证完整的操作系统级隔离。
 

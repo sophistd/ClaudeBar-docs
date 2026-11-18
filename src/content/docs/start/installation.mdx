@@ -1,18 +1,21 @@
 ---
 title: "Installation and access"
 description: "Choose an authorized build path and check its requirements."
+showDescription: false
 kind: "How-to"
 audience: "Operators and developers"
 prerequisites: "macOS 14 or later; source access for developer builds."
 outcome: "Understand how to obtain a build and what has not been verified."
 sidebar: {"order": 2}
+# [INPUT]: 既有 Installation and access 文档事实与双语路由。
+# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## Availability
 
 The application source repository is private. This documentation site does not grant access to it and does not distribute an application binary. A public download channel has not been established by this documentation release. Obtain an authorized build from the project maintainer.
-
-A DMG and release automation exist in the source baseline. Their existence is not evidence that a particular download is current, notarized, or suitable for your machine.
 
 ## System requirements
 
@@ -25,7 +28,7 @@ System-extension features additionally depend on appropriate entitlements, signi
 
 ## If you received a DMG
 
-Confirm its origin and release instructions with the maintainer. Open the disk image, place the application in Applications as directed, and launch it. Follow macOS's security checks; do not disable them to force an unverified build to run.
+The source includes DMG packaging and release automation. Before installing a specific file, confirm its origin, version, notarization, machine suitability, and release instructions with the maintainer. Open the disk image, place the application in Applications as directed, and launch it. Follow macOS's security checks; do not disable them to force an unverified build to run.
 
 Then continue to [first successful setup](/ClaudeBar-docs/start/first-setup/).
 

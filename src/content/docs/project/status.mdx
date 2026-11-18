@@ -1,6 +1,7 @@
 ---
 title: "Baseline and verification"
 description: "What this documentation release establishes, and what it does not."
+showDescription: false
 kind: "Reference"
 audience: "All readers"
 prerequisites: "None."
@@ -27,18 +28,11 @@ This site describes the application source baseline reviewed on **November 17, 2
 | Diagnostic and repair commands | Implementations inspected | Live diagnostics and state-changing commands not run |
 | System extension and packaging | Source and scripts exist | Activation, signing and notarization not tested here |
 
-## Executed application checks
+The application checks used Swift 6.4.2: **25 tests across four suites** passed, covering gate recovery, transparent tunnels, browser isolation, and proxy parsing. These fixtures do not establish real account sessions, every network topology, or the complete application suite.
 
-On the final reviewed local source baseline, Swift 6.4.2 successfully built the CLI product. Top-level help and a credential-free loopback parse succeeded. A filtered Swift test run passed **25 tests across four suites**: gate recovery, transparent tunnels, browser isolation, and proxy parsing. These tests use controlled fixtures; they do not establish behavior for real account sessions, every network topology, or the complete application test suite.
+## Still unverified
 
-
-## Planned or unverified
-
-Public application downloads, a supported release matrix, and independent full-system security validation are not established by this site. They are not shipped features merely because they would be useful. English and Simplified Chinese documentation are now available, including localized navigation and the lifecycle teaching model.
-
-## Documentation changes
-
-This initial documentation edition introduces task-oriented guides, a source-grounded CLI/configuration reference, a labeled lifecycle simulation, static search, and generated Markdown/agent indexes. Deployment status belongs to the actual Pages run, not to the existence of a workflow file.
+Public application downloads, a supported release matrix, and independent full-system security validation are not established. Documentation deployment status belongs to the actual Pages run.
 
 ## Illustrated evidence
 

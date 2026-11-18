@@ -6,6 +6,10 @@ audience: "Operators"
 prerequisites: "A configured profile and a completed or blocked diagnostic attempt."
 outcome: "Identify a blocking condition and choose the next check."
 sidebar: {"order": 2}
+# [INPUT]: 既有 Read diagnostics 文档事实与双语路由。
+# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## Collect a current observation
@@ -23,12 +27,12 @@ This is a live operation: it can contact network endpoints, access profile crede
 | Status | Meaning | Next action |
 | --- | --- | --- |
 | PASS | The observed check met its predicate | Continue, within that check's scope |
-| MITIGATED | A compensating control covers the finding | Read which control provides coverage |
+| MITIGATED | A compensating control covers the finding; the underlying condition may remain | Read which control provides coverage |
 | FAIL | An observed condition did not meet the predicate | Fix the stated cause and rerun |
 | UNOBSERVED | Evidence was not obtained | Resolve reachability or collection problems |
 | SKIPPED_BLOCKED | A prerequisite blocked execution | Address the prerequisite first |
 
-Severity is separate from status. A critical failure or an uncovered critical observation gap can block the gate. **MITIGATED does not mean the original condition disappeared.**
+Severity is separate from status. A critical failure or an uncovered critical observation gap can block the gate.
 
 ## Trace cause before changing settings
 

@@ -6,6 +6,10 @@ audience: "Operators"
 prerequisites: "An authorized ClaudeBar build, macOS 14 or later, and a working upstream proxy."
 outcome: "A managed session with a reviewed route and no unexplained blocking diagnostics."
 sidebar: {"order": 3}
+# [INPUT]: 既有 First successful setup 文档事实与双语路由。
+# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## 1. Open the workbench
@@ -20,7 +24,7 @@ See [configure a profile](/ClaudeBar-docs/guides/configuration/) for the differe
 
 ## 3. Select a browser and session mode
 
-In **Browser** (**浏览器**), select an installed browser and a supported session mode. A guarded sandbox uses a separate browser data directory. A native session opens the browser's existing session without injecting gate proxy settings; matching observed egress is not proof that its traffic traverses the gate. Clear any shared-container collision warning before continuing.
+In **Browser** (**浏览器**), select an installed browser and a supported session mode. A guarded sandbox uses a separate browser data directory. A native session opens the browser's existing session without injecting gate proxy settings. Clear any shared-container collision warning before continuing.
 
 ## 4. Verify, then launch
 

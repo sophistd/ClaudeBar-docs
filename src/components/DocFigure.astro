@@ -1,6 +1,6 @@
 ---
 /**
- * [INPUT]: 双语 MDX 提供图像与语义；共享 ui-kit.css 提供截图表面的高度 token。
+ * [INPUT]: 双语 MDX 提供图像与语义；共享 ui-kit.css 提供截图接触高度与焦点 token；机制图不额外套框。
  * [OUTPUT]: 可打开原图的响应式图像，以及窄屏时可用键盘滚动的图面。
  * [POS]: 双语图解导读共用的静态图像组件，继承 Starlight 的配色与焦点样式。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -41,19 +41,21 @@ const minWidth = Math.min(frameWidth, 600);
   .image-frame {
     max-width: 100%;
     overflow-x: auto;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: var(--geist-radius);
+    border: 0;
+    border-radius: 0;
   }
 
   .screenshot .image-frame {
     border-radius: 12px;
-    box-shadow: var(--cb-floating);
+    border: 1px solid var(--cb-edge);
+    box-shadow: var(--cb-raised);
   }
 
   .image-frame:focus-visible,
   .image-link:focus-visible {
-    outline: 2px solid var(--sl-color-text-accent);
-    outline-offset: -2px;
+    --cb-focus-offset: -2px;
+    outline: var(--cb-focus);
+    outline-offset: var(--cb-focus-offset);
   }
 
   .image-link {

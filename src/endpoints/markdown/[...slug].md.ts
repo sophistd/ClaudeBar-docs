@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 同一 docs 内容集合的正文与 frontmatter。
- * [OUTPUT]: 每种语言的静态 Markdown 端点，保留语言标记并替换浏览器专用交互。
+ * [OUTPUT]: 双语 Markdown 端点，沿用网页摘要显示契约并替换浏览器专用交互。
  * [POS]: Agent 阅读接口，不另维护一份文档正文。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -12,6 +12,7 @@ export async function getStaticPaths() {
 export const GET: APIRoute = ({ props }) => {
   const { entry } = props;
   const zh = entry.id === 'zh' || entry.id.startsWith('zh/');
+  const lead = entry.data.showDescription && entry.data.description ? `${entry.data.description}\n\n` : '';
   const body = (entry.body ?? '')
     .replace(/^import .+;\s*$/gm, '')
     .replace(/<DocFigure\b([^>]*?)\/>/gs, (_: string, attrs: string) => {
@@ -22,5 +23,5 @@ export const GET: APIRoute = ({ props }) => {
       ? '*网页版提供可操作的门禁教学模拟，不会连接真实网络。下方状态表说明了相同的变化过程。*'
       : '*The web version includes an explicitly labeled lifecycle simulation. The state table below is its text equivalent.*')
     .replace(/<\/?(?:Tabs|TabItem)[^>]*>/g, '');
-  return new Response(`---\ntitle: ${JSON.stringify(entry.data.title)}\nlang: ${zh ? 'zh-CN' : 'en'}\nkind: ${entry.data.kind}\naudience: ${entry.data.audience}\nprerequisites: ${JSON.stringify(entry.data.prerequisites)}\noutcome: ${JSON.stringify(entry.data.outcome)}\nevidence: ${entry.data.evidence}\nbaseline: 2026-11-17\n---\n\n# ${entry.data.title}\n\n${entry.data.description}\n\n${body}`, { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } });
+  return new Response(`---\ntitle: ${JSON.stringify(entry.data.title)}\nlang: ${zh ? 'zh-CN' : 'en'}\nkind: ${entry.data.kind}\naudience: ${entry.data.audience}\nprerequisites: ${JSON.stringify(entry.data.prerequisites)}\noutcome: ${JSON.stringify(entry.data.outcome)}\nevidence: ${entry.data.evidence}\nbaseline: 2026-11-17\n---\n\n# ${entry.data.title}\n\n${lead}${body}`, { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } });
 };

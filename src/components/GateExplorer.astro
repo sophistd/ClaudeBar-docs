@@ -1,25 +1,21 @@
 ---
 /**
  * [INPUT]: lib/gate 的教学状态、动作表与 gate-copy 的当前语言说明。
- * [OUTPUT]: 可键盘操作、明确标注模拟性质的中英文门禁解释器。
+ * [OUTPUT]: 复用 UI Kit 按钮、单一当前状态与一次模拟说明的中英文门禁解释器。
  * [POS]: 概念页的渐进增强组件，禁用脚本时保留文字说明。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
-import { states } from '../lib/gate.mjs';
 import { stateText } from '../lib/gate-copy.mjs';
 const locale = Astro.locals.starlightRoute.locale === 'zh' ? 'zh' : 'en';
 const zh = locale === 'zh';
 ---
-<p class="simulation-label">{zh ? '这是教学模拟，不会连接网络，也不会改变你的实际配置。' : 'Deterministic simulation. No live network access.'}</p>
-<gate-explorer class="gate-explorer" data-locale={locale}>
-  <ol class="gate-states" aria-label={zh ? '门禁状态变化' : 'Gate lifecycle states'}>
-    {Object.keys(states).map((key) => <li data-state={key} aria-current={key === 'armed' ? 'step' : undefined}>{stateText(key, locale).label}</li>)}
-  </ol>
+<gate-explorer class="gate-explorer not-content" data-locale={locale}>
   <div role="status" aria-live="polite" aria-atomic="true" class="gate-status">
-    <code data-code>ARMED_OPEN</code>
+    <p data-label>{stateText('armed', locale).label}</p>
     <p data-detail>{stateText('armed', locale).detail}</p>
   </div>
   <div class="gate-actions" data-actions></div>
+  <p class="simulation-label">{zh ? '教学模拟 · 不连接网络，不改变实际配置。' : 'Simulation · No live network or configuration changes.'}</p>
   <noscript>{zh ? '开启 JavaScript 后可以操作这个示例；也可以阅读下方状态表，了解相同的变化过程。' : 'Enable JavaScript to explore transitions. Read the state table below for the same explanation.'}</noscript>
 </gate-explorer>
 <script>
@@ -29,17 +25,14 @@ const zh = locale === 'zh';
     state: keyof typeof states = 'armed';
     connectedCallback() { this.render(); }
     render() {
-      this.querySelectorAll<HTMLElement>('[data-state]').forEach((item) => {
-        if (item.dataset.state === this.state) item.setAttribute('aria-current', 'step');
-        else item.removeAttribute('aria-current');
-      });
-      this.querySelector('[data-code]')!.textContent = states[this.state].code;
+      this.querySelector('[data-label]')!.textContent = stateText(this.state, this.dataset.locale).label;
       this.querySelector('[data-detail]')!.textContent = stateText(this.state, this.dataset.locale).detail;
       const actions = this.querySelector('[data-actions]')!;
       actions.replaceChildren();
       for (const action of transitions[this.state]) {
         const button = document.createElement('button');
         button.type = 'button';
+        button.className = actions.childElementCount === 0 ? 'cb-button primary' : 'cb-button';
         button.textContent = actionText(action, this.state, this.dataset.locale);
         button.addEventListener('click', () => {
           this.state = transition(this.state, action.event) as keyof typeof states;

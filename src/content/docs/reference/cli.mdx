@@ -1,11 +1,16 @@
 ---
 title: "CLI reference"
 description: "Command syntax, outputs, and side effects for the SwiftPM executable."
+showDescription: false
 kind: "Reference"
 audience: "Operators and developers"
 prerequisites: "An authorized source checkout and a built claudebar-cli executable."
 outcome: "Choose a command with a clear understanding of its effects."
 sidebar: {"order": 1}
+# [INPUT]: 既有 CLI reference 文档事实与双语路由。
+# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
@@ -54,13 +59,11 @@ swift run claudebar-cli --help
 
 ## Offline parsing example
 
-The CLI product build, top-level help, and this loopback parsing example were executed successfully during documentation verification. This does not verify a live proxy connection.
-
 ```sh
 printf '%s\n' 'http://127.0.0.1:7890' | swift run claudebar-cli parse -
 ```
 
-This loopback address is an **illustrative input**, not a promise that a proxy listens there. Parsing demonstrates syntax acceptance; it does not verify connectivity. Do not put real credentials in shell history.
+The CLI build, top-level help, and this credential-free example passed during the recorded verification. The address is sample input; parsing can succeed with no listener and does not verify connectivity. Keep real credentials out of shell history.
 
 ## Exit behavior
 

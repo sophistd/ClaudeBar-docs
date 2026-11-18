@@ -1,6 +1,7 @@
 ---
 title: "图解 ClaudeBar"
 description: "看懂系统分工、浏览器联网方式和门禁恢复流程，再到 macOS 界面里找操作。"
+showDescription: false
 kind: "Explanation"
 audience: "首次接触 ClaudeBar 的使用者和开发者"
 prerequisites: "无需提前配置代理。"
@@ -18,44 +19,26 @@ import DocFigure from '../../../../components/DocFigure.astro';
 
 ## 从一次启动看分工
 
-选好**配置档案**后，ClaudeBar 读取要用的设置。启动前检查记录当前的出口身份，核验通过后将它记为**出口基线**。**门禁**负责受管连接的放行和恢复。
-
 <DocFigure src="/ClaudeBar-docs/diagrams/architecture-zh.svg" alt="从配置与存储，经观测与决策，到控制门禁和受管连接的系统分层图。" width={780} height={348} lang="zh" />
 
-<details>
-<summary>展开看各部分的职责</summary>
+macOS 界面和 CLI 提供操作入口；可选的系统级控制需要单独部署并检查权限。详见[系统分工](/ClaudeBar-docs/zh/concepts/architecture/)和[保护边界](/ClaudeBar-docs/zh/concepts/security/)。
 
-macOS 界面负责协调这几层，部分流程也可从命令行运行。配置好的上游代理承接进入本机回环门禁的连接。可选的系统级控制需要单独部署并检查权限。详见[系统分工](/ClaudeBar-docs/zh/concepts/architecture/)和[保护边界](/ClaudeBar-docs/zh/concepts/security/)。
-
-</details>
 
 ## 浏览器的流量走哪条路
 
-两种方式都可能先检查出口。看检查过后发生了什么。「**单独打开**」会为受支持的浏览器启动一个独立实例，使用单独的数据目录和门禁代理配置。「**用现有登录**」打开已有浏览器，由它按原有设置联网。
-
 <DocFigure src="/ClaudeBar-docs/diagrams/routes-zh.svg" alt="受控沙箱通过回环门禁联网。原生浏览器在出口对照后沿自己的既有路径联网。" width={780} height={326} lang="zh" />
 
-<details>
-<summary>两边出口一致，能说明什么？</summary>
+出口比较只说明当时的观测吻合；关闭门禁不能证明原生浏览器已断网。绑定条件与覆盖范围见[会话隔离](/ClaudeBar-docs/zh/concepts/sessions/)。
 
-打开原生会话前，ClaudeBar 会比较本机和门禁的出口身份。结果一致，只能说明当时的观测吻合。ClaudeBar 不向原生浏览器注入门禁代理，因此只关闭门禁无法确定该浏览器已经断网。详见[浏览器会话隔离](/ClaudeBar-docs/zh/concepts/sessions/)。
-
-</details>
 
 ## 上游中断后，门禁怎么决定是否恢复
 
-门禁已放行时，如果上游短时中断，可以进入**宽限期**。新的握手先等一等，门禁根据恢复探测的结果决定下一步。
-
 <DocFigure src="/ClaudeBar-docs/diagrams/recovery-zh.svg" alt="已放行门禁进入宽限期。出口匹配则恢复，观测到漂移则立即隔离，到期按是否记录到探测拒绝处理。" width={780} height={330} lang="zh" />
 
-到期时若无新观测、也无探测拒绝，门禁会沿用旧基线恢复放行；这次恢复没有重新核验出口。
-
-<details>
-<summary>等待的是新连接还是旧连接？</summary>
+图中的「沿用旧基线」不等于重新核验出口。
 
 配置档案的默认宽限期是 4 秒，等待的是新握手。旧隧道能否保留取决于中断原因。网络切换或系统休眠可以立即断开旧隧道，普通的上游短时中断可以保留旧隧道。可用[门禁交互演示](/ClaudeBar-docs/zh/concepts/network-egress/)分别试一次。
 
-</details>
 
 ## 去 macOS 界面里找入口
 
@@ -81,6 +64,6 @@ macOS 界面负责协调这几层，部分流程也可从命令行运行。配�
 
 ### 内容预检
 
-「内容预检」检查的是输入文本。用工作台看文本经过哪些分析阶段，哪些词被标记，以及它们关联到哪类风险。启用了云端阶段时，输入文本可能会发送给模型服务商。
+「内容预检」检查输入文本，与网络启动前检查是两个流程。启用云端阶段时，文本可能发送给模型服务商。
 
 <DocFigure src="/ClaudeBar-docs/screenshots/workbench-preflight-light.png" alt="内容预检页面上方为分析阶段，左侧为示例原文，右侧为风险类别。" width={2080} height={1360} kind="screenshot" lang="zh" />

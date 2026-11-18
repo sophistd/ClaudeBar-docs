@@ -1,12 +1,17 @@
 ---
 title: "兼容性"
 description: "查询系统、浏览器和代理协议的支持范围，以及已经验证过的运行环境。"
+showDescription: false
 kind: "Reference"
 audience: "日常使用者和开发者"
 prerequisites: "知道自己使用的操作系统、浏览器和上游代理协议。"
 outcome: "确认当前组合能否使用，哪些地方还需实机验证。"
 evidence: "已核对源码"
 sidebar: {"order": 3}
+# [INPUT]: 既有 兼容性 文档事实与双语路由。
+# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## 系统与工具链
@@ -25,13 +30,15 @@ sidebar: {"order": 3}
 
 ## 代理协议能否接入门禁
 
-| 导入格式 | 能否解析 | 接入门禁的条件 |
-| --- | --- | --- |
-| HTTP CONNECT | 可以 | 核验通过后，门禁可直接使用该代理，无需本地桥接 |
-| SOCKS5 / SOCKS5H | 可以 | 走 SOCKS 连接 |
-| HTTPS 上游代理 | 可以 | 需要本地桥接服务。门禁不会静默降级 TLS |
-| Shadowsocks、VMess、VLESS、Trojan、Hysteria2、TUIC 分享格式 | 可以 | 远端加密传输需要本地代理内核做桥接 |
-| Clash YAML 中受支持的条目 | 可以 | 取决于解析出的协议 |
+以下格式均可解析；能否直接联网取决于接入条件。
+
+| 导入格式 | 接入门禁的条件 |
+| --- | --- |
+| HTTP CONNECT | 核验通过后，门禁可直接使用该代理，无需本地桥接 |
+| SOCKS5 / SOCKS5H | 走 SOCKS 连接 |
+| HTTPS 上游代理 | 需要本地桥接服务。门禁不会静默降级 TLS |
+| Shadowsocks、VMess、VLESS、Trojan、Hysteria2、TUIC 分享格式 | 远端加密传输需要本地代理内核做桥接 |
+| Clash YAML 中受支持的条目 | 取决于解析出的协议 |
 
 本地桥接服务需要另行配置，并在回环地址上运行。ClaudeBar 的解析器不会替你安装第三方代理内核。
 

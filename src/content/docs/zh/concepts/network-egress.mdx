@@ -7,23 +7,30 @@ prerequisites: "了解配置档案和上游代理。"
 outcome: "能根据观测结果判断门禁接下来会怎样处理连接。"
 evidence: "已核对源码"
 sidebar: {"order": 2}
+# [INPUT]: 门禁教学模型与既有网络行为说明。
+# [OUTPUT]: 单一状态演示、可展开状态速查及恢复边界。
+# [POS]: 概念正文，细节按需展开，网页与 Markdown 共用。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 import GateExplorer from '../../../../components/GateExplorer.astro';
 
 ## 一次受管连接怎么出去
 
-ClaudeBar 的门禁在本机回环地址上接受受支持的 HTTP CONNECT 和 SOCKS5 连接。启动前检查通过后，ClaudeBar 把观测到的出口身份记为**出口基线**。门禁进入放行状态后，受管连接可以通过配置好的上游代理访问网络。
+ClaudeBar 的门禁在本机回环地址上接受受支持的 HTTP CONNECT 和 SOCKS5 连接。启动前检查通过后，ClaudeBar 把观测到的出口身份记为**出口基线**。
 
 <div class="flow" role="img" aria-label="受管应用通过本机回环门禁连接到配置好的上游代理"><span>受管应用</span><b aria-hidden="true">→</b><span>本机回环门禁</span><b aria-hidden="true">→</b><span>上游代理</span></div>
 
 转发链路只传送隧道里的字节，无需安装 TLS 拦截证书。门禁的覆盖范围限于接入这条链路的连接。
 
-## 上游断了一下，门禁怎么处理？
+## 试一次中断
 
 <GateExplorer />
 
 演示从启动前检查成功之后开始。它省略了应用中的短暂探测状态 `PREFLIGHT_PROBING`，也没有真实的计时器、网络套接字和探测调度。配置档案默认给门禁 **4 秒宽限期**。可以分别操作演示里的两个「到期」选项，看看有探测拒绝和没有观测结果时会发生什么。
+
+<details>
+<summary>状态速查</summary>
 
 | 状态 | 新连接握手 | 接下来会怎样 |
 | --- | --- | --- |
@@ -31,6 +38,8 @@ ClaudeBar 的门禁在本机回环地址上接受受支持的 HTTP CONNECT 和 S
 | 放行 `ARMED_OPEN` | 可以获得放行许可 | 链路中断时可以进入宽限期 |
 | 暂缓 `GRACE_HOLD` | 等待恢复 | 出口身份匹配就恢复。实测漂移就立即隔离。到期时按探测结果处理 |
 | 隔离 `TRIPPED_ISOLATED` | 拒绝握手 | 查看事件记录，重新核验出口 |
+
+</details>
 
 ### 宽限期到期有两种结果
 

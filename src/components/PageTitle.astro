@@ -1,7 +1,7 @@
 ---
 /**
  * [INPUT]: Starlight 当前文档标题与描述。
- * [OUTPUT]: 唯一的页面标题和一句摘要；编辑元数据留在内容源中。
+ * [OUTPUT]: 唯一标题及按内容契约显示的摘要；隐藏摘要仍保留在搜索元数据中。
  * [POS]: 公共页首，不重复导航或渲染编写过程。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -9,4 +9,4 @@ import Default from '@astrojs/starlight/components/PageTitle.astro';
 const { data } = Astro.locals.starlightRoute.entry;
 ---
 <Default {...Astro.props} />
-{data.description && <p class="page-description">{data.description}</p>}
+{data.showDescription && data.description && <p class="page-description">{data.description}</p>}

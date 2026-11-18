@@ -1,6 +1,6 @@
 /**
  * [INPUT]: Starlight loader、schema 与 Astro 内容集合。
- * [OUTPUT]: 强制声明受众、前提、成果与证据状态的双语文档集合，以及中文界面词条。
+ * [OUTPUT]: 双语文档集合与界面词条；摘要默认展示，允许保留检索描述而省略重复开场。
  * [POS]: HTML 和机器可读文档共用的内容契约。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -16,6 +16,7 @@ export const collections = {
     loader: glob({ pattern: '**/*.mdx', base: './src/content/docs' }),
     schema: docsSchema({ extend: z.object({
       audience: z.string(),
+      showDescription: z.boolean().default(true),
       kind: z.enum(['Overview', 'Tutorial', 'How-to', 'Reference', 'Explanation']),
       prerequisites: z.string(),
       outcome: z.string(),

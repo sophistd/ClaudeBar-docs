@@ -1,12 +1,17 @@
 ---
 title: "配置档案"
 description: "为一个档案选好上游代理、浏览器和会话模式，再核验实际出口。"
+showDescription: false
 kind: "How-to"
 audience: "管理 ClaudeBar 会话的使用者"
 prerequisites: "已获得授权的应用版本，并掌握有权使用的上游代理配置。"
 outcome: "当前档案使用受支持的代理协议和浏览器会话模式。"
 evidence: "已核对源码"
 sidebar: {"order": 1}
+# [INPUT]: 既有 配置档案 文档事实与双语路由。
+# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## 选中要设置的档案
@@ -20,7 +25,7 @@ sidebar: {"order": 1}
 - **HTTP CONNECT 或 SOCKS5**：门禁支持直接使用这两种协议。
 - **HTTPS 上游代理或加密分享协议**：把配置导入有权使用的兼容本地代理内核，再在 ClaudeBar 里选该内核提供的、门禁支持的回环代理端口。
 
-应用能解析链接，只说明认得它的格式。有的格式仍需要转接。线路能否连通，要等启动前检查确认。具体支持范围见[兼容性](/ClaudeBar-docs/zh/reference/compatibility/)。
+导入成功后，线路仍须通过启动前检查。具体支持范围见[兼容性](/ClaudeBar-docs/zh/reference/compatibility/)。
 
 ## 选定会话实际使用的浏览器
 
