@@ -73,7 +73,14 @@ for(const theme of ['light','dark']){
    await page.keyboard.press('Escape');await expect(popup).toBeHidden();await expect(trigger).toBeFocused();
    await trigger.click();await page.locator('#overlays h2').click();await expect(popup).toBeHidden();
    const opener=page.getByRole('button',{name:'打开对话框',exact:true});await opener.click();const dialog=page.locator('#demo-dialog');await expect(dialog).toBeVisible();
-   for(let i=0;i<5;i++)await page.keyboard.press('Tab');expect(await dialog.evaluate(e=>e.contains(document.activeElement))).toBe(true);
+   // 原生 dialog 允许 Tab 进入浏览器界面；禁止的是焦点落到背景页面控件。
+   for(let i=0;i<6;i++){
+    await page.keyboard.press('Tab');
+    const focus=await dialog.evaluate(e=>({inside:e.contains(document.activeElement),browser:document.activeElement===document.body&&!document.hasFocus()}));
+    expect(focus.inside||focus.browser).toBe(true);
+   }
+   const cancel=dialog.locator('[data-close-dialog]');await cancel.focus();await expect(cancel).toBeFocused();
+   await opener.focus();await expect(opener).not.toBeFocused();await expect(cancel).toBeFocused();
    await capture(page,`${theme}-dialog-open`);await audit(page);await page.keyboard.press('Escape');await expect(opener).toBeFocused();
    const tooltip=page.locator('.cb-tooltip');await tooltip.hover();await expect(page.locator('#tip-example')).toBeVisible();await page.locator('#tip-example').hover();await expect(page.locator('#tip-example')).toBeVisible();
    await capture(page,`${theme}-tooltip-open`);await page.keyboard.press('Escape');await expect(page.locator('#tip-example')).toBeHidden();
