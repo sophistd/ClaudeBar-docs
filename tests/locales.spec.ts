@@ -7,6 +7,8 @@
 import { test, expect, type Page } from '@playwright/test';
 const base = '/ClaudeBar-docs/';
 async function revealLanguagePicker(page: Page, menuName: string) {
+  // ---- URL 已变化不等于新页面控件已加载，先等待页面再区分桌面/手机 ----
+  await page.waitForLoadState('load');
   if (!await page.locator('starlight-lang-select select:visible').count()) {
     await page.getByRole('button', { name: menuName, exact: true }).click();
   }
