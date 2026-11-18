@@ -19,6 +19,6 @@ src/: 页面、组件、内容集合与教学模型，站点唯一实现树。
 tests/: 教学模型和真实浏览器验收，面向生产构建。
 tsconfig.json: Astro strict 类型检查范围。
 
-私有应用仓库另含 designs/：静态样页、UI Kit、主视觉和按需材质预览。该本地模块及其 npm 命令不进入独立公开文档包；维护地图位于该目录的 CLAUDE.md。
+designs/: 四个产品静态页、UI Kit 与按需材质预览；明确清单控制公开源码，构建后与 Docs 同处 dist，复用共享导航、样式和状态。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

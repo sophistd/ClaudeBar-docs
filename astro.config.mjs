@@ -27,7 +27,7 @@ export default defineConfig({
     defaultLocale: 'root',
     locales: { root: { label: 'English', lang: 'en' }, zh: { label: '简体中文', lang: 'zh-CN' } },
     customCss: ['./src/styles/custom.css'],
-    components: { Head: './src/components/Head.astro', PageTitle: './src/components/PageTitle.astro', Footer: './src/components/Footer.astro' },
+    components: { Sidebar: './src/components/Sidebar.astro', Head: './src/components/Head.astro', PageTitle: './src/components/PageTitle.astro', Footer: './src/components/Footer.astro' },
     sidebar: [
       { label: 'Overview', translations: { 'zh-CN': '文档首页' }, link: '/' },
       { label: 'Get started', translations: { 'zh-CN': '开始使用' }, items: [{ autogenerate: { directory: 'start' } }] },

@@ -1,16 +1,21 @@
 /**
  * [INPUT]: 明确允许的文档站源文件，不遍历父仓库。
  * [OUTPUT]: 公开内容的大小与 SHA-256 清单；--stage 导出同一份字节。
- * [POS]: 发布边界；排除本地设计目录与其 npm 命令，保留本地开发工作流。
+ * [POS]: 发布边界；按明确清单收录授权展示页，不遍历私有设计附加文件。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 import { readdir, readFile, mkdir, writeFile, lstat, realpath } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import {publicationFiles} from '../designs/publication.mjs';
 const allowedRoots = ['.github', 'src', 'scripts', 'tests', 'public'];
-const allowedFiles = ['.gitignore', '.nvmrc', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'DESIGN.md', 'astro.config.mjs', 'package.json', 'package-lock.json', 'playwright.config.ts', 'tsconfig.json'];
+const allowedFiles = ['.gitignore', '.nvmrc', 'AGENTS.md', 'CLAUDE.md', 'README.md', 'DESIGN.md', 'astro.config.mjs', 'package.json', 'package-lock.json', 'playwright.config.ts', 'tsconfig.json', ...publicationFiles.map(file => `designs/${file}`)];
 for (const entry of [...allowedRoots, ...allowedFiles]) {
-  if ((await lstat(entry)).isSymbolicLink()) throw new Error(`Symlink is not publishable: ${entry}`);
+  let cursor = '';
+  for (const part of entry.split('/')) {
+    cursor = path.posix.join(cursor, part);
+    if ((await lstat(cursor)).isSymbolicLink()) throw new Error(`Symlink is not publishable: ${cursor}`);
+  }
 }
 async function walk(dir) {
   const out = [];
@@ -53,13 +58,6 @@ if (stage) {
 const entries = await Promise.all(files.map(async (file) => {
   const source = await readFile(file);
   let bytes = source;
-  if (file === 'package.json') {
-    const pkg = JSON.parse(source.toString('utf8'));
-    for (const name of Object.keys(pkg.scripts ?? {})) {
-      if (name.startsWith('designs:')) delete pkg.scripts[name];
-    }
-    bytes = Buffer.from(JSON.stringify(pkg, null, 2) + '\n');
-  }
   if (stage) {
     const target = path.resolve(stage, file);
     await mkdir(path.dirname(target), { recursive: true });

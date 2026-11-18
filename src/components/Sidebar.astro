@@ -1,0 +1,14 @@
+---
+/**
+ * [INPUT]: Starlight 原生侧栏和共享站点导航生成器。
+ * [OUTPUT]: 分区切换入口与保留原生行为的文档目录、手机主题和语言控件。
+ * [POS]: Docs 导航适配层，不复制 Starlight 目录状态或移动菜单逻辑。
+ * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+ */
+import DefaultSidebar from '@astrojs/starlight/components/Sidebar.astro';
+import { renderSiteNavigation } from '../../public/scripts/site-navigation.mjs';
+const locale = Astro.locals.starlightRoute.entry.id.startsWith('zh') ? 'zh' : 'en';
+---
+<div class="site-navigation" set:html={renderSiteNavigation('docs', locale)} />
+<DefaultSidebar />
+<style>.site-navigation { margin-bottom: 1.5rem; }</style>

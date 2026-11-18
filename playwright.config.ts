@@ -10,8 +10,8 @@ export default defineConfig({
   testDir: './tests',
   testMatch: '**/*.spec.ts',
   timeout: 60_000,
-  use: { baseURL: `http://127.0.0.1:${port}`, browserName: 'chromium', channel: process.env.DOCS_BROWSER_CHANNEL, viewport: { width: 1536, height: 1024 }, screenshot: 'only-on-failure' },
+  use: { baseURL: process.env.SITE_ORIGIN ?? `http://127.0.0.1:${port}`, browserName: 'chromium', channel: process.env.DOCS_BROWSER_CHANNEL, viewport: { width: 1536, height: 1024 }, screenshot: 'only-on-failure' },
   projects: [{ name: 'desktop' }, { name: 'mobile', use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } }],
-  webServer: { command: `npm run preview -- --port ${port} --ignore-lock`, url: `http://127.0.0.1:${port}/ClaudeBar-docs/`, reuseExistingServer: !process.env.CI },
+  webServer: process.env.SITE_ORIGIN ? undefined : { command: `npm run preview -- --port ${port} --ignore-lock`, url: `http://127.0.0.1:${port}/ClaudeBar-docs/`, reuseExistingServer: !process.env.CI },
   reporter: [['list'], ['json', { outputFile: 'test-results/results.json' }]],
 });

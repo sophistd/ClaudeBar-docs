@@ -20,7 +20,9 @@ let checked = 0;
 for (const file of html) {
   const source = await readFile(file, 'utf8');
   const $ = load(source);
-  const chinese = path.relative(root, file).startsWith('zh/');
+  const relative = path.relative(root, file);
+  const showcase = relative.startsWith('designs/');
+  const chinese = relative.startsWith('zh/') || showcase;
   if ($('html').attr('lang') !== (chinese ? 'zh-CN' : 'en')) errors.push(`${file}: incorrect document language`);
   if (chinese) {
     for (const anchor of $('.sl-markdown-content a[href]').toArray()) {
@@ -60,7 +62,7 @@ for (const file of new Set([...englishPages, ...chinesePages])) {
   if (!englishPages.includes(file) || !chinesePages.includes(file)) errors.push(`Missing language counterpart: ${file}`);
 }
 const forbidden = [/\/Users\//, /TeamIdentifier=[A-Z0-9]{10}/, /BEGIN (?:RSA |OPENSSH )?PRIVATE KEY/, /gh[pousr]_[A-Za-z0-9]{20,}/, /sk-[A-Za-z0-9]{20,}/, /ref-[a-z-]*(?:ban|fingerprint)[a-z-]*report/, /\.claude\/scratch/];
-for (const file of all.filter((f) => /\.(?:html|md|txt|json|js|css|svg)$/.test(f))) {
+for (const file of all.filter((f) => /\.(?:html|md|txt|json|m?js|css|svg)$/.test(f))) {
   const source = await readFile(file, 'utf8');
   for (const pattern of forbidden) if (pattern.test(source)) errors.push(`${file}: forbidden pattern ${pattern}`);
 }
