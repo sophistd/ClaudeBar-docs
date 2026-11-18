@@ -17,7 +17,7 @@ playwright.config.ts: 生产 dist 与正式域名的桌面/手机 Chromium 验�
 kit.spec.ts: 五页明暗/响应式/链接/Axe、原生选择、WebGL 调参回归及页面清单截图。
 states.spec.ts: 按组件族操作展开、焦点、选中、禁用及反馈；跨 Docs/营销/UI Kit 比较计算样式，输出真实状态截图。
 styles.css: 营销页的文字、布局与响应式几何；按钮、导航与分段选择材质来自共享 UI Kit。
-interactions.js: 手机导航展开/关闭和 cb:change 之后的业务文案；选择状态交给共享运行时。
+interactions.js: 脚本就绪后启用手机导航、展开/关闭和 cb:change 之后的业务文案；选择状态交给共享运行时。
 index.html: 生成的产品首页，承担首次认识与进入功能的任务。
 network.html: 生成的功能页，解释门禁路径、恢复与保护边界。
 sessions.html: 生成的场景页，以两个浏览器会话解释数据与路由隔离。

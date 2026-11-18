@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 静态导航结构、ui-controls.js 的 cb:change 选择事件。
- * [OUTPUT]: 手机菜单展开/收起、键盘 Escape 和状态说明切换。
+ * [OUTPUT]: 脚本就绪后启用手机菜单、展开/收起、键盘 Escape 和状态说明切换。
  * [POS]: 静态样页的渐进增强，不读取应用数据或发起网络请求。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -14,3 +14,6 @@ const messages={open:'已有核验基线，允许新的受管连接握手。',wa
 document.querySelector('[data-cb-choice]')?.addEventListener('cb:change', event => {
   document.querySelector('[data-state-description]').textContent = messages[event.detail.button.dataset.state];
 });
+
+// ---- 事件就绪后才允许点击，避免慢网下吞掉第一次操作 ----
+if(menu)menu.disabled=false;

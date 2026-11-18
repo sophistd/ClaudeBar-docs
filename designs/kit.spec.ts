@@ -116,3 +116,29 @@ test('320px navigation remains reachable on every showcase page',async({page})=>
   await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true}).click({trial:true});
  }
 });
+
+// ---- 覆盖手机与大桌面之间的真实布局宽度 ----
+test('intermediate viewports keep every showcase page within the viewport',async({page})=>{
+ for(const width of [768,1024,1280,1440]){
+  await page.setViewportSize({width,height:900});
+  for(const file of ['index','network','sessions','access','ui-kit']){
+   await page.goto(`/ClaudeBar-docs/designs/${file}.html`);
+   const sizes=await page.evaluate(()=>({content:document.documentElement.scrollWidth,viewport:document.documentElement.clientWidth}));
+   expect(sizes.content,`${file} at ${width}px`).toBeLessThanOrEqual(sizes.viewport);
+  }
+ }
+});
+
+// ---- 延迟脚本期间禁用菜单，脚本就绪后的第一次点击必须生效 ----
+test('mobile menu waits for its behavior before accepting a click',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ let release!:()=>void;const ready=new Promise<void>(resolve=>{release=resolve;});
+ await page.route('**/designs/interactions.js',async route=>{await ready;await route.continue();});
+ await page.goto('/ClaudeBar-docs/designs/index.html',{waitUntil:'commit'});
+ const menu=page.getByRole('button',{name:'打开菜单',exact:true});
+ try {await expect(menu).toBeVisible();await expect(menu).toBeDisabled();} finally {release();}
+ await page.waitForLoadState('load');await expect(menu).toBeEnabled();await menu.click();
+ await expect(page.getByRole('button',{name:'关闭菜单',exact:true})).toHaveAttribute('aria-expanded','true');
+ await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'UI Kit',exact:true}).click();
+ await expect(page.locator('h1')).toHaveText('UI Kit');
+});
