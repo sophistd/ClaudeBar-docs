@@ -8,14 +8,17 @@
   },
   "scripts": {
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev --host 127.0.0.1",
-    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build && node designs/assemble.mjs",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview --host 127.0.0.1",
     "check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
     "test": "node --test tests/*.test.mjs",
     "test:links": "node scripts/check-site.mjs",
     "test:browser": "playwright test",
     "manifest": "node scripts/publication.mjs",
-    "verify": "npm run check && npm test && npm run build && npm run test:links"
+    "verify": "npm run check && npm test && npm run build && npm run test:links",
+    "designs:build": "node designs/build.mjs",
+    "designs:preview": "node designs/serve.mjs",
+    "designs:test": "playwright test --config designs/playwright.config.ts"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.3.0",

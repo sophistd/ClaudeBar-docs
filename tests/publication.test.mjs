@@ -6,13 +6,14 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync, symlinkSync, existsSync, realpathSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync, symlinkSync, existsSync, realpathSync, renameSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 
+import {publicationFiles} from '../designs/publication.mjs';
 const script = fileURLToPath(new URL('../scripts/publication.mjs', import.meta.url));
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 function fixture(t) {
@@ -25,13 +26,17 @@ function fixture(t) {
     writeFileSync(path.join(source, file), 'fixture\n');
   }
   writeFileSync(path.join(source, 'package.json'), JSON.stringify({ scripts: { build: 'astro build', 'designs:build': 'node designs/build.mjs' } }));
-  mkdirSync(path.join(source, 'designs'));
+  for (const file of publicationFiles) {
+    const target = path.join(source, 'designs', file);
+    mkdirSync(path.dirname(target), {recursive:true});
+    writeFileSync(target, 'approved fixture');
+  }
   writeFileSync(path.join(source, 'designs/private-note.txt'), 'not for publication');
   const run = (destination) => spawnSync(process.execPath, [script, ...(destination ? ['--stage', destination] : [])], { cwd: source, encoding: 'utf8' });
   return { root, source, run };
 }
 
-test('exported bytes match every manifest hash and exclude local design commands', (t) => {
+test('exported bytes match every manifest hash and include only approved showcase files', (t) => {
   const { root, source, run } = fixture(t);
   const original = readFileSync(path.join(source, 'package.json'));
   const destination = path.join(root, 'release');
@@ -43,10 +48,11 @@ test('exported bytes match every manifest hash and exclude local design commands
     assert.equal(bytes.length, file.bytes);
     assert.equal(hash(bytes), file.sha256);
   }
-  assert.equal(existsSync(path.join(destination, 'designs')), false);
-  assert.deepEqual(JSON.parse(readFileSync(path.join(destination, 'package.json'))).scripts, { build: 'astro build' });
+  assert.equal(existsSync(path.join(destination, 'designs/ui-kit.html')), true);
+  assert.equal(existsSync(path.join(destination, 'designs/private-note.txt')), false);
+  assert.deepEqual(readFileSync(path.join(destination, 'package.json')), original);
   assert.deepEqual(readFileSync(path.join(source, 'package.json')), original);
-  assert.equal(manifest.files.find((f) => f.path === 'package.json').sourceSha256, hash(original));
+  assert.equal(manifest.files.find((f) => f.path === 'package.json').sha256, hash(original));
 });
 
 test('source, ancestor and descendant targets are rejected before writing', (t) => {
@@ -84,4 +90,18 @@ test('root source symlinks are rejected rather than copied', (t) => {
   const destination = path.join(root, 'release');
   assert.notEqual(run(destination).status, 0);
   assert.equal(existsSync(destination), false);
+});
+
+// ---- 嵌套白名单也必须拒绝祖先目录符号链接 ----
+test('showcase directory symlinks cannot disclose files outside the source', (t) => {
+  for (const relative of ['designs', 'designs/assets']) {
+    const {root, source, run} = fixture(t);
+    const target = path.join(source, relative);
+    const external = path.join(root, 'external');
+    renameSync(target, external);
+    symlinkSync(external, target, 'dir');
+    const destination = path.join(root, 'release');
+    assert.notEqual(run(destination).status, 0);
+    assert.equal(existsSync(destination), false);
+  }
 });

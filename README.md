@@ -22,6 +22,7 @@ build; use `npm run build` and `npm run preview` to check it.
 npm run verify
 npx playwright install chromium
 npm run test:browser
+npm run designs:test
 ```
 
 This checks content types, the lifecycle teaching model, production generation,
@@ -53,8 +54,9 @@ Generate an exact disclosure manifest with `node scripts/publication.mjs`.
 To export the same reviewed bytes, pass `--stage <new-or-empty-directory>`.
 The destination must be separate from the source tree and its ancestors, with no
 symbolic links in its path. Existing nonempty directories are rejected, not cleaned.
-The export excludes local design prototypes and their `designs:*` npm commands;
-the manifest records the exported hash and, when different, the source hash.
+The export includes the explicitly listed product pages and UI Kit source in
+`designs/publication.mjs`; extra files in that directory are not published.
+All exported files retain their source bytes and SHA-256 hashes.
 Obtain the owner's authorization for that file set before the first public push.
 Enable GitHub Pages with **GitHub Actions** as the source. The workflow validates
 pull requests and publishes approved main changes. Its repository identity check
@@ -69,3 +71,14 @@ Verify the live homepage, a deep route, search, and raw Markdown after publicati
 The application source is private. This documentation does not grant access or
 assert an application license. No open-source license is assigned on the owner's
 behalf. See the site's project information and security boundaries.
+
+## Online entry points
+
+- [Product](https://sophistd.github.io/ClaudeBar-docs/designs/index.html)
+- [中文文档](https://sophistd.github.io/ClaudeBar-docs/zh/) / [English docs](https://sophistd.github.io/ClaudeBar-docs/)
+- [UI Kit](https://sophistd.github.io/ClaudeBar-docs/designs/ui-kit.html)
+
+`npm run build` builds Docs and the five showcase pages into one `dist`.
+The site navigation is generated from `public/scripts/site-navigation.mjs`.
+The UI Kit is a local simulation: form inputs stay in the page; no application
+configuration is changed. Set `SITE_ORIGIN` to run browser suites against a deployed site.
