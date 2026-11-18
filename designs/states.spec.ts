@@ -59,7 +59,7 @@ for(const theme of ['light','dark']){
    for(const el of await page.locator('#selection input:disabled').all()){await expect(el).toBeDisabled();await el.hover();await expect(el).toHaveCSS('cursor','not-allowed');}
    for(const el of await page.locator('.cb-range').all())await expect(el).toBeDisabled();
    await capture(page,`${theme}-choices`,page.locator('#selection'));await audit(page);
-   await page.locator('#load-optics').click();await expect(page.locator('#roughness')).toBeEnabled();await focus(page,page.locator('#roughness'));await page.keyboard.press('End');await expect(page.locator('#roughness-value')).toHaveText('0.75');await capture(page,`${theme}-range-enabled`,page.locator('.optics-controls'));
+   await page.locator('#load-optics').click();await expect(page.locator('#optics-stage')).toHaveAttribute('data-renderer','webgl',{timeout:30000});await expect(page.locator('#roughness')).toBeEnabled();await focus(page,page.locator('#roughness'));await page.keyboard.press('End');await expect(page.locator('#roughness-value')).toHaveText('0.75');await capture(page,`${theme}-range-enabled`,page.locator('.optics-controls'));
   });
   test('tabs and segmented: keyboard skips disabled and groups stay independent',async({page})=>{
    await focus(page,page.locator('#tab-0'));await page.keyboard.press('End');await expect(page.locator('#tab-2')).toBeFocused();await expect(page.locator('#panel-2')).toBeVisible();await expect(page.locator('#tab-3')).toBeDisabled();

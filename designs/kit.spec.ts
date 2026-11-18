@@ -128,3 +128,17 @@ test('intermediate viewports keep every showcase page within the viewport',async
   }
  }
 });
+
+// ---- 延迟脚本期间禁用菜单，脚本就绪后的第一次点击必须生效 ----
+test('mobile menu waits for its behavior before accepting a click',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ let release!:()=>void;const ready=new Promise<void>(resolve=>{release=resolve;});
+ await page.route('**/designs/interactions.js',async route=>{await ready;await route.continue();});
+ await page.goto('/ClaudeBar-docs/designs/index.html',{waitUntil:'commit'});
+ const menu=page.getByRole('button',{name:'打开菜单',exact:true});
+ try {await expect(menu).toBeVisible();await expect(menu).toBeDisabled();} finally {release();}
+ await page.waitForLoadState('load');await expect(menu).toBeEnabled();await menu.click();
+ await expect(page.getByRole('button',{name:'关闭菜单',exact:true})).toHaveAttribute('aria-expanded','true');
+ await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'UI Kit',exact:true}).click();
+ await expect(page.locator('h1')).toHaveText('UI Kit');
+});
