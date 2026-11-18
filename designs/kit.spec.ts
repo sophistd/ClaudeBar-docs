@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 实际静态页、Axe 与原生浏览器交互。
- * [OUTPUT]: 响应式/对比度、单选展开/确认、表单验证、浮层焦点与光学调参证据。
+ * [OUTPUT]: 首页与 Docs 材质/语义一致性、响应式/对比度、单选展开/确认、表单验证、浮层焦点与光学调参证据。
  * [POS]: UI Kit 的行为验收；不把 DOM 存在视为美术质量通过。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -142,4 +142,24 @@ test('mobile menu waits for its behavior before accepting a click',async({page})
  await expect(page.getByRole('button',{name:'关闭菜单',exact:true})).toHaveAttribute('aria-expanded','true');
  await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true}).click();
  await expect(page).toHaveURL(/\/ClaudeBar-docs\/zh\/$/);
+});
+
+// ---- 首页与 Docs 复用同一表面；根地址也纳入验收，而非只测 designs 样页 ----
+for(const theme of ['light','dark'])test(`homepage follows Docs surface and semantic rules: ${theme}`,async({page})=>{
+ await page.goto('/ClaudeBar-docs/');
+ await page.locator('[data-cb-theme]').selectOption(theme);
+ await expect(page.locator('a[href$="access.html"]')).toHaveCount(1);
+ await expect(page.locator('.feature-strip .icon,.closing')).toHaveCount(0);
+ await expect(page.locator('.feature-strip')).toHaveCSS('box-shadow','none');
+ await expect(page.locator('.topbar')).toHaveCSS('backdrop-filter','none');
+ const signature=async(selector:string)=>page.locator(selector).first().evaluate(el=>{
+  const s=getComputedStyle(el);return {background:s.backgroundColor,shadow:s.boxShadow,radius:s.borderRadius,border:s.borderBottom};
+ });
+ const header=await signature('.topbar');const image=await signature('.window');
+ const art=await page.locator('.hero-art').evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right};});
+ expect(art.left).toBeGreaterThanOrEqual(0);expect(art.right).toBeLessThanOrEqual(page.viewportSize()!.width);
+ await page.goto('/ClaudeBar-docs/zh/concepts/visual-guide/');
+ await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
+ expect(await signature('.page > .header')).toEqual(header);
+ expect(await signature('.doc-figure.screenshot .image-frame')).toEqual(image);
 });

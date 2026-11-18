@@ -1,5 +1,5 @@
 /* [INPUT]: geist.css 的颜色、字体与交互时序。
- * [OUTPUT]: 共享材质与悬停/按下/焦点/选中/禁用/错误/展开态；深色保持同一光源方向。
+ * [OUTPUT]: 共享页头、接触面板与悬停/按下/焦点/选中/禁用/错误/展开态；深色保持同一光源方向。
  * [POS]: Docs、营销页与 UI Kit 的共享材质和组件层，不负责页面布局。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md */
 :root {
@@ -37,6 +37,8 @@
   --cb-well:inset 0 1px 2px #0008,0 1px 0 #ffffff0a;
   --cb-success:#75dfaa;--cb-success-bg:#0c291b;--cb-warning:#f7c66d;--cb-warning-bg:#30230d;--cb-danger:#ffa1a9;--cb-danger-bg:#32151a;--cb-glass:rgba(24,24,24,.78);
 }
+/* ---- 页头与内容基面：Docs 与产品页只定义各自布局，不复制材质 ---- */
+:is(.cb-site-header,.page > .header) {background:var(--cb-surface);border-bottom:1px solid var(--cb-edge);box-shadow:var(--cb-contact)}
 /* ---- 焦点和可用性：只有一份规则，容器内的焦点用变量收进边缘 ---- */
 :where(a,button,input,select,textarea,summary,[tabindex]):focus-visible {
   outline:var(--cb-focus);outline-offset:var(--cb-focus-offset);
