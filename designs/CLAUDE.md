@@ -14,9 +14,9 @@ optics-scene.mjs: Three.js 物理材质、环境反射、主光阴影与三项�
 optical.css: 营销页面的光环境、美术节奏和静态主视觉组合。
 serve.mjs: 仅回环地址的设计预览服务，限定 designs/public/dist。
 playwright.config.ts: 生产 dist 与正式域名的桌面/手机 Chromium 验收入口。
-kit.spec.ts: 五页明暗/响应式/链接/Axe、原生选择、WebGL 调参回归及页面清单截图。
+kit.spec.ts: 根首页与 Docs 页头/截图表面及语义去重契约、五页明暗/响应式/链接/Axe、原生选择、WebGL 调参回归及页面清单截图。
 states.spec.ts: 按组件族操作展开、焦点、选中、禁用及反馈；跨 Docs/营销/UI Kit 比较计算样式，输出真实状态截图。
-styles.css: 营销页的文字、布局与响应式几何；按钮、导航与分段选择材质来自共享 UI Kit。
+styles.css: 营销页的文字、布局与响应式几何；页头由 cb-site-header、截图由 cb-panel 统一材质；按钮、导航与分段选择材质来自共享 UI Kit。
 interactions.js: 脚本就绪后启用手机导航、展开/关闭和 cb:change 之后的业务文案；选择状态交给共享运行时。
 index.html: 生成的产品首页，承担首次认识与进入功能的任务。
 network.html: 生成的功能页，解释门禁路径、恢复与保护边界。

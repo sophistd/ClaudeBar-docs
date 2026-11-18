@@ -1,6 +1,6 @@
 ---
 /**
- * [INPUT]: 双语 MDX 提供图像与语义；共享 ui-kit.css 提供截图接触高度与焦点 token；机制图不额外套框。
+ * [INPUT]: 双语 MDX 提供图像与语义；共享 cb-panel 提供截图材质与接触高度、ui-kit.css 提供焦点 token；机制图不额外套框。
  * [OUTPUT]: 可打开原图的响应式图像，以及窄屏时可用键盘滚动的图面。
  * [POS]: 双语图解导读共用的静态图像组件，继承 Starlight 的配色与焦点样式。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -23,7 +23,7 @@ const frameWidth = displayWidth ?? (kind === 'diagram' ? width : width / 2);
 const minWidth = Math.min(frameWidth, 600);
 ---
 <figure class:list={['doc-figure', kind]} style={`--figure-width: ${frameWidth}px; --figure-min-width: ${minWidth}px`}>
-  <div class="image-frame" role="group" aria-label={scrollLabel} tabindex="0">
+  <div class:list={['image-frame', kind === 'screenshot' && 'cb-panel']} role="group" aria-label={scrollLabel} tabindex="0">
     <a class="image-link" href={src} aria-label={`${openLabel} · ${alt}`}>
       <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
     </a>
@@ -41,14 +41,6 @@ const minWidth = Math.min(frameWidth, 600);
   .image-frame {
     max-width: 100%;
     overflow-x: auto;
-    border: 0;
-    border-radius: 0;
-  }
-
-  .screenshot .image-frame {
-    border-radius: 12px;
-    border: 1px solid var(--cb-edge);
-    box-shadow: var(--cb-raised);
   }
 
   .image-frame:focus-visible,

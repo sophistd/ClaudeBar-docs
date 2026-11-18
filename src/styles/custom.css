@@ -38,7 +38,7 @@
 html { scroll-behavior: smooth; }
 body { -webkit-font-smoothing: antialiased; }
 .page { max-width: var(--geist-page-width-with-margin); margin-inline: auto; border-inline: 0; }
-.page > .header { max-width: var(--geist-page-width-with-margin); inset-inline-start: 50%; transform: translateX(-50%); border-inline: 0; border-bottom-color: var(--cb-edge); background: var(--cb-surface); box-shadow: var(--cb-contact); }
+.page > .header { max-width: var(--geist-page-width-with-margin); inset-inline-start: 50%; transform: translateX(-50%); border-inline: 0; }
 @media (min-width: 50rem) {
   .sidebar-pane { inset-inline-start: max(0px, calc((100vw - var(--geist-page-width-with-margin)) / 2)); }
   .page > .header > .header { grid-template-columns: 14rem 1fr auto; }
