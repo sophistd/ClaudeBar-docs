@@ -116,3 +116,15 @@ test('320px navigation remains reachable on every showcase page',async({page})=>
   await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true}).click({trial:true});
  }
 });
+
+// ---- 覆盖手机与大桌面之间的真实布局宽度 ----
+test('intermediate viewports keep every showcase page within the viewport',async({page})=>{
+ for(const width of [768,1024,1280,1440]){
+  await page.setViewportSize({width,height:900});
+  for(const file of ['index','network','sessions','access','ui-kit']){
+   await page.goto(`/ClaudeBar-docs/designs/${file}.html`);
+   const sizes=await page.evaluate(()=>({content:document.documentElement.scrollWidth,viewport:document.documentElement.clientWidth}));
+   expect(sizes.content,`${file} at ${width}px`).toBeLessThanOrEqual(sizes.viewport);
+  }
+ }
+});
