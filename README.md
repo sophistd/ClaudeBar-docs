@@ -74,11 +74,14 @@ behalf. See the site's project information and security boundaries.
 
 ## Online entry points
 
-- [Product](https://sophistd.github.io/ClaudeBar-docs/designs/index.html)
-- [中文文档](https://sophistd.github.io/ClaudeBar-docs/zh/) / [English docs](https://sophistd.github.io/ClaudeBar-docs/)
-- [UI Kit](https://sophistd.github.io/ClaudeBar-docs/designs/ui-kit.html)
+- [Product](https://sophistd.github.io/ClaudeBar-docs/)
+- [中文文档](https://sophistd.github.io/ClaudeBar-docs/zh/) / [English docs](https://sophistd.github.io/ClaudeBar-docs/en/)
 
 `npm run build` builds Docs and the five showcase pages into one `dist`.
 The site navigation is generated from `public/scripts/site-navigation.mjs`.
 The UI Kit is a local simulation: form inputs stay in the page; no application
 configuration is changed. Set `SITE_ORIGIN` to run browser suites against a deployed site.
+
+## 站点入口
+
+根地址 `/ClaudeBar-docs/` 展示产品首页，统一导航仅保留产品与文档。中文文档仍在 `zh/`；英文规范入口为 `en/`，旧英文文章 URL 保留可访问别名，Markdown 地址不变。旧 `designs/index.html` 保持可用。UI Kit 不出现在导航和页尾，保留直接访问用于组件维护，并标记 noindex。

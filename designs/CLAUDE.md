@@ -4,7 +4,7 @@
 
 成员清单
 publication.mjs: 公开源码与站点运行文件的明确清单，排除目录内未授权附加文件。
-assemble.mjs: 先生成展示页，再将运行清单写入 Astro dist/designs，资源链接复用公共目录。
+assemble.mjs: 先生成展示页，再将运行清单写入 Astro dist/designs，资源链接复用公共目录；产品首页写入站点根地址，英文旧文章路径保留为规范页面的别名。
 build.mjs: 共享文案、页壳和组件生成四种独立静态页、UI Kit 与光学场景包；公开事实来自现有文档。
 kit-source.mjs: 共享按钮生成器与十个分区的 UI Kit 组合，演示数据不进入真实应用。
 kit.css: UI Kit 展台排版与响应式布局，控件外观来自共享样式。
@@ -25,6 +25,6 @@ access.html: 生成的获取页，说明实际获取前提和安装流程，不�
 assets/: 静态材质主视觉、可编辑 SVG 机制图与按需光学运行包；许可和来源由局部地图记录。
 README.md: 样页类型、来源、生成与本地查看方式，以及验收记录入口。
 
-五页发布在 /ClaudeBar-docs/designs/，文档原路由保持不变。顶层 publication.mjs 仅收录本模块 publicationFiles 明确列出的文件。
+产品首页位于 /ClaudeBar-docs/，旧 designs/index.html 保持可用；其余静态页仍在 designs/。文档规范入口为 en/ 与 zh/，既有英文文章 URL 保留别名，中文 URL 不变。UI Kit 无公开导航入口且 noindex，仅保留组件维护与验收用途。顶层 publication.mjs 仅收录本模块 publicationFiles 明确列出的文件。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

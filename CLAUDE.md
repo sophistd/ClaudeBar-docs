@@ -1,6 +1,6 @@
 # ClaudeBar Docs
 
-Astro 7 + Starlight + MDX + Pagefind + TypeScript + Playwright。中英文独立静态文档站，应用源代码不进入发布包。
+Astro 7 + Starlight + MDX + Pagefind + TypeScript + Playwright。产品根首页与中英文静态文档站，应用源代码不进入发布包。
 
 成员清单
 public/: 共享 token、组件状态与静态页控件行为，官方 Geist 字体及许可、站点图标、双语 SVG 与演示界面截图。
@@ -19,6 +19,6 @@ src/: 页面、组件、内容集合与教学模型，站点唯一实现树。
 tests/: 教学模型和真实浏览器验收，面向生产构建。
 tsconfig.json: Astro strict 类型检查范围。
 
-designs/: 四个产品静态页、UI Kit 与按需材质预览；明确清单控制公开源码，构建后与 Docs 同处 dist，复用共享导航、样式和状态。
+designs/: 四个产品静态页、UI Kit 与按需材质预览；明确清单控制公开源码，构建后与 Docs 同处 dist，复用共享导航、样式和状态；公开导航仅产品/文档，UI Kit 保留维护用途。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

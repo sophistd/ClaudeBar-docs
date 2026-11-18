@@ -19,7 +19,7 @@ for(const pageName of ['index','network','sessions','access','ui-kit'])for(const
  for(const img of await page.locator('img:visible').all())await img.evaluate((el:HTMLImageElement)=>el.decode());
  expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
  if(pageName!=='ui-kit'&&!isMobile)await expect(page.locator('.menu')).toBeHidden();
- if(pageName!=='ui-kit'&&isMobile){await page.locator('.menu').click();await expect(page.locator('#nav-links')).toBeVisible();const target=page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'UI Kit',exact:true});await target.click({trial:true});await page.keyboard.press('Escape');await expect(page.locator('#nav-links')).toBeHidden();await expect(page.locator('.menu')).toBeFocused();}
+ if(pageName!=='ui-kit'&&isMobile){await page.locator('.menu').click();await expect(page.locator('#nav-links')).toBeVisible();const target=page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true});await target.click({trial:true});await page.keyboard.press('Escape');await expect(page.locator('#nav-links')).toBeHidden();await expect(page.locator('.menu')).toBeFocused();}
  if(pageName==='network'){await page.getByRole('button',{name:'隔离',exact:true}).click();await expect(page.locator('[data-state-description]')).toContainText('拒绝新的握手');}
  if(pageName==='access')for(const details of await page.locator('.faq details').all()){await details.locator('summary').click();await expect(details).toHaveAttribute('open','');await details.locator('summary').click();}
  const hrefs=await page.locator('a[href]').evaluateAll(es=>[...new Set(es.map(e=>(e as HTMLAnchorElement).href))]);
@@ -89,7 +89,7 @@ test('kit: shared native selection opens and commits',async({page})=>{
 });
 
 // ---- 生产路径上的三入口往返，避免展台成为导航孤岛 ----
-test('shared navigation connects product, docs and kit',async({page,isMobile})=>{
+test('shared navigation connects product and docs without a kit entry',async({page,isMobile})=>{
  await page.goto('/ClaudeBar-docs/designs/ui-kit.html');
  await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true}).click();
  await expect(page).toHaveURL(/\/ClaudeBar-docs\/zh\/$/);
@@ -101,9 +101,10 @@ test('shared navigation connects product, docs and kit',async({page,isMobile})=>
  await page.getByRole('link',{name:'了解门禁',exact:true}).click();
  await expect(page).toHaveURL(/network.html$/);
  if(isMobile)await page.getByRole('button',{name:'打开菜单',exact:true}).click();
- await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'UI Kit',exact:true}).click();
- await expect(page.locator('h1')).toHaveText('UI Kit');
- await expect(page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'UI Kit',exact:true})).toHaveAttribute('aria-current','location');
+ await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true}).click();
+ await expect(page).toHaveURL(/\/ClaudeBar-docs\/zh\/$/);
+ if(isMobile)await page.getByRole('button',{name:'菜单',exact:true}).click();
+ await expect(page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'UI Kit',exact:true})).toHaveCount(0);
 });
 
 // ---- 窄手机尺寸不让布局视口扩张掩盖横向溢出 ----
@@ -139,6 +140,6 @@ test('mobile menu waits for its behavior before accepting a click',async({page})
  try {await expect(menu).toBeVisible();await expect(menu).toBeDisabled();} finally {release();}
  await page.waitForLoadState('load');await expect(menu).toBeEnabled();await menu.click();
  await expect(page.getByRole('button',{name:'关闭菜单',exact:true})).toHaveAttribute('aria-expanded','true');
- await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'UI Kit',exact:true}).click();
- await expect(page.locator('h1')).toHaveText('UI Kit');
+ await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true}).click();
+ await expect(page).toHaveURL(/\/ClaudeBar-docs\/zh\/$/);
 });

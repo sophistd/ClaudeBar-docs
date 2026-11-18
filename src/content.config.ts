@@ -1,6 +1,6 @@
 /**
  * [INPUT]: Starlight loader、schema 与 Astro 内容集合。
- * [OUTPUT]: 双语文档集合与界面词条；摘要默认展示，允许保留检索描述而省略重复开场。
+ * [OUTPUT]: en/zh 双语文档路由、集合与界面词条；摘要默认展示，允许保留检索描述而省略重复开场。
  * [POS]: HTML 和机器可读文档共用的内容契约。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */

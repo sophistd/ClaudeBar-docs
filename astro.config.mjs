@@ -24,8 +24,8 @@ export default defineConfig({
   }, starlight({
     title: { en: 'ClaudeBar / Docs', 'zh-CN': 'ClaudeBar / 文档' },
     description: 'Understand, configure, and verify managed network sessions on macOS.',
-    defaultLocale: 'root',
-    locales: { root: { label: 'English', lang: 'en' }, zh: { label: '简体中文', lang: 'zh-CN' } },
+    defaultLocale: 'en',
+    locales: { en: { label: 'English', lang: 'en' }, zh: { label: '简体中文', lang: 'zh-CN' } },
     customCss: ['./src/styles/custom.css'],
     components: { Sidebar: './src/components/Sidebar.astro', Head: './src/components/Head.astro', PageTitle: './src/components/PageTitle.astro', Footer: './src/components/Footer.astro' },
     sidebar: [

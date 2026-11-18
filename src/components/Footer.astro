@@ -1,7 +1,7 @@
 ---
 /**
  * [INPUT]: 当前语言与文档 ID；Starlight 原生页尾。
- * [OUTPUT]: 页尾的 Markdown 阅读入口与框架分页。
+ * [OUTPUT]: 页尾 Markdown 旧地址兼容入口与框架分页。
  * [POS]: 将机器阅读工具置于正文之后，不占用标题区。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -9,5 +9,5 @@ import Default from '@astrojs/starlight/components/Footer.astro';
 const { entry, locale } = Astro.locals.starlightRoute;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
-{entry.data.kind && <div class="document-tools"><a href={`${base}/markdown/${entry.id || 'index'}.md`}>{locale === 'zh' ? '查看 Markdown 原文' : 'Read as Markdown'}</a></div>}
+{entry.data.kind && <div class="document-tools"><a href={`${base}/markdown/${entry.id === 'en' ? 'index' : entry.id.replace(/^en\//, '')}.md`}>{locale === 'zh' ? '查看 Markdown 原文' : 'Read as Markdown'}</a></div>}
 <Default {...Astro.props} />

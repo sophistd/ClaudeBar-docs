@@ -42,7 +42,7 @@ npx playwright test --config designs/playwright.config.ts
 
 ## 交付边界
 
-用户已授权公开五页展示；模块 publication.mjs 明确列出公开源码和部署运行文件。npm run build 将页面构建到 dist/designs，与 Docs 共用发布和导航。设计思考、评分和检查记录不进入页面 UI。
+用户已授权公开五类页面展示；模块 publication.mjs 明确列出公开源码和部署运行文件。npm run build 将页面构建到 dist/designs，与 Docs 共用发布和导航。设计思考、评分和检查记录不进入页面 UI。
 
 ## 验收边界
 
@@ -51,6 +51,6 @@ npx playwright test --config designs/playwright.config.ts
 
 组件状态统一来自 `../public/styles/ui-kit.css`，静态页主题与分组键盘来自 `../public/scripts/ui-controls.js`。`styles.css`、`optical.css`、`kit.css` 只负责页面和展台布局；Docs 使用同一视觉层并保留 Starlight 行为。
 
-`UI_STATE_REVIEW_DIR=<绝对路径> npm run designs:test` 导出真实状态截图，并在同级 pages 目录保存五页明暗/桌面手机全页截图及组件清单。状态回归比较跨页面计算样式，覆盖原生浮层、键盘、禁用、只读、错误、复制、主题持久化及自动主题。审阅记录留在任务 scratch；不把验收矩阵塞进产品页面。
+`UI_STATE_REVIEW_DIR=<绝对路径> npm run designs:test` 导出真实状态截图，并在同级 pages 目录保存五类页面明暗/桌面手机全页截图及组件清单。状态回归比较跨页面计算样式，覆盖原生浮层、键盘、禁用、只读、错误、复制、主题持久化及自动主题。审阅记录留在任务 scratch；不把验收矩阵塞进产品页面。
 
-正式入口为 `/ClaudeBar-docs/designs/index.html`，组件库为 `/ClaudeBar-docs/designs/ui-kit.html`。生产预览使用 `npm run preview`；本地源文件预览仍可使用 serve.mjs。
+正式入口为 `/ClaudeBar-docs/`，UI Kit 保留维护用途，不在对外导航展示。生产预览使用 `npm run preview`；本地源文件预览仍可使用 serve.mjs。

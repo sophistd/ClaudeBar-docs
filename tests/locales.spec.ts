@@ -20,7 +20,7 @@ test('switching languages preserves the current article', async ({ page }) => {
   await expect(page.locator('h1')).toHaveText('网络出口与门禁');
   await expect(page.locator('.page-meta, .page-contract, .breadcrumb')).toHaveCount(0);
   await (await revealLanguagePicker(page, '菜单')).selectOption({ label: 'English' });
-  await expect(page).toHaveURL(`${base}concepts/network-egress/`);
+  await expect(page).toHaveURL(`${base}en/concepts/network-egress/`);
   await expect(page.locator('h1')).toHaveText('Network egress');
 });
 test('Chinese search returns Chinese results and a working route', async ({ page }) => {
@@ -73,4 +73,35 @@ test('Chinese code tabs retain runnable commands and copy labels', async ({ page
   const panel = page.getByRole('tabpanel', { name: '通过 SwiftPM 运行', exact: true });
   await panel.getByRole('button', { name: /复制/ }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('swift run claudebar-cli --help');
+});
+
+// ---- 根入口只展示产品；中英文文档首页互切不回到产品 ----
+test('product root and documentation home navigation stay separate', async ({page,isMobile}) => {
+  await page.goto(base);
+  await expect(page.locator('h1')).toContainText('掌握连接');
+  await expect(page.locator('a').filter({hasText:'UI Kit'})).toHaveCount(0);
+  if(isMobile)await page.getByRole('button',{name:'打开菜单',exact:true}).click();
+  await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true}).click();
+  await expect(page).toHaveURL(`${base}zh/`);
+  await (await revealLanguagePicker(page,'菜单')).selectOption({label:'English'});
+  await expect(page).toHaveURL(`${base}en/`);
+  await expect(page.getByRole('heading',{name:'Get started',exact:true})).toBeVisible();
+  await (await revealLanguagePicker(page,'Menu')).selectOption({label:'简体中文'});
+  await expect(page).toHaveURL(`${base}zh/`);
+  if(isMobile)await page.getByRole('button',{name:'菜单',exact:true}).click();
+  await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'产品',exact:true}).click();
+  await expect(page).toHaveURL(base);
+  await expect(page.locator('h1')).toContainText('掌握连接');
+});
+
+test('legacy English links and Markdown retain their content', async ({page,request}) => {
+  await page.goto(`${base}concepts/network-egress/`);
+  await expect(page.locator('h1')).toHaveText('Network egress');
+  await expect(page.locator('link[rel=canonical]')).toHaveAttribute('href',`https://sophistd.github.io${base}en/concepts/network-egress/`);
+  const oldMarkdown=await request.get(`${base}markdown/concepts/network-egress.md`);
+  expect(oldMarkdown.ok()).toBe(true);
+  expect(await oldMarkdown.text()).toContain('# Network egress');
+  await page.goto(`${base}designs/index.html`);
+  await expect(page.locator('h1')).toContainText('掌握连接');
+  await expect(page.locator('a').filter({hasText:'UI Kit'})).toHaveCount(0);
 });
