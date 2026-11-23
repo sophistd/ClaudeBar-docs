@@ -1,10 +1,12 @@
 [
   {
-    "tag_name": "v0.5.0",
-    "name": "ClaudeBar 0.5.0",
-    "body": "macOS 原生纯净出口门禁、跨内核多浏览器隔离、Sift 风险边界诊断与商业级设置面板基线版本。",
-    "html_url": "https://sophistd.github.io/ClaudeBar-docs/zh/start/installation/",
-    "published_at": "2026-11-23T00:00:00Z",
+    "tag_name": "v0.6.0",
+    "name": "ClaudeBar 0.6.0",
+    "body": "macOS 14+ 公证版发布：H17 跨内核 Sift 指纹风险告警、Desktop ant-did 与 CLI 隔离加固、P02-P14 与 ASN 门禁硬化，以及手动触发的应用内验签自更新。",
+    "html_url": "https://github.com/sophistd/ClaudeBar-docs/releases/tag/v0.6.0",
+    "dmg_url": "https://github.com/sophistd/ClaudeBar-docs/releases/download/v0.6.0/ClaudeBar-0.6.0.dmg",
+    "sha256": "3110148e8047f10b88dfca535e69b42ede1b4cdbac3ec115ce406122967913c3",
+    "published_at": "2026-11-23T14:57:00Z",
     "prerelease": false,
     "draft": false
   }
