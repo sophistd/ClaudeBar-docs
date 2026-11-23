@@ -1,5 +1,16 @@
 [
   {
+    "tag_name": "v0.6.1",
+    "name": "ClaudeBar 0.6.1",
+    "body": "修复 Claude Desktop 卡死且门禁恢复后无法跟着恢复：冻结改为看门狗持有的 6 秒租约并回读整棵进程树，只在出口短暂挂起期间生效且有绝对上限，熔断后不再冻结；修复宽限恢复循环可能无人看管的竞态；合盖唤醒给 30 秒重验窗口，休眠锁存不再依赖单一唤醒事件；超时熔断后若出口与原验真身份完全一致则自动恢复；系统扩展状态每 10 秒重新同步；裸启拦截按进程身份核对后再处置。",
+    "html_url": "https://github.com/sophistd/ClaudeBar-docs/releases/tag/v0.6.1",
+    "dmg_url": "https://github.com/sophistd/ClaudeBar-docs/releases/download/v0.6.1/ClaudeBar-0.6.1.dmg",
+    "sha256": "c9be20aec9b9157fb05152cbc3fc4e49c27e1a75ffe06964b401b6bf5a2d88b0",
+    "published_at": "2026-11-23T17:26:33Z",
+    "prerelease": false,
+    "draft": false
+  },
+  {
     "tag_name": "v0.6.0",
     "name": "ClaudeBar 0.6.0",
     "body": "macOS 14+ 公证版发布：H17 跨内核 Sift 指纹风险告警、Desktop ant-did 与 CLI 隔离加固、P02-P14 与 ASN 门禁硬化，以及手动触发的应用内验签自更新。",
