@@ -1,0 +1,78 @@
+---
+title: "Multi-account isolation and risk boundaries"
+description: "Separate what ClaudeBar controls from what no local tool can control, and follow a realistic isolation ladder."
+showDescription: false
+kind: "How-to"
+audience: "Operators managing multiple Claude accounts or evaluating isolation limits"
+prerequisites: "Familiarity with profiles, the loopback gate, and browser session modes."
+outcome: "Avoid same-engine multi-profile pitfalls, choose an appropriate isolation tier, and verify local controls."
+evidence: "Source reviewed"
+sidebar: {"order": 2}
+# [INPUT]: Reviewed security/session contracts (BrowserModels, CrossProfileRiskAnalyzer, SessionProbeEvaluators, ProtectionReceiptCard) and empirical risk-boundary findings.
+# [OUTPUT]: Human-readable multi-account isolation ladder, capability boundaries, and engineering trade-offs without ban-proof claims.
+# [POS]: Core risk mental-model guide in guides/, paired with concepts/security.mdx and concepts/sessions.mdx.
+# [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
+---
+
+## Start with the bottom line: no local tool makes an account “ban-proof”
+
+ClaudeBar controls **managed local egress**, **local session storage**, and **pre-launch and runtime checks**. It cannot rewrite a provider's fraud model, and it cannot promise that an account will avoid verification prompts, restrictions, or suspension.
+
+The most reliable way to use ClaudeBar well is to draw a sharp line between what a local tool controls and what remains completely outside its reach.
+
+## What ClaudeBar controls vs. what it cannot control
+
+| Layer | Controlled by ClaudeBar | Outside any local tool's control |
+| --- | --- | --- |
+| Egress & drift | Fail-closed loopback gate on managed connections; blocks launch or isolates sessions on multi-source country splits or IP drift | The inherent reputation of your proxy node (datacenter, commercial VPN, or dirty IP). `P05` can warn or fail closed when `blockDatacenterASN` is enabled, but it cannot turn a datacenter IP into a clean residential exit |
+| Bypass channels | Launch flags and local probes for remote DNS, IPv6 bypass, UDP STUN, and QUIC (reported honestly as rule-based mitigation rather than packet capture when the host exposes public IPv6 or raw UDP) | Unmanaged apps or manually opened windows that bypass the managed route |
+| Environment alignment | Aligns `TZ` and `LANG` / `LC_ALL` / browser locale with the exit country; strips polluted host environment variables before launching managed processes | Long-term usage patterns, request velocity anomalies, or manual provider review |
+| Session & local device state | Separate browser cookie/storage directories; isolated CLI `CLAUDE_CONFIG_DIR` (`userID` in `~/.claude.json`); isolated Desktop data directory (`ant-did`) | Hardware and graphics fingerprints shared across multiple profiles or sandboxes of the **same browser engine** (~74 of 79 observed Sift fields stay unchanged) |
+| Local auditing & recovery | Zero-wake read-only checks for container collisions (`P15`) and `userID` / `ant-did` binding collisions (`P19`, storing only SHA-256 hashes); journaled rollback repairs | Payment cards and Stripe Radar linkage, email/phone normalization linkage, Persona / Yoti identity checks, and Sift's cross-merchant reputation graph |
+
+## Multi-account isolation ladder (strongest to weakest)
+
+If you operate more than one Claude account, do not confuse a separate browser profile with a separate device. Choose the highest tier your workflow allows:
+
+1. **One machine, one account (zero physical sharing)**
+   - The cleanest boundary. Hardware, graphics stack, system fonts, local storage, and network state never intersect.
+2. **Prefer isolated CLI for day-to-day work**
+   - For coding and routine sessions, run Claude Code CLI through a managed profile with `CLAUDE_CONFIG_DIR` isolation enabled. CLI traffic avoids the Web browser Sift `s.js` fingerprinting surface while keeping each profile's `~/.claude.json` `userID` and state directory separate, audited read-only by `P19`.
+3. **If you must run multiple Web accounts on one Mac: one browser engine per account**
+   - Assign each Web account to a **different browser engine family**: for example, Chromium (Chrome, Edge, Brave, or Aside) for one account, Gecko (Firefox or Zen) for another, and system WebKit (Safari) if needed.
+   - Crossing engine boundaries separates the rendering pipeline, WebGL/Canvas output, font enumeration, and runtime traits that stay identical within one browser family.
+4. **Never log multiple Web accounts into multiple profiles or sandboxes of the same browser engine**
+   - Creating extra Chrome profiles or spawning separate `--user-data-dir` sandboxes from the same Chrome installation isolates cookies and local storage, **not** browser-install and hardware rendering fingerprints.
+
+> Using the **same** account across multiple browsers on your own machine is normal single-user behavior. When ClaudeBar confirms two profiles belong to the same `accountUUID`, cross-profile analysis exempts them from multi-account overlap warnings.
+
+## Why this is more than “guilt by association”
+
+A common assumption is that sharing one Chrome installation across two accounts only hurts if one of them misbehaves. In practice, two separate mechanisms are in play:
+
+- **Graph contagion (guilt by association)**: if one account tied to a device, card, or IP is flagged or banned, linked accounts on the same graph face elevated risk.
+- **Active counter scoring (`users_per_device_id`)**: even when every account behaves normally and none has been banned, observing multiple distinct users behind the same stable device fingerprint directly increases risk through device-level user counts (`users_per_device_id`).
+
+Across multiple profiles or `--user-data-dir` sandboxes of the same Chromium engine, roughly 74 of 79 fields collected by Sift `s.js` remain identical. Isolating cookies alone stops neither post-incident contagion nor routine multi-user counting.
+
+## Why ClaudeBar refuses JS fingerprint spoofing and does not block `s-cdn.anthropic.com`
+
+Both omissions are deliberate engineering choices:
+
+- **No UA, Canvas, or WebGL JS spoofing**: Sift includes anti-tamper and environment-consistency checks. Injecting scripts that add fake Canvas noise or spoof navigator fields often creates detectable inconsistencies that look worse than an unmodified browser. Reduce browser fingerprint overlap by moving up the isolation ladder (separate hardware, isolated CLI, or cross-engine browsers), not by installing spoofing extensions.
+- **No blocking of `s-cdn.anthropic.com`**: `claude.ai` sends risk beacons through `s-cdn.anthropic.com` (CNAME to Sift). Blocking it with a firewall or ad blocker can trigger missing-beacon or decoy anomalies. Instead, ClaudeBar routes it through the **same verified managed exit** as the main session (same-origin egress alignment), while optional `officialPrivacyFlags` mode only blocks configured third-party telemetry hosts such as Sentry, Datadog, and Segment.
+
+### Note on Sift privacy exposure
+
+While signed into `claude.ai`, page navigation sends the full URL (including conversation UUID), the opening of the conversation title, and the account UUID to Sift in plaintext (with unsalted MD5 hashes that do not anonymize the values). Keep secrets, tokens, real names, and sensitive identifiers out of conversation titles.
+
+## How to verify your setup inside ClaudeBar
+
+1. **Check the live Protection Receipt card**: in Overview or Channel Detail, verify three things—host env-var stripping, same-exit forwarding of Sift beacons alongside core traffic, and whether your fingerprint isolation tier shows an `H17` same-engine multi-account warning.
+2. **Watch three key probes**:
+   - `P15` (cross-profile isolation): fails closed if two profiles share a cookie or data container.
+   - `P19` (permanent device-ID binding): read-only check on CLI `userID` and Desktop `ant-did` to catch cross-profile or host-default collisions.
+   - `P05` (ASN purity): flags known datacenter and commercial VPN ASNs; enable `blockDatacenterASN` on a profile or channel if you want datacenter or missing-ASN exits to fail closed.
+3. **Maintain off-tool account hygiene**: keep payment cards, emails, and phone numbers distinct across accounts (avoid `+` aliases, dot variants, or sequential email prefixes), and avoid dense sign-ups or card binding within the first 24 hours of a fresh sandbox.
+
+Related reading: [security boundaries](/ClaudeBar-docs/concepts/security/), [session isolation](/ClaudeBar-docs/concepts/sessions/), and [compatibility](/ClaudeBar-docs/reference/compatibility/).

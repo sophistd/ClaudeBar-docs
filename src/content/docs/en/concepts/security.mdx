@@ -1,38 +1,46 @@
 ---
 title: "Security boundaries"
-description: "Understand the scope of each control before relying on it."
+description: "Understand what ClaudeBar controls locally, what remains outside its control, and what is not promised."
 kind: "Explanation"
 audience: "All users"
 prerequisites: "None."
-outcome: "Distinguish intended controls from independently proven guarantees."
+outcome: "Distinguish implemented local controls from external risk signals and unverified claims."
 sidebar: {"order": 4}
-# [INPUT]: 既有 Security boundaries 文档事实与双语路由。
-# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
-# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [INPUT]: Existing security boundaries facts, reviewed probe/isolation contracts, and empirical Sift risk limits.
+# [OUTPUT]: Scope of local controls, out-of-scope risk factors, data handling, and privacy exposure without ban-proof claims.
+# [POS]: Canonical MDX source shared by HTML and generated Markdown.
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
-## What the implementation is designed to do
+## What ClaudeBar is designed to control
 
-The loopback gate controls admission to its managed connection path, records a verified egress baseline, and can hold or isolate connections when evidence changes. Profiles separate configuration and session data in supported workflows. Diagnostic exports apply redaction before producing an archive.
+The loopback gate manages connections routed through it. Based on the reviewed source baseline, ClaudeBar implements the following local controls:
 
-These are implementation descriptions. They are not a security certification.
+- **Fail-closed managed egress gate**: preflight checks verify the exit through an isolated probe tunnel and record an egress baseline; multi-source country splits, IP drift, or uncovered critical observation gaps block launch or isolate the session.
+- **Bypass-channel and locale alignment**: launch flags and local probes cover remote DNS, IPv6 bypass, UDP STUN, and QUIC (reported honestly as rule-based mitigation rather than packet capture when the host exposes public IPv6 or raw UDP), and align `TZ` and `LANG` / `LC_ALL` / browser locale with the exit country.
+- **Local session and device-state isolation**: separate cookie and storage directories for supported browser sandboxes; isolated `CLAUDE_CONFIG_DIR` (`userID` in `~/.claude.json`) for Claude Code CLI; isolated data directories (`ant-did`) for Claude Desktop.
+- **Read-only local auditing and journaled recovery**: zero-wake read-only probes such as `P15` (container collisions) and `P19` (`userID` / `ant-did` binding collisions, storing only SHA-256 hashes), paired with rollback-capable remediation.
+- **Same-exit risk beacons without JS spoofing**: ClaudeBar intentionally does not block `s-cdn.anthropic.com` and does not inject UA, Canvas, or WebGL spoofing scripts; risk beacons travel over the same verified exit as the main session, while optional privacy mode only blocks configured third-party telemetry hosts.
+- **Diagnostic redaction**: diagnostic exports apply redaction before writing an archive.
 
-## What this documentation does not establish
+These are implementation descriptions, not a security certification or a promise against account bans.
 
-- Complete capture or protection of every process and packet on the machine.
-- Prevention of every possible network leak under every system configuration.
-- Provider account safety, eligibility, or immunity from suspension.
-- Correct signing, notarization, or activation of a particular installed system extension.
-- Browser compatibility beyond the observed installation and supported mode.
+## What ClaudeBar cannot control or guarantee
+
+- **Same-engine browser fingerprint overlap**: separate profiles or `--user-data-dir` sandboxes within the same Chromium engine isolate cookies and storage, not hardware or graphics fingerprints (~74 of 79 observed Sift fields stay unchanged). See [multi-account isolation and risk boundaries](/ClaudeBar-docs/guides/multi-account-isolation/).
+- **Inherent proxy-node reputation**: ClaudeBar cannot turn a datacenter, commercial VPN, or dirty IP into a clean residential exit (`P05` warns by default and can fail closed when `blockDatacenterASN` is enabled).
+- **Provider fraud and identity graphs**: payment cards and Stripe Radar linkage, email/phone normalization linkage, Persona / Yoti identity verification, Sift's cross-merchant reputation graph, and whether a provider permits or suspends an account.
+- **Traffic outside the managed path**: the loopback gate does not cover every process or packet on the machine; optional system extensions and packet-filter controls require separate entitlements, signing, notarization, and activation that are not verified in this documentation baseline.
 
 ClaudeBar is intended for legitimate network configuration, session management, and diagnostics. Provider terms and account rules still apply.
 
-## Local data and exports
+## Local data, exports, and external exposure
 
-Profiles contain settings and credential references. Secrets are intended to be stored through the system Keychain path rather than directly in normalized proxy configuration. Local diagnostics and history can still reveal environment details.
+Profiles store settings and credential references. Secrets are intended to be stored through the macOS Keychain path rather than directly in normalized proxy configuration, and device-identity bindings store SHA-256 hashes only. Local diagnostics and history can still reveal environment details.
 
 Account masking is a display aid, not encryption. Redaction reduces disclosure; it does not remove the need to inspect a diagnostic archive before sharing it. Never publish a real profile store, browser data directory, account identifiers, or signing material.
+
+While signed into `claude.ai`, page navigation sends the full URL (including conversation UUID), the start of the conversation title, and the account UUID to Sift in plaintext. Do not place secrets, tokens, or real names in conversation titles.
 
 ## Optional prompt analysis
 

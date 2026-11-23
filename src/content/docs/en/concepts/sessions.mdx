@@ -1,15 +1,15 @@
 ---
 title: "Session isolation"
-description: "Separate browser data and process ownership without overstating the boundary."
+description: "Separate browser engines, data directories, and CLI/Desktop state without confusing cookie isolation with device-fingerprint isolation."
 showDescription: false
 kind: "Explanation"
 audience: "Operators"
 prerequisites: "A profile and an installed browser."
-outcome: "Choose a supported session mode and recognize unmanaged sessions."
+outcome: "Choose a supported session mode, distinguish cookie isolation from cross-engine isolation, and understand CLI/Desktop isolation."
 sidebar: {"order": 3}
-# [INPUT]: 既有机制说明与共享双语 SVG。
-# [OUTPUT]: 面向操作或概念的规范正文。
-# [POS]: MDX 内容源，图只承载关系，正文补充操作与边界。
+# [INPUT]: Existing session isolation model, BrowserModels 4-tier engine catalog, H17/P15/P19 contracts, and shared bilingual SVG.
+# [OUTPUT]: Conceptual explanation separating cookie/storage isolation from Sift browser-install fingerprint overlap.
+# [POS]: Canonical MDX source; diagram carries route topology while prose explains engine tiers, CLI/Desktop isolation, and limits.
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
@@ -20,24 +20,40 @@ import DocFigure from '../../../../components/DocFigure.astro';
 
 ## Mode requirements
 
-A separate instance requires a supported Chromium browser. For an existing sign-in, a binding may identify a supported subprofile; the launch checks host/gate egress assumptions before opening the app.
+“Guarded sandbox” launches a managed browser process with its own isolated data directory. Two engine families support it:
 
-“Sandbox” is the product's session-isolation term. It does not mean a virtual machine, a separate OS user, or proof of complete operating-system containment.
+- **Pure Chromium** (Chrome, Edge, Brave, Aside): isolated `--user-data-dir`, loopback proxy flags, and QUIC/WebRTC bypass restrictions.
+- **Gecko** (Firefox, Zen): isolated `-no-remote -profile` directory with generated `user.js` proxy and anti-leak preferences.
 
-**Native-session egress matching is an observation, not a routing guarantee.** A matching exit does not establish that native-browser traffic traverses the loopback gate. Isolating that gate alone therefore does not establish that native-browser traffic has been cut off. Separate system controls, if deployed, have their own scope.
+“Sandbox” refers to browser data-directory and managed-process separation. It is not a virtual machine, a separate OS user, or proof of complete operating-system containment.
+
+“Native session” reuses an existing browser sign-in. Supported pure Chromium browsers can target a specific subprofile, and launch checks compare host and gate egress beforehand. **Native-session egress matching is an observation, not a routing guarantee.** A matching exit does not establish that native-browser traffic traverses the loopback gate, so isolating the gate alone does not prove native-browser traffic has been cut off.
 
 ## Browser capability is detected
 
-The implementation distinguishes pure Chromium browsers, wrapped Chromium shells, and WebKit. Pure Chromium can support both modes. Wrapped shells and Safari use native sessions. Known names alone are insufficient: the scanner examines the installed application and can restrict capabilities.
+ClaudeBar classifies installed browsers into four engine tiers: pure Chromium and Gecko support both guarded sandbox and native sessions; wrapped Chromium shells (Arc, Dia) and system WebKit (Safari) use native sessions. Actual options come from scanning the installed application rather than assuming capabilities from a name alone.
 
-For a concrete matrix, see [compatibility](/ClaudeBar-docs/reference/compatibility/).
+For the full matrix, see [compatibility](/ClaudeBar-docs/reference/compatibility/).
 
-## Avoid shared-container collisions
+## Cookie isolation is not browser-fingerprint isolation
 
-Two profiles pointing at the same native browser container may share account state. The binding workflow detects conflicts and exposes a warning; do not ignore it. Use a distinct supported subprofile or a separate managed sandbox as appropriate.
+If two profiles point at the same native browser container, they share login state; preflight (`P15`) blocks that container collision.
+
+However, **separate subprofiles or separate `--user-data-dir` sandboxes inside the same Chromium browser do not isolate Web hardware or rendering fingerprints.** Roughly 74 of 79 observed Sift fields stay unchanged within the same browser engine, creating both graph contagion risk and active `users_per_device_id` scoring risk.
+
+When ClaudeBar detects multiple profiles sharing one browser engine family, it raises the non-blocking `H17` overlap warning (exempted when both profiles are confirmed to belong to the same `accountUUID`). For multi-account setups, follow the ladder in [multi-account isolation and risk boundaries](/ClaudeBar-docs/guides/multi-account-isolation/): prefer one machine per account or isolated CLI first, and use different browser engines (for example, Chrome paired with Firefox or Zen) if you must run multiple Web accounts on one Mac.
+
+## CLI and Desktop data-directory isolation
+
+Beyond browsers, ClaudeBar isolates local state for two non-browser clients:
+
+- **Claude Code CLI**: enabling `isolateClaudeConfigDir` assigns a dedicated `CLAUDE_CONFIG_DIR` per profile, separating `~/.claude.json` (`userID`) and settings while keeping routine work off the Web browser fingerprinting surface.
+- **Claude Desktop**: managed launches use an isolated data directory (`ant-did`) so sessions do not fall back to the host default directory.
+
+`P19` audits both CLI `userID` and Desktop `ant-did` bindings read-only without waking processes, storing only SHA-256 hashes.
 
 ## Existing sessions are observations
 
-The session inventory can classify managed browser processes, managed desktop processes, existing logins, and unmanaged processes. Account labels and masking help inspect that inventory; a label does not turn an existing process into a managed session.
+The session inventory classifies managed browser processes, managed desktop processes, existing logins, and unmanaged processes. Account labels and masking help inspect that inventory; a label does not turn an existing process into a managed session.
 
 Changing the selected profile is not proof that every open window changed its identity or network route. Verify the specific launch and instance you intend to use.

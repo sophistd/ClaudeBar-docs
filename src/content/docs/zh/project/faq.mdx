@@ -1,15 +1,15 @@
 ---
 title: "常见问题"
-description: "查询项目归属、适用范围、获取方式和许可。"
+description: "查询项目归属、风控边界、适用范围、获取方式和许可。"
 showDescription: false
 kind: "Reference"
 audience: "所有读者"
 prerequisites: "无。"
-outcome: "了解 ClaudeBar 的用途、如何获取应用，以及使用和分发的授权情况。"
+outcome: "了解 ClaudeBar 的用途、能力边界、如何获取应用，以及使用和分发的授权情况。"
 evidence: "已核对源码"
 sidebar: {"order": 2}
-# [INPUT]: 既有 常见问题 文档事实与双语路由。
-# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [INPUT]: 既有常见问题事实与多账号隔离/风控边界说明。
+# [OUTPUT]: 项目归属、防封边界、同内核指纹与不伪装说明、获取方式与许可问答正文。
 # [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
@@ -17,6 +17,14 @@ sidebar: {"order": 2}
 ## ClaudeBar 是 Anthropic 的产品吗？
 
 ClaudeBar 是独立项目，与 Anthropic 无隶属关系，也未获其背书。
+
+## 用了 ClaudeBar 就能保证不被封号吗？
+
+不能。ClaudeBar 负责管住本机受管出口、本地目录隔离与启动前后核验，但管不住代理节点本身的机房/脏 IP 属性、同浏览器内核的硬件与图形指纹重合、支付卡/Stripe Radar、邮箱与手机号关联、Persona/Yoti 身份核验，以及 Sift 全网信誉图谱。详见[保护范围与数据安全](/ClaudeBar-docs/zh/concepts/security/)。
+
+## 为什么不能用同一个 Chrome 开多个 Profile 登多号？为什么不做指纹伪装？
+
+在同一个 Chrome 里建多 Profile 或多沙箱，只隔开了 Cookie，Web 端 Sift 采集的约 74/79 项硬件与图形渲染特征仍然相同，既存在连坐风险，也会直接触发 `users_per_device_id` 主动计数加分。同时，ClaudeBar 刻意不做 JS 指纹伪装，也不屏蔽 `s-cdn.anthropic.com`，以免反篡改校验或信标缺失引发更大异常。单机多账号应按“一机一号 > 隔离 CLI > 跨浏览器内核（一核一号）”的阶梯安排，详见[多账号隔离与风控边界](/ClaudeBar-docs/zh/guides/multi-account-isolation/)。
 
 ## 它能当通用 AI 智能体工作台用吗？
 

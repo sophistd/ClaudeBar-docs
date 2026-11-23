@@ -23,5 +23,5 @@ export const GET: APIRoute = ({ props }) => {
       ? '*网页版提供可操作的门禁教学模拟，不会连接真实网络。下方状态表说明了相同的变化过程。*'
       : '*The web version includes an explicitly labeled lifecycle simulation. The state table below is its text equivalent.*')
     .replace(/<\/?(?:Tabs|TabItem)[^>]*>/g, '');
-  return new Response(`---\ntitle: ${JSON.stringify(entry.data.title)}\nlang: ${zh ? 'zh-CN' : 'en'}\nkind: ${entry.data.kind}\naudience: ${entry.data.audience}\nprerequisites: ${JSON.stringify(entry.data.prerequisites)}\noutcome: ${JSON.stringify(entry.data.outcome)}\nevidence: ${entry.data.evidence}\nbaseline: 2026-11-17\n---\n\n# ${entry.data.title}\n\n${lead}${body}`, { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } });
+  return new Response(`---\ntitle: ${JSON.stringify(entry.data.title)}\nlang: ${zh ? 'zh-CN' : 'en'}\nkind: ${entry.data.kind}\naudience: ${entry.data.audience}\nprerequisites: ${JSON.stringify(entry.data.prerequisites)}\noutcome: ${JSON.stringify(entry.data.outcome)}\nevidence: ${entry.data.evidence}\nbaseline: 2026-11-22\n---\n\n# ${entry.data.title}\n\n${lead}${body}`, { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } });
 };

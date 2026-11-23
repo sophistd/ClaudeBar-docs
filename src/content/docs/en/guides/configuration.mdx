@@ -1,15 +1,15 @@
 ---
 title: "Configure a profile"
-description: "Bind a route and a session deliberately, then verify both."
+description: "Bind an upstream route, browser engine, and isolation options deliberately, then verify both."
 showDescription: false
 kind: "How-to"
 audience: "Operators"
 prerequisites: "An authorized build and an upstream configuration you control."
-outcome: "A selected profile with a supported transport and browser mode."
+outcome: "A selected profile with a supported transport, intentional isolation settings, and a verified browser mode."
 sidebar: {"order": 1}
-# [INPUT]: 既有 Configure a profile 文档事实与双语路由。
-# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
-# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [INPUT]: Existing profile configuration workflow, BrowserModels 4-tier catalog, P05/P19, and multi-account guidance.
+# [OUTPUT]: Step-by-step profile configuration prose noting cross-engine assignment, CLI isolation, and datacenter ASN blocking.
+# [POS]: Canonical MDX source shared by HTML and Markdown.
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
@@ -28,14 +28,18 @@ After import, the route must still pass preflight. See [compatibility](/ClaudeBa
 
 ## Choose session behavior
 
-Open **浏览器** (Browser), select an installed application, then choose the allowed session mode. When a native browser exposes supported subprofiles, choose the intended **子容器** (subprofile). Resolve any collision warning.
+Open **浏览器** (Browser), select an installed application, then choose the allowed session mode (both pure Chromium browsers and Gecko browsers such as Firefox and Zen support guarded sandboxes). When a native browser exposes supported subprofiles, choose the intended **子容器** (subprofile) and resolve any collision warning.
 
-## Review the controls
+If you manage multiple **distinct** Web accounts on one Mac, do not assign them to multiple subprofiles or sandboxes of the same Chrome installation. Prefer isolated CLI or assign one browser engine family per Web account (for example, Chrome paired with Firefox or Zen). See [multi-account isolation and risk boundaries](/ClaudeBar-docs/guides/multi-account-isolation/).
+
+## Review recovery, ASN, and isolation controls
 
 Keep strict IP pinning unless your operating requirements justify a different recovery predicate. The default grace window is four seconds; it is a hold window, not a promise that every request survives an interruption.
 
-Telemetry options affect the managed path. The enterprise-cloud mode is represented in configuration, but its enum label alone does not prove a complete provider integration. See [configuration reference](/ClaudeBar-docs/reference/configuration/).
+- **Datacenter ASN blocking (`blockDatacenterASN`)**: off by default (`P05` warns on datacenter or commercial VPN ASNs). Enable it if you want datacenter or missing-ASN exits to fail closed.
+- **CLI directory isolation (`isolateClaudeConfigDir`)**: assigns a per-profile `CLAUDE_CONFIG_DIR` so each profile keeps its own `~/.claude.json` `userID`. Multi-channel profiles enable this by default; legacy single profiles can enable it explicitly.
+- **Telemetry mode**: applies to the managed path. `s-cdn.anthropic.com` risk beacons are forwarded over the same verified exit rather than blocked; `officialPrivacyFlags` only blocks configured third-party telemetry hosts. The enterprise-cloud enum is represented in configuration, but its label alone does not prove end-to-end provider integration. See [configuration reference](/ClaudeBar-docs/reference/configuration/).
 
 ## Verify the result
 
-Run the current profile's checks, inspect unresolved findings, and use the verified launch action. Confirm the resulting managed session rather than relying on a pre-existing browser window.
+Run the current profile's checks, review unresolved findings and the live Protection Receipt card (including any `H17` same-engine overlap warning), and use the verified launch action. Confirm the resulting managed session rather than relying on a pre-existing browser window.

@@ -1,31 +1,32 @@
 ---
 title: "Compatibility"
-description: "Separate supported representations from verified runtime behavior."
+description: "Separate supported platforms, four-tier browser engines, and proxy transports from verified runtime behavior."
 showDescription: false
 kind: "Reference"
 audience: "Operators and developers"
 prerequisites: "Know your browser, operating system, and upstream transport."
-outcome: "Choose a supported combination and identify missing evidence."
+outcome: "Choose a supported combination, distinguish browser engine families, and identify missing evidence."
 sidebar: {"order": 3}
-# [INPUT]: 既有 Compatibility 文档事实与双语路由。
-# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
-# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [INPUT]: Existing compatibility facts, BrowserModels 4-tier engine catalog (including Gecko), and proxy import contract.
+# [OUTPUT]: Platform, four-tier browser engine/fingerprint family, and proxy transport reference prose.
+# [POS]: Canonical MDX source shared by HTML and Markdown.
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## Platform
 
-The package declares macOS 14 or later and Swift tools version 6.2. This documentation work ran on an Apple silicon Mac with Swift 6.4.2; the CLI build and 25 selected fixture tests passed. Intel runtime behavior and a macOS version matrix were not tested here.
+The package declares macOS 14 or later and Swift tools version 6.2. Build and fixture checks ran on Apple silicon Macs; Intel runtime behavior and a full macOS version matrix were not verified here.
 
-## Browser model
+## Browser model and engine families
 
-| Browser family / known entries | Mode represented by the implementation | Important constraint |
-| --- | --- | --- |
-| Pure Chromium: Chrome, Edge, Brave | Guarded sandbox or native session | Installed-app detection must confirm capability |
-| Wrapped Chromium: Arc, Dia, Aside | Native session | Do not assume Chromium launch flags or separate data-directory support |
-| WebKit: Safari | Native session | Chromium command-line routing is unavailable |
+| Browser engine tier | Known entries | Mode represented by the implementation | Fingerprint family and constraint |
+| --- | --- | --- | --- |
+| Pure Chromium | Chrome, Edge, Brave, Aside | Guarded sandbox or native session | `chromium` family; installed-app detection must confirm capability. Multiple profiles or sandboxes in the same family isolate cookies only, not hardware/rendering fingerprints |
+| Gecko | Firefox, Zen (dynamic detection also covers LibreWolf, Waterfox, Floorp) | Guarded sandbox or native session | `gecko` family; uses `-no-remote -profile` with generated `user.js`. Crossing from Chromium to Gecko reduces browser-install fingerprint overlap |
+| Wrapped Chromium shell | Arc, Dia | Native session | `chromium` family; do not assume Chromium launch flags or separate data-directory support |
+| System WebKit | Safari | Native session | `webkit` family; Chromium command-line routing is unavailable |
 
-This table describes code-supported modes. It is not a certification of every current browser release. Subprofile routing is limited to engines whose installed descriptor supports it.
+This table describes code-supported modes, not a certification of every browser release. Deterministic `--profile-directory` subprofile routing is limited to pure Chromium browsers. If you must run multiple distinct Web accounts on one Mac, assign different engine families (for example, Chrome paired with Firefox or Zen); see [multi-account isolation and risk boundaries](/ClaudeBar-docs/guides/multi-account-isolation/).
 
 ## Proxy import versus transport
 

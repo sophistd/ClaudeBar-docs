@@ -7,28 +7,28 @@ audience: "All readers"
 prerequisites: "None."
 outcome: "Judge claims against their actual evidence."
 sidebar: {"order": 1}
-# [INPUT]: 既有公开文档基线与双语页面路由。
-# [OUTPUT]: 记录证据基线与待验证范围，不叙述制作过程。
-# [POS]: 文档内容集合中的规范正文，供网页与 Markdown 共用。
+# [INPUT]: Existing public documentation baseline plus 2026-11-22 source review updates (Gecko sandbox, H17/P19/P05, ProtectionReceiptCard).
+# [OUTPUT]: Evidence baseline and unverified boundaries without process narration.
+# [POS]: Canonical MDX source shared by HTML and generated Markdown.
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## Documentation baseline
 
-This site describes the application source baseline reviewed on **November 17, 2026**. It is not a versioned application release announcement. Source review covered the Swift package, CLI dispatch, gate lifecycle, profile and browser models, diagnostic/export paths, UI labels, and existing tests.
+Building on the initial **November 17, 2026** source review, this edition was updated against the source baseline reviewed on **November 22, 2026** (covering Gecko browser sandboxes, `H17` cross-profile same-engine risk detection, `P19` read-only CLI `userID` and Desktop `ant-did` binding audits, optional `blockDatacenterASN` fail-closed enforcement, and the live Protection Receipt card). These dates are source-review dates, not a versioned application release announcement.
 
 ## Evidence ledger
 
 | Area | Evidence | Limit |
 | --- | --- | --- |
 | Platform and package targets | Manifest inspected | Not a tested OS/architecture matrix |
-| Gate lifecycle and recovery | State-machine code and test cases inspected | 12 selected gate and tunnel tests passed; not full-system validation |
-| Browser modes and bindings | Models, scanner and CLI inspected | 6 browser-isolation model tests passed; real browser/account sessions not exercised |
+| Gate lifecycle and recovery | State-machine code and fixture tests inspected, including multi-source country split, IP drift, and grace recovery | Not full-system validation across every network topology |
+| Browser modes and cross-profile risk | Four-tier browser engine models (pure Chromium / Gecko / wrapped shell / WebKit), `H17` overlap analysis, and `P15` / `P19` audits inspected with fixture tests | Real long-lived multi-browser and multi-account sessions not externally certified |
 | CLI build, help and offline parsing | CLI product built; help and a credential-free loopback parse succeeded | No live proxy credentials or routing changes tested |
-| Diagnostic and repair commands | Implementations inspected | Live diagnostics and state-changing commands not run |
+| Diagnostic and repair commands | Implementations and redaction export logic inspected | Live diagnostics and state-changing commands not run here |
 | System extension and packaging | Source and scripts exist | Activation, signing and notarization not tested here |
 
-The application checks used Swift 6.4.2: **25 tests across four suites** passed, covering gate recovery, transparent tunnels, browser isolation, and proxy parsing. These fixtures do not establish real account sessions, every network topology, or the complete application suite.
+These checks use controlled fixtures in a local environment. They do **not** prove account immunity from provider restrictions or whole-device traffic containment.
 
 ## Still unverified
 
@@ -36,4 +36,4 @@ Public application downloads, a supported release matrix, and independent full-s
 
 ## Illustrated evidence
 
-The [illustrated guide](/ClaudeBar-docs/concepts/visual-guide/) connects three mechanism diagrams to four native interface screenshots. The screenshots were rendered from actual SwiftUI views by the application’s existing perceptual regression suite: 25 view checks passed. Network states, scores, and timings are test fixtures; this is not evidence of a live account session or a real network check.
+The [illustrated guide](/ClaudeBar-docs/concepts/visual-guide/) connects three mechanism diagrams to four native interface screenshots. The screenshots were rendered from actual SwiftUI views by the application's existing perceptual regression suite: 25 view checks passed. Network states, scores, and timings are test fixtures; this is not evidence of a live account session or a real network check.

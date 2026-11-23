@@ -1,32 +1,33 @@
 ---
 title: "兼容性"
-description: "查询系统、浏览器和代理协议的支持范围，以及已经验证过的运行环境。"
+description: "查询系统、四档浏览器内核和代理协议的支持范围，以及已经验证过的运行环境。"
 showDescription: false
 kind: "Reference"
 audience: "日常使用者和开发者"
 prerequisites: "知道自己使用的操作系统、浏览器和上游代理协议。"
-outcome: "确认当前组合能否使用，哪些地方还需实机验证。"
+outcome: "确认当前组合能否使用，区分跨内核指纹族，并知道哪些地方还需实机验证。"
 evidence: "已核对源码"
 sidebar: {"order": 3}
-# [INPUT]: 既有 兼容性 文档事实与双语路由。
-# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [INPUT]: 既有兼容性文档事实、BrowserModels 四档内核分类（含 Gecko）与代理导入契约。
+# [OUTPUT]: 系统、四档浏览器内核、跨内核指纹族与代理协议接入参考正文。
 # [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## 系统与工具链
 
-软件包声明支持 macOS 14 或更高版本，Swift tools version 为 6.2。编写文档时，在 Apple 芯片 Mac 上使用 Swift 6.4.2 成功构建了 CLI，选取的 25 项测试也通过了。Intel Mac 和不同 macOS 版本的运行情况尚未验证。
+软件包声明支持 macOS 14 或更高版本，Swift tools version 为 6.2。文档核对期间在 Apple 芯片 Mac 上验证了构建与受控测试套件；Intel Mac 和不同 macOS 大版本的运行情况尚未逐一验证。
 
-## 浏览器可用模式
+## 浏览器可用模式与内核族
 
-| 浏览器 | 实现支持的模式 | 使用条件 |
-| --- | --- | --- |
-| Chrome、Edge、Brave（标准 Chromium） | 单独打开（受控沙箱）、原生会话 | 具体能力以本机安装检测为准 |
-| Arc、Dia、Aside（基于 Chromium 且有自有封装） | 原生会话 | Chromium 启动参数和独立数据目录未必可用 |
-| Safari（WebKit） | 原生会话 | 无法通过 Chromium 命令行参数设置路由 |
+| 浏览器内核档位 | 常见浏览器 | 实现支持的模式 | 指纹族与使用条件 |
+| --- | --- | --- | --- |
+| 纯 Chromium | Chrome、Edge、Brave、Aside | 单独打开（受控沙箱）、原生会话 | `chromium` 族；具体能力以本机安装检测为准。同族多 Profile 或多沙箱仅隔离 Cookie，不隔离硬件与渲染指纹 |
+| Gecko 独立内核 | Firefox、Zen（动态识别含 LibreWolf、Waterfox、Floorp） | 单独打开（受控沙箱）、原生会话 | `gecko` 族；通过 `-no-remote -profile` 与 `user.js` 隔离。与 Chromium 跨内核可减少浏览器安装级指纹重叠 |
+| Chromium 外壳封装 | Arc、Dia | 原生会话 | 同属 `chromium` 族；不支持标准 Chromium 独立目录与启动参数 |
+| 系统 WebKit | Safari | 原生会话 | `webkit` 族；无法通过 Chromium 命令行参数设置路由 |
 
-原生会话由浏览器自己决定怎么联网，ClaudeBar 不注入代理。只有检测到已安装的浏览器支持子配置档案时，才能按子配置档案路由。表格依据当前实现，各浏览器版本的实际运行情况未逐一验证。
+原生会话由浏览器自己决定怎么联网，ClaudeBar 不注入代理。只有纯 Chromium 档且检测到子配置档案时，才支持按子配置档案确定性路由。单机若需登录多个不同 Web 账号，请按不同指纹族分配（如 Chrome 搭配 Firefox / Zen），详见[多账号隔离与风控边界](/ClaudeBar-docs/zh/guides/multi-account-isolation/)。
 
 ## 代理协议能否接入门禁
 

@@ -1,21 +1,29 @@
 ---
 title: "FAQ and project information"
-description: "Practical answers without promises beyond the evidence."
+description: "Practical answers about scope, risk boundaries, access, and licensing without promises beyond the evidence."
 showDescription: false
 kind: "Reference"
 audience: "All readers"
 prerequisites: "None."
-outcome: "Resolve common questions about scope, access, and licensing."
+outcome: "Resolve common questions about scope, risk boundaries, access, and licensing."
 sidebar: {"order": 2}
-# [INPUT]: 既有 FAQ and project information 文档事实与双语路由。
-# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
-# [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
+# [INPUT]: Existing FAQ facts and multi-account risk boundary guidance.
+# [OUTPUT]: Answers covering affiliation, ban-proof limits, same-engine fingerprints and non-spoofing rationale, access, and licensing.
+# [POS]: Canonical MDX source shared by HTML and Markdown.
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
 
 ## Is this made by Anthropic?
 
 No. ClaudeBar is an independent project and is not affiliated with or endorsed by Anthropic.
+
+## Does ClaudeBar prevent account bans?
+
+No. ClaudeBar controls managed local egress, local directory isolation, and pre-launch checks, but it cannot control inherent proxy-node reputation, same-engine browser fingerprint overlap, payment cards and Stripe Radar, email/phone linkage, Persona/Yoti verification, or Sift's cross-merchant reputation graph. See [security boundaries](/ClaudeBar-docs/concepts/security/).
+
+## Why shouldn't I use multiple Chrome profiles for different accounts, and why doesn't ClaudeBar spoof fingerprints?
+
+Multiple profiles or sandboxes inside the same Chrome installation isolate cookies only; roughly 74 of 79 observed Sift hardware and rendering fields remain unchanged, exposing accounts to both graph contagion and active `users_per_device_id` scoring. ClaudeBar also intentionally refuses JS fingerprint spoofing and does not block `s-cdn.anthropic.com`, because tampering artifacts and missing risk beacons create stronger anomalies. Follow the isolation ladder (one machine per account > isolated CLI > one browser engine per Web account) in [multi-account isolation and risk boundaries](/ClaudeBar-docs/guides/multi-account-isolation/).
 
 ## Is it a general AI-agent workspace?
 

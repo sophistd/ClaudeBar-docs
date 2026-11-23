@@ -8,8 +8,8 @@ prerequisites: "了解配置档案和浏览器会话模式。"
 outcome: "读懂每项设置的影响，并知道该用哪个入口修改配置。"
 evidence: "已核对源码"
 sidebar: {"order": 2}
-# [INPUT]: 既有 配置项参考 文档事实与双语路由。
-# [OUTPUT]: 该页操作、查询或概念正文，保护条件与副作用不因精简而省略。
+# [INPUT]: 既有配置项参考文档事实、ProfileModels 与 MultiChannelModels 最新字段契约。
+# [OUTPUT]: 配置档案字段（含 blockDatacenterASN / isolateClaudeConfigDir）、上游代理与遥测模式参考正文。
 # [POS]: MDX 唯一内容源，HTML 与 Markdown 同源。
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 ---
@@ -23,11 +23,12 @@ sidebar: {"order": 2}
 | `name` | 必填 | 配置档案的显示名称 |
 | `proxyConfig` | 必填 | 规范化后的上游代理设置 |
 | `strictIPPinning` | `true` | 开启固定 IP 后，恢复时须匹配出口基线中的 IP |
+| `blockDatacenterASN` | `false` | 开启后将 `P05` 机房/商业 VPN ASN 检查升格为 `CRITICAL` Fail-Closed，命中机房或 ASN 缺测均阻断放行 |
 | `graceDurationMs` | `4000` 毫秒，限制在 `1000–10000` 毫秒 | 恢复宽限期 |
 | `telemetryMode` | `proxiedPassThrough` | 受管会话的遥测处理方式 |
 | `browserBinding` | 省略时根据所选浏览器推导 | 记录浏览器应用、会话模式及可选的浏览器子配置档案 |
 | `freezeProcessGroupDuringGrace` | `false` | 是否在宽限期内暂停进程组 |
-| `isolateClaudeConfigDir` | 模型初始化为 `false`，创建流程可另设 | 是否为配置档案单独使用一套 CLI 配置 |
+| `isolateClaudeConfigDir` | 传统单档案模型默认 `false`；多通道档案默认 `true` | 是否为配置档案分配独立 `CLAUDE_CONFIG_DIR`（隔离 CLI `~/.claude.json` `userID`） |
 | `configRevision` | 至少为 `1` | 用版本号区分配置变更 |
 
 底层门禁 API 的宽限期可从 200 毫秒起设。通过配置档案设置时，以表中的范围为准。
@@ -42,8 +43,8 @@ sidebar: {"order": 2}
 
 | 值 | 行为和验证范围 |
 | --- | --- |
-| `proxiedPassThrough` | 默认值。该枚举值不会注入隐私相关环境变量 |
-| `officialPrivacyFlags` | 加入隐私相关环境变量，并由门禁拦截目标地址匹配配置后缀的第三方遥测请求 |
+| `proxiedPassThrough` | 默认值。不注入隐私相关环境变量，受管流量（含 `s-cdn.anthropic.com` 风控信标）全部走同一锁定出口转发 |
+| `officialPrivacyFlags` | 加入隐私相关环境变量，由门禁拦停配置后缀匹配的第三方遥测（如 Sentry / Datadog / Segment）；**不会**拦截 `s-cdn.anthropic.com`，风控信标仍与主站同源转发 |
 | `enterpriseCloudProvider` | 已定义此配置值。该枚举值不会额外注入环境变量，云服务商链路的端到端行为尚未验证 |
 
-关于账号结果的验证范围，见[保护边界](/ClaudeBar-docs/zh/concepts/security/)。
+关于账号结果与风控边界，见[保护范围与数据安全](/ClaudeBar-docs/zh/concepts/security/)与[多账号隔离与风控边界](/ClaudeBar-docs/zh/guides/multi-account-isolation/)。
