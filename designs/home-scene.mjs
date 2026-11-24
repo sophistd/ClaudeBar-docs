@@ -119,7 +119,7 @@ export function mountScene(canvas, { reduced = false } = {}) {
     });
   const path = new THREE.CatmullRomCurve3(keys.map((k) => k.at), false, 'centripetal');
   const gaze = new THREE.CatmullRomCurve3(keys.map((k) => k.look), false, 'centripetal');
-  let stops = [];
+  let stops = [], lastStops = '';
   const measure = () => {
     const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
     const vh = innerHeight;
@@ -131,6 +131,9 @@ export function mountScene(canvas, { reduced = false } = {}) {
       return Math.min(max, y);
     });
     for (let i = 1; i < stops.length; i++) stops[i] = Math.max(stops[i], stops[i - 1] + 1);
+    const key = stops.join(',');
+    const changed = key !== lastStops; lastStops = key;
+    return changed;
   };
   const scrollToRail = (y) => {
     if (y <= stops[0]) return 0;
@@ -158,7 +161,8 @@ export function mountScene(canvas, { reduced = false } = {}) {
   };
   resize();
   addEventListener('resize', resize);
-  const ro = new ResizeObserver(() => { measure(); wake(); }); ro.observe(document.body);
+  // 只有锚点真的移动才唤醒；无关的版面变化（图片解码、审计注入的节点）不产生帧
+  const ro = new ResizeObserver(() => { if (measure()) wake(); }); ro.observe(document.body);
 
   // ============================================================================
   //  事件驱动渲染：滚动、指针、尺寸与状态跃迁唤醒循环；一切落定后不再产生任何一帧。
@@ -186,7 +190,8 @@ export function mountScene(canvas, { reduced = false } = {}) {
 
   const look = new THREE.Vector3();
   const step = (now) => {
-    const dt = last ? Math.min((now - last) / 1000, 0.05) : 1 / 60; last = now;
+    // 按真实耗时阻尼（上限 0.25s）：慢机器每帧跨度大、k 也大，落定始终约 0.5 秒而不是固定帧数
+    const dt = last ? Math.min((now - last) / 1000, 0.25) : 1 / 60; last = now;
     adapt(dt);
     const k = 1 - Math.exp(-SETTLE * dt);
     const railTarget = scrollToRail(scrollY), phaseTarget = phaseOf();
