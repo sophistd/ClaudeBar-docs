@@ -68,7 +68,7 @@ While signed into `claude.ai`, page navigation sends the full URL (including con
 
 ## How to verify your setup inside ClaudeBar
 
-1. **Check the live Protection Receipt card**: in Overview or Channel Detail, verify three things—host env-var stripping, same-exit forwarding of Sift beacons alongside core traffic, and whether your fingerprint isolation tier shows an `H17` same-engine multi-account warning.
+1. **Check the live Protection Receipt card**: in Channel Detail (**通道详情** on the Launchpad main-channel card), verify three things—host env-var stripping, same-exit forwarding of Sift beacons alongside core traffic, and whether your fingerprint isolation tier shows an `H17` same-engine multi-account warning.
 2. **Watch three key probes**:
    - `P15` (cross-profile isolation): fails closed if two profiles share a cookie or data container.
    - `P19` (permanent device-ID binding): read-only check on CLI `userID` and Desktop `ant-did` to catch cross-profile or host-default collisions.

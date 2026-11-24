@@ -7,10 +7,11 @@
 export const siteFiles = [
   'index.html', 'network.html', 'sessions.html', 'access.html', 'ui-kit.html',
   'styles.css', 'optical.css', 'kit.css', 'interactions.js', 'kit.js',
-  'kit-source.mjs', 'optics-scene.mjs',
+  'kit-source.mjs', 'optics-scene.mjs', 'home.css',
   'assets/gateway-studio.webp', 'assets/sessions-studio.webp', 'assets/package-studio.webp',
   'assets/network.svg', 'assets/gate.svg', 'assets/sessions.svg', 'assets/package.svg',
-  'assets/optics.bundle.js', 'assets/optics.bundle.js.LEGAL.txt', 'assets/THREE-LICENSE.txt',
+  'assets/optics.bundle.js', 'assets/optics.bundle.js.LEGAL.txt',
+  'assets/home.bundle.js', 'assets/home.bundle.js.LEGAL.txt', 'assets/THREE-LICENSE.txt',
 ];
 export const publicationFiles = [...siteFiles, 'CLAUDE.md', 'README.md', 'assets/CLAUDE.md',
-  'build.mjs', 'assemble.mjs', 'publication.mjs', 'serve.mjs', 'playwright.config.ts', 'kit.spec.ts', 'states.spec.ts'];
+  'build.mjs', 'assemble.mjs', 'home-source.mjs', 'home.mjs', 'home-scene.mjs', 'home-world.mjs', 'home-fx.mjs', 'release.mjs', 'publication.mjs', 'serve.mjs', 'playwright.config.ts', 'kit.spec.ts', 'states.spec.ts'];

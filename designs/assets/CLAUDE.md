@@ -8,6 +8,8 @@ sessions-studio.webp: 生成的独立会话材质面板主视觉。
 package-studio.webp: 生成的陶瓷、铝与玻璃安装包主视觉。
 optics.bundle.js: esbuild 输出的 Three.js 按需运行包，仅 UI Kit 按需加载，与静态站一同发布。
 optics.bundle.js.LEGAL.txt: 打包器保留的第三方许可。
+home.bundle.js: esbuild 输出的首页运行包（home.mjs + Three.js 后期管线），由首页以 module 脚本加载。
+home.bundle.js.LEGAL.txt: 首页运行包保留的第三方许可。
 THREE-LICENSE.txt: Three.js 原始 MIT 许可。
 network.svg: 可复用的平面受管路径示意，浏览器与应用接入门禁，出口证据参与判断。
 gate.svg: 可复用的平面门禁示意，稀疏点阵、中心门禁与进出连接。
