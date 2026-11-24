@@ -16,6 +16,7 @@
     "test:browser": "playwright test",
     "manifest": "node scripts/publication.mjs",
     "verify": "npm run check && npm test && npm run build && npm run test:links",
+    "ci": "npm run verify && npm run test:browser && npm run designs:test",
     "designs:build": "node designs/build.mjs",
     "designs:preview": "node designs/serve.mjs",
     "designs:test": "playwright test --config designs/playwright.config.ts"

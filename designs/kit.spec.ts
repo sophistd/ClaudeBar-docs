@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 实际静态页、Axe 与原生浏览器交互。
- * [OUTPUT]: 首页与 Docs 材质/语义一致性、响应式/对比度、单选展开/确认、表单验证、浮层焦点与光学调参证据。
+ * [OUTPUT]: 沉浸式首页内容/恢复三态/画廊/空闲零帧与降级、营销页与 Docs 导航往返、响应式/对比度、单选展开/确认、表单验证、浮层焦点与光学调参证据。
  * [POS]: UI Kit 的行为验收；不把 DOM 存在视为美术质量通过。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -8,7 +8,7 @@ import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import path from 'node:path';
-for(const pageName of ['index','network','sessions','access','ui-kit'])for(const theme of ['light','dark'])test(`${pageName} ${theme}: readable, linked, no overflow`,async({page,request,isMobile},testInfo)=>{
+for(const pageName of ['network','sessions','access','ui-kit'])for(const theme of ['light','dark'])test(`${pageName} ${theme}: readable, linked, no overflow`,async({page,request,isMobile},testInfo)=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(`/ClaudeBar-docs/designs/${pageName}.html`);await page.evaluate(()=>document.fonts.ready);
  if(pageName==='ui-kit'){if(theme==='dark')await page.locator('#theme-toggle').click();}
@@ -98,7 +98,7 @@ test('shared navigation connects product and docs without a kit entry',async({pa
  await expect(nav.getByRole('link',{name:'文档',exact:true})).toHaveAttribute('aria-current','location');
  await nav.getByRole('link',{name:'产品',exact:true}).click();
  await expect(page.locator('h1')).toContainText('掌握连接');
- await page.getByRole('link',{name:'了解门禁',exact:true}).click();
+ await page.getByRole('link',{name:'了解门禁路径',exact:true}).click();
  await expect(page).toHaveURL(/network.html$/);
  if(isMobile)await page.getByRole('button',{name:'打开菜单',exact:true}).click();
  await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true}).click();
@@ -113,7 +113,7 @@ test('320px navigation remains reachable on every showcase page',async({page})=>
  for(const file of ['index','network','sessions','access','ui-kit']){
   await page.goto(`/ClaudeBar-docs/designs/${file}.html`);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
-  if(file!=='ui-kit')await page.getByRole('button',{name:'打开菜单',exact:true}).click();
+  if(file!=='ui-kit'&&file!=='index')await page.getByRole('button',{name:'打开菜单',exact:true}).click();
   await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true}).click({trial:true});
  }
 });
@@ -135,7 +135,7 @@ test('mobile menu waits for its behavior before accepting a click',async({page})
  await page.setViewportSize({width:390,height:844});
  let release!:()=>void;const ready=new Promise<void>(resolve=>{release=resolve;});
  await page.route('**/designs/interactions.js',async route=>{await ready;await route.continue();});
- await page.goto('/ClaudeBar-docs/designs/index.html',{waitUntil:'commit'});
+ await page.goto('/ClaudeBar-docs/designs/network.html',{waitUntil:'commit'});
  const menu=page.getByRole('button',{name:'打开菜单',exact:true});
  try {await expect(menu).toBeVisible();await expect(menu).toBeDisabled();} finally {release();}
  await page.waitForLoadState('load');await expect(menu).toBeEnabled();await menu.click();
@@ -144,22 +144,60 @@ test('mobile menu waits for its behavior before accepting a click',async({page})
  await expect(page).toHaveURL(/\/ClaudeBar-docs\/zh\/$/);
 });
 
-// ---- 首页与 Docs 复用同一表面；根地址也纳入验收，而非只测 designs 样页 ----
-for(const theme of ['light','dark'])test(`homepage follows Docs surface and semantic rules: ${theme}`,async({page})=>{
+// ---- 沉浸式首页：内容不依赖 WebGL；恢复三态与画廊可操作；动效只由事件触发，空闲时零帧 ----
+test('immersive homepage: content, recovery states, gallery and idle frames',async({page,request})=>{
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(()=>{const raf=window.requestAnimationFrame.bind(window);(window as any).__frames=0;window.requestAnimationFrame=(f:FrameRequestCallback)=>{(window as any).__frames++;return raf(f);};});
+ await page.goto('/ClaudeBar-docs/');await page.evaluate(()=>document.fonts.ready);
+ await expect(page.locator('h1')).toHaveCount(1);await expect(page.locator('h1')).toHaveAttribute('aria-label',/掌握连接/);
+ await expect(page.locator('.cb-site-nav a[aria-current]')).toHaveText('产品');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBeTruthy();
+ expect(await page.evaluate(()=>document.getAnimations().filter(a=>a.effect?.getTiming().iterations===Infinity).length)).toBe(0);
+ // 恢复三态：手动选择优先于滚动，文案随状态切换
+ await page.locator('#recovery').scrollIntoViewIfNeeded();
+ await page.getByRole('button',{name:'隔离',exact:true}).click();
+ await expect(page.locator('[data-recovery]')).toHaveAttribute('data-state','2');
+ await expect(page.locator('[data-recovery-text]')).toContainText('拒绝新的握手');
+ // 画廊：点击与方向键都切换同一组标签
+ await page.locator('#product').scrollIntoViewIfNeeded();
+ await page.getByRole('tab',{name:'检查与修复',exact:true}).click();
+ await expect(page.locator('#shot-repair')).toBeVisible();await expect(page.locator('#shot-launchpad')).toBeHidden();
+ await page.keyboard.press('ArrowRight');await expect(page.getByRole('tab',{name:'内容预检',exact:true})).toHaveAttribute('aria-selected','true');
+ for(const img of await page.locator('img:visible').all())await img.evaluate((el:HTMLImageElement)=>el.decode());
+ // 弹簧过渡（≤480ms）落定后再审计，避免在选中态颜色渐变的半途取样
+ await page.evaluate(()=>Promise.all(document.getAnimations().map(a=>a.finished.catch(()=>{}))));
+ expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
+ const hrefs=await page.locator('a[href]').evaluateAll(es=>[...new Set(es.map(e=>(e as HTMLAnchorElement).href))]);
+ // 站外下载只核对发布地址可达（HEAD、不跟随跳转），不拉取整个安装包
+ for(const href of hrefs.filter(h=>!h.includes('#'))){const external=!href.startsWith(new URL(page.url()).origin);const r=external?await request.head(href,{maxRedirects:0}):await request.get(href);expect(r.status(),href).toBeLessThan(400);}
+ // 空闲：落定之后整窗不再请求任何一帧
+ await page.mouse.move(0,0);await page.waitForTimeout(3000);
+ const before=await page.evaluate(()=>(window as any).__frames);await page.waitForTimeout(1000);
+ expect(await page.evaluate(()=>(window as any).__frames)).toBe(before);
+ expect(errors).toEqual([]);
+});
+test('immersive homepage keeps all content under reduced motion and without WebGL',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(this:HTMLCanvasElement,type:string,...rest:unknown[]){return /webgl/.test(type)?null:(get as any).call(this,type,...rest);} as any;});
  await page.goto('/ClaudeBar-docs/');
- await page.locator('[data-cb-theme]').selectOption(theme);
- await expect(page.locator('a[href$="access.html"]')).toHaveCount(1);
- await expect(page.locator('.feature-strip .icon,.closing')).toHaveCount(0);
- await expect(page.locator('.feature-strip')).toHaveCSS('box-shadow','none');
- await expect(page.locator('.topbar')).toHaveCSS('backdrop-filter','none');
- const signature=async(selector:string)=>page.locator(selector).first().evaluate(el=>{
-  const s=getComputedStyle(el);return {background:s.backgroundColor,shadow:s.boxShadow,radius:s.borderRadius,border:s.borderBottom};
- });
- const header=await signature('.topbar');const image=await signature('.window');
- const art=await page.locator('.hero-art').evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right};});
- expect(art.left).toBeGreaterThanOrEqual(0);expect(art.right).toBeLessThanOrEqual(page.viewportSize()!.width);
- await page.goto('/ClaudeBar-docs/zh/concepts/visual-guide/');
- await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
- expect(await signature('.page > .header')).toEqual(header);
- expect(await signature('.doc-figure.screenshot .image-frame')).toEqual(image);
+ await expect(page.locator('html')).not.toHaveClass(/has-webgl/);
+ await expect(page.locator('.hero-poster')).toBeVisible();
+ await page.locator('#download').scrollIntoViewIfNeeded();
+ await expect(page.locator('#download-title')).toBeVisible();
+ await expect(page.locator('#download [data-reveal]')).toHaveCSS('opacity','1');
+});
+// ---- 减弱动态即使有 WebGL 也不挂载镜头穿越；脚本加载失败时内容不被隐藏 ----
+test('reduced motion keeps the static poster even when WebGL is available',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/ClaudeBar-docs/');
+ await expect(page.locator('html')).toHaveClass(/motion/);
+ await expect(page.locator('html')).not.toHaveClass(/has-webgl/);
+ await expect(page.locator('.hero-poster')).toBeVisible();
+});
+test('homepage content stays visible when the script bundle fails to load',async({page})=>{
+ await page.route('**/designs/assets/home.bundle.js',route=>route.abort());
+ await page.goto('/ClaudeBar-docs/');
+ await expect(page.locator('html')).not.toHaveClass(/motion/);
+ for(const id of ['#gate','#recovery','#download'])await expect(page.locator(`${id} [data-reveal]`).first()).toHaveCSS('opacity','1');
+ await expect(page.locator('.hero .lead')).toHaveCSS('opacity','1');
 });

@@ -104,7 +104,7 @@ for(const theme of ['light','dark']){
   });
   test('same button signature across kit, marketing and docs',async({page})=>{
    const kitButton=page.locator('#buttons .cb-button.primary').first();await focus(page,kitButton);const expected=await signature(kitButton);
-   await page.goto('/ClaudeBar-docs/designs/index.html');await expect(page.locator('html')).toHaveAttribute('data-theme',theme);const marketing=page.locator('.hero .button.primary').first();await focus(page,marketing);expect(await signature(marketing)).toEqual(expected);
+   await page.goto('/ClaudeBar-docs/designs/network.html');await expect(page.locator('html')).toHaveAttribute('data-theme',theme);const marketing=page.locator('.hero .button.primary').first();await focus(page,marketing);expect(await signature(marketing)).toEqual(expected);
    await page.goto('/ClaudeBar-docs/zh/concepts/network-egress/');const docs=page.locator('gate-explorer .cb-button.primary');await focus(page,docs);expect(await signature(docs)).toEqual(expected);
   });
   test('docs states: search no-results, clear, tabs, copy, disclosure, gate and navigation',async({page,isMobile,context})=>{
@@ -126,9 +126,9 @@ for(const theme of ['light','dark']){
  });
 }
 
-// ---- 自动主题与实际展开：四个营销页使用同一个行为入口 ----
+// ---- 自动主题与实际展开：三个营销页使用同一个行为入口 ----
 test('marketing selectors: native menu, automatic theme and persisted preference',async({page})=>{
- await page.goto('/ClaudeBar-docs/designs/index.html');const select=page.locator('[data-cb-theme]');
+ await page.goto('/ClaudeBar-docs/designs/sessions.html');const select=page.locator('[data-cb-theme]');
  await select.click();expect(await select.evaluate(e=>e.matches(':open'))).toBe(true);await page.keyboard.press('Escape');await expect(select).toBeFocused();
  await select.selectOption('auto');await page.emulateMedia({colorScheme:'dark'});await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
  await page.emulateMedia({colorScheme:'light'});await expect(page.locator('html')).toHaveAttribute('data-theme','light');

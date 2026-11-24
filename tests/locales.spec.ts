@@ -82,7 +82,7 @@ test('product root and documentation home navigation stay separate', async ({pag
   await page.goto(base);
   await expect(page.locator('h1')).toContainText('掌握连接');
   await expect(page.locator('a').filter({hasText:'UI Kit'})).toHaveCount(0);
-  if(isMobile)await page.getByRole('button',{name:'打开菜单',exact:true}).click();
+  // 沉浸式首页在手机上也直接露出「产品 / 文档」两个链接，不再折叠进菜单
   await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true}).click();
   await expect(page).toHaveURL(`${base}zh/`);
   await (await revealLanguagePicker(page,'菜单')).selectOption({label:'English'});

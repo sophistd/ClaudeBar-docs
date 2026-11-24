@@ -8,7 +8,7 @@ prerequisites: "无需提前配置代理。"
 outcome: "能判断 ClaudeBar 管到哪里、受管连接何时恢复，以及到哪个界面查看状态。"
 evidence: "已核对源码，原生 SwiftUI 界面使用演示数据渲染"
 sidebar: {"order": 5}
-# [INPUT]: 既有公开文档基线与双语页面路由。
+# [INPUT]: 既有公开文档基线与双语页面路由；public/screenshots 的 2026-11-23 改版界面渲染（启动台 / 检查与修复 / 内容预检 / 菜单栏首次流程）。
 # [OUTPUT]: 用机制图解释关系，以原生截图定位操作。
 # [POS]: 文档内容集合中的规范正文，供网页与 Markdown 共用。
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -42,28 +42,32 @@ macOS 界面和 CLI 提供操作入口；可选的系统级控制需要单独部
 
 ## 去 macOS 界面里找入口
 
-以下为应用界面截图，使用演示数据，不代表实时网络状态。
+以下为应用界面截图，使用固定的演示数据，不代表实时网络状态。截图中菜单栏面板和工作台侧栏显示的是英文标签，下文在括号里给出中文界面的对应名称。
 
 ### 菜单栏面板
 
-点右上角的「嗅探」查找本机代理设置。点底部「主工作台」进入完整界面。
+首次使用时，面板顶部按「Proxy / Apps / Arm」（通道 / 入口 / 放行）提示进度。点右上角的 **Detect Proxy**（嗅探代理）查找本机代理，或点提示卡去 Channels 绑定一条通道。点底部 **Workbench**（工作台）进入完整界面。
 
-<DocFigure src="/ClaudeBar-docs/screenshots/menu-panel-firstrun-light.png" alt="首次使用时的菜单栏面板，右上有嗅探按钮，底部有主工作台入口。" width={712} height={660} kind="screenshot" lang="zh" />
+<DocFigure src="/ClaudeBar-docs/screenshots/menu-panel-firstrun-light.png" alt="首次使用时的菜单栏面板：顶部是 Proxy / Apps / Arm 三步进度和 Detect Proxy 按钮，中间提示先接入一条本机代理通道，底部有 Workbench、Settings 和 Quit。" width={712} height={388} kind="screenshot" lang="zh" />
 
-### 总览
+### 启动台
 
-在「总览」先确认当前配置档案与出口状态。再看「正在跑」里的每个实例，确认是否受管。
+工作台侧栏有 **Launchpad**（启动台）、**Channels**（通道）和 **Preflight**（发前预检），底部是当前通道切换和 **Settings**（偏好设置）。有异常、门禁已隔离或有未读事件时，侧栏会多出 **Incidents**（待处置）。
 
-<DocFigure src="/ClaudeBar-docs/screenshots/workbench-overview-light.png" alt="总览显示当前配置档案、出口放行状态、打开独立浏览器的入口和未受控浏览器列表。" width={2080} height={1360} kind="screenshot" lang="zh" />
+在启动台先看主通道那张通关卡：通道名、本机监听地址、检查通过数和放行状态。再看「我的受控入口」，每个已纳管的桌面应用或浏览器各占一行，从这里打开。
+
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-overview-light.png" alt="启动台：顶部是 US-Primary 主通道的通关卡，标为已放行、检查 22/22；下方「我的受控入口」列出 Claude Desktop、Google Chrome、Safari、Dia、Aside 五个入口，各带打开按钮。" width={2080} height={1360} kind="screenshot" lang="zh" />
 
 ### 检查与修复
 
-先读顶部汇总，再从左边的风险关系找到右侧对应的检查项。具体怎么读，见[诊断结果](/ClaudeBar-docs/zh/guides/diagnostics/)。
+「检查与修复」不在侧栏常驻。启动台上出现风险提醒时，点它会跳到这里，并定位到那条风险关系。启动前的核验没有通过时，应用也会打开这一页。
 
-<DocFigure src="/ClaudeBar-docs/screenshots/workbench-topology-light.png" alt="检查与修复页面顶部为出口与风险汇总，左侧为风险关系，右侧为各项检查结果。" width={2080} height={1360} kind="screenshot" lang="zh" />
+先读顶部四张卡：出口、检查、同一出口、风险。再从左侧「风险关系」找到已触发的条目，每条都写明是哪几项检查触发的，到右侧「22 项检查」里按编号查看。右侧可按 L1–L5 分层筛选。具体怎么读，见[诊断结果](/ClaudeBar-docs/zh/guides/diagnostics/)。
+
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-topology-light.png" alt="检查与修复页面处于失步状态：顶部四张卡显示出口 HK、检查 19/22 通过、11 个端点同一出口、3 项风险；左侧风险关系列出 3/17 条已触发，右侧 22 项检查按 L1–L5 分层，P01、P03 未过。" width={2080} height={1360} kind="screenshot" lang="zh" />
 
 ### 内容预检
 
-「内容预检」检查输入文本，与网络启动前检查是两个流程。启用云端阶段时，文本可能发送给模型服务商。
+侧栏的 **Preflight** 打开「内容预检」。它检查输入文本，与网络启动前检查是两个流程。启用云端阶段时，文本可能发送给模型服务商。
 
-<DocFigure src="/ClaudeBar-docs/screenshots/workbench-preflight-light.png" alt="内容预检页面上方为分析阶段，左侧为示例原文，右侧为风险类别。" width={2080} height={1360} kind="screenshot" lang="zh" />
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-preflight-light.png" alt="内容预检页面：上方是 S0 分词到 S3 语义、最后判定的分析阶段；左侧为示例原文和消歧改写、复制净本按钮；右侧风险向量场把命中词连到风险类别。" width={2080} height={1360} kind="screenshot" lang="zh" />

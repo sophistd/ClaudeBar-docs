@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 已核对的 ClaudeBar 文档与 Vercel 页面结构、共享样式、ui-controls.js 行为和字体。
- * [OUTPUT]: 四个静态页面、完整 UI Kit、原创 SVG 与按需加载的光学场景包。
+ * [OUTPUT]: 沉浸式首页（home-source.mjs + home.bundle.js）、三个静态页面、完整 UI Kit、原创 SVG 与按需加载的光学场景包。
  * [POS]: designs 的内容与组件组合源，与 Docs 同时构建并发布。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -8,6 +8,8 @@ import {writeFileSync,copyFileSync} from 'node:fs';
 import {build as bundle} from 'esbuild';
 import {kitButton,renderKit} from './kit-source.mjs';
 import {renderSiteNavigation} from '../public/scripts/site-navigation.mjs';
+import {renderHome} from './home-source.mjs';
+import {RELEASE} from './release.mjs';
 const root=new URL('./',import.meta.url);
 const arrow='<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const paths={gate:'M5 21V3h14v18M9 21V7h6v14M3 21h18',layers:'m3 7 9-4 9 4-9 4-9-4Zm0 5 9 4 9-4M3 17l9 4 9-4',check:'m5 12 4 4L19 6',activity:'M2 12h5l3-8 4 16 3-8h5',shield:'M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7l-9-4Zm-4 9 3 3 5-6',command:'M8 8H5a3 3 0 1 1 3-3v14a3 3 0 1 1-3-3h14a3 3 0 1 1-3 3V5a3 3 0 1 1 3 3H8Z',browser:'M3 8h18M7 5h.1M10 5h.1M3 3h18v18H3Z',download:'M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4',info:'M12 11v6m0-10v.1M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z'};
@@ -74,15 +76,6 @@ function shell(file,pageTitle,body){return `<!doctype html>
 const closing=(titleText,desc,cta,href)=>`<section class="closing"><div><h2>${titleText}</h2><p>${desc}</p></div><div class="actions">${button(cta,href,true)}</div></section>`;
 const boundary=(text)=>`<aside class="boundary">${icon('info')}<p>${text}</p></aside>`;
 const pages={
-'index.html':['掌握每一次连接',`
-<section class="hero split home-hero"><div><h1>掌握连接。<br/>看清边界。</h1><p class="lead">在 Mac 上配置网络出口、分开浏览器会话，并在异常发生时找到原因。</p><div class="actions">${button('获取与安装','access.html',true)}</div></div><div class="hero-art studio"><img src="assets/gateway-studio.webp" width="1536" height="1024" alt="金属、玻璃与石墨构成的三层门框，表达逐层清晰的连接边界" fetchpriority="high"/></div></section>
-<section class="three-up feature-strip" aria-label="产品能力">
-<article class="cell"><h2>网络出口</h2><p>启动前核验出口身份。中断之后，门禁依据探测结果等待、恢复或隔离。</p>${link('了解门禁','network.html')}</article>
-<article class="cell"><h2>会话隔离</h2><p>为不同会话使用独立浏览器数据目录，或明确选择已有登录。</p>${link('选择会话模式','sessions.html')}</article>
-<article class="cell"><h2>检查与修复</h2><p>从观测结果追到失败原因，再决定是否执行对应的修复。</p>${link('查看诊断指南',docs('guides/diagnostics/'))}</article>
-</section>
-<section class="section split-section no-bottom"><div><h2>状态就在菜单栏。<br/>细节留在工作台。</h2>${link('查看应用界面',docs('concepts/visual-guide/'))}</div><figure style="margin:0"><div class="window cb-panel"><img src="../public/screenshots/workbench-overview-light.png" width="2080" height="1360" alt="ClaudeBar 工作台总览，显示档案、出口状态与浏览器实例" loading="lazy"/></div><figcaption class="caption">截图使用演示数据。</figcaption></figure></section>
-${boundary('门禁只管理接入它的连接。它不接管所有应用，也不保证账号安全。')}`],
 'network.html':['网络出口与门禁',`
 <section class="hero split"><div><h1>先核验出口。<br/>再放行连接。</h1><p class="lead">把连接路径和恢复条件放在一起管理。上游中断后，知道门禁为什么等待、恢复或隔离。</p><div class="actions">${button('配置受管连接',docs('start/first-setup/'),true)}${button('查看工作原理',docs('concepts/network-egress/'))}</div></div><div class="hero-art studio"><img src="assets/gateway-studio.webp" width="1536" height="1024" alt="层叠门框的光与投影，门禁边界的材质示意" fetchpriority="high"/></div></section>
 <section class="section white"><div class="section-intro"><h2>一条明确的受管路径。</h2><p>应用接入本机回环门禁，再由档案指定的上游代理转发。转发层传递隧道字节，无需安装 TLS 拦截证书。</p></div><div class="grid-art">${responsive(heroNetwork(),mobileNetwork())}</div></section>
@@ -98,7 +91,7 @@ ${closing('把实际观测查清楚。','从诊断记录确认这次连接发生
 ${boundary('独立数据目录不是虚拟机或系统用户隔离。已有浏览器窗口的登录状态与网络路径，仍需逐个确认。')}
 ${closing('让第一个会话跑通。','选择档案，核验出口，然后启动。','首次配置指南',docs('start/first-setup/'))}`],
 'access.html':['获取 ClaudeBar',`
-<section class="hero split"><div class="access-hero"><h1>把连接边界，<br/>带回你的 Mac。</h1><p class="lead">ClaudeBar 是一款原生 macOS 工具。<br/>已通过 Developer ID 签名与 Apple 公证，下载后拖入「应用程序」即可使用。</p><div class="actions">${button('下载 ClaudeBar v0.6.2 (DMG)','https://github.com/sophistd/ClaudeBar-docs/releases/download/v0.6.2/ClaudeBar-0.6.2.dmg',true)}${button('阅读安装说明',docs('start/installation/'))}</div><p class="hero-note">macOS 14+ · Apple Silicon · Apple Notarized · SHA-256 前缀 <code>c9be20ae</code></p></div><div class="hero-art studio"><img src="assets/package-studio.webp" width="1536" height="1024" alt="具有铝制边缘、陶瓷正面与玻璃背板的安装包示意" fetchpriority="high"/></div></section>
+<section class="hero split"><div class="access-hero"><h1>把连接边界，<br/>带回你的 Mac。</h1><p class="lead">ClaudeBar 是一款原生 macOS 工具。<br/>已通过 Developer ID 签名与 Apple 公证，下载后拖入「应用程序」即可使用。</p><div class="actions">${button(`下载 ClaudeBar ${RELEASE.version} (DMG)`,RELEASE.dmg,true)}${button('阅读安装说明',docs('start/installation/'))}</div><p class="hero-note">macOS 14+ · Apple Silicon · Apple Notarized · SHA-256 前缀 <code>${RELEASE.sha}</code></p></div><div class="hero-art studio"><img src="assets/package-studio.webp" width="1536" height="1024" alt="具有铝制边缘、陶瓷正面与玻璃背板的安装包示意" fetchpriority="high"/></div></section>
 <section class="section white access-grid"><div><h2>安装前，确认这些。</h2><p class="lead" style="font-size:16px">系统版本只是起点。还需要可用的代理，以及你选用的浏览器。</p>${link('查看完整兼容范围',docs('reference/compatibility/'))}</div><dl class="requirement-list"><div><dt>操作系统</dt><dd>macOS 14 或更高版本</dd></div><div><dt>网络</dt><dd>可访问的上游代理</dd></div><div><dt>浏览器</dt><dd>已安装所选模式支持的浏览器</dd></div><div><dt>源码构建</dt><dd>仓库权限 · Swift 6.2 或兼容工具链</dd></div></dl></section>
 <section class="section"><div class="section-intro"><h2>从获取到第一次连接。</h2></div><div class="three-up"><article class="cell"><div class="eyebrow mono">01</div><h3>确认来源</h3><p>向维护者核对版本、适用机型与公证状态。</p></article><article class="cell"><div class="eyebrow mono">02</div><h3>安装应用</h3><p>收到 DMG 后按说明安装，保留 macOS 的安全检查。</p></article><article class="cell"><div class="eyebrow mono">03</div><h3>配置会话</h3><p>选择档案和浏览器，核验出口，再启动受管会话。</p></article></div></section>
 <section class="section faq"><h2>获取前的几个问题。</h2><details><summary>是否需要关闭 macOS 的安全检查？</summary><p>不需要。若系统拦下来源尚未核实的版本，请保留安全检查，先向维护者核实安装包和说明。</p></details><details><summary>可以从源码构建吗？</summary><p>需要应用仓库的访问权限。准备 Swift 6.2 或兼容工具链，按<a class="color-link" href="${docs('developers/build/')}">构建与测试文档</a>操作。</p></details><details><summary>系统扩展会随普通构建自动启用吗？</summary><p>不会。系统扩展需要相应签名、entitlement、配置描述文件与 macOS 批准，必须单独部署和验证。</p></details></section>
@@ -110,6 +103,8 @@ for(const [name,art] of Object.entries({'network':heroNetwork(),'gate':featureAr
  writeFileSync(new URL(`assets/${name}.svg`,root),art.replace('</svg>',style+'</svg>'));
 }
 writeFileSync(new URL('ui-kit.html',root),renderKit());
+writeFileSync(new URL('index.html',root),renderHome());
 await bundle({entryPoints:[new URL('optics-scene.mjs',root).pathname],outfile:new URL('assets/optics.bundle.js',root).pathname,bundle:true,format:'esm',minify:true,legalComments:'linked',target:'es2022'});
+await bundle({entryPoints:[new URL('home.mjs',root).pathname],outfile:new URL('assets/home.bundle.js',root).pathname,bundle:true,format:'esm',minify:true,legalComments:'linked',target:'es2022'});
 copyFileSync(new URL('../node_modules/three/LICENSE',root),new URL('assets/THREE-LICENSE.txt',root));
-console.log('Generated 4 static pages, UI Kit, SVG illustrations and on-demand optics bundle.');
+console.log('Generated immersive homepage, 3 static pages, UI Kit, SVG illustrations and on-demand optics bundle.');

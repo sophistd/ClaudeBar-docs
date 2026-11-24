@@ -8,7 +8,7 @@ prerequisites: "None. The diagrams and app images can be read without a running 
 outcome: "Identify what ClaudeBar controls, when a managed connection resumes, and where to see those states in the app."
 evidence: "Source reviewed; native SwiftUI views rendered with demo data"
 sidebar: {"order": 5}
-# [INPUT]: 既有公开文档基线与双语页面路由。
+# [INPUT]: 既有公开文档基线与双语页面路由；public/screenshots 的 2026-11-23 改版界面渲染（启动台 / 检查与修复 / 内容预检 / 菜单栏首次流程）。
 # [OUTPUT]: 用机制图解释关系，以原生截图定位操作。
 # [POS]: 文档内容集合中的规范正文，供网页与 Markdown 共用。
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -42,28 +42,32 @@ A profile defaults to a four-second grace window. The wait applies to new handsh
 
 ## Where to look in the macOS app
 
-App screenshots use demo data, not live network results. Controls retain the app’s Chinese labels.
+App screenshots use fixed demo data, not live network results. The menu bar panel and the workbench sidebar show English labels; page titles and most controls inside the workbench keep the app’s Chinese labels.
 
 ### Menu bar panel
 
-Use **嗅探** (discover) to look for local proxy settings. **主工作台** opens the workbench.
+On first run, the top of the panel tracks three steps: **Proxy / Apps / Arm**. Use **Detect Proxy** to look for a local proxy, or follow the prompt card to bind a channel in Channels. **Workbench** opens the full window.
 
-<DocFigure src="/ClaudeBar-docs/screenshots/menu-panel-firstrun-light.png" alt="First-run menu bar panel with the Discover button at top right and the workbench entry along the bottom." width={712} height={660} kind="screenshot" />
+<DocFigure src="/ClaudeBar-docs/screenshots/menu-panel-firstrun-light.png" alt="First-run menu bar panel with the Proxy / Apps / Arm steps and a Detect Proxy button at the top, a prompt to connect a local proxy channel, and Workbench, Settings and Quit along the bottom." width={712} height={388} kind="screenshot" />
 
-### Overview
+### Launchpad
 
-Open **总览** to see the selected profile and the gate’s egress status. Check **正在跑** to see how the app classifies each running instance.
+The workbench sidebar lists **Launchpad**, **Channels** and **Preflight**, with the active channel switcher and **Settings** at the bottom. **Incidents** appears only when there is an anomaly, an isolated gate or an unread incident.
 
-<DocFigure src="/ClaudeBar-docs/screenshots/workbench-overview-light.png" alt="Overview with the selected profile, egress state, separate browser launch button and a list of unmanaged browser instances." width={2080} height={1360} kind="screenshot" />
+On **Launchpad** (page title **启动台**), start with the main channel’s pass card: channel name, local listener, checks passed and admission state. Below it, **我的受控入口** (my managed entries) lists each managed desktop app or browser on its own row, where you open it.
+
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-overview-light.png" alt="Launchpad with a pass card for the US-Primary main channel, marked as admitted with 22 of 22 checks, above a managed-entries list of Claude Desktop, Google Chrome, Safari, Dia and Aside, each with an open button." width={2080} height={1360} kind="screenshot" />
 
 ### Checks and repair
 
-Open **检查与修复**. Read the summaries along the top, then use the risk map on the left and the individual check results on the right to investigate. See [how to read diagnostics](/ClaudeBar-docs/guides/diagnostics/).
+**检查与修复** (checks and repair) has no permanent sidebar entry. Selecting a risk alert on Launchpad opens this page focused on that risk relation. The app also opens it when the check before a launch fails.
 
-<DocFigure src="/ClaudeBar-docs/screenshots/workbench-topology-light.png" alt="Checks and repair workbench with an egress summary, a risk map and an individual check results list." width={2080} height={1360} kind="screenshot" />
+Read the four cards along the top: egress, checks, same egress and risks. Then pick a triggered item in **风险关系** (risk relations) on the left; each one names the checks that triggered it. Find those checks by ID in **22 项检查** (22 checks) on the right, which can be filtered by layer L1–L5. See [how to read diagnostics](/ClaudeBar-docs/guides/diagnostics/).
+
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-topology-light.png" alt="Checks and repair in a desynced state: four cards show HK egress, 19 of 22 checks passing, the same egress at 11 endpoints and 3 risks; the risk relation list shows 3 of 17 triggered, and the layered check list marks P01 and P03 as failed." width={2080} height={1360} kind="screenshot" />
 
 ### Content preflight
 
-**内容预检** examines supplied text, separately from network preflight. A configured cloud stage may send that text to a model provider.
+**Preflight** in the sidebar opens **内容预检** (content preflight). It examines supplied text, separately from network preflight. A configured cloud stage may send that text to a model provider.
 
-<DocFigure src="/ClaudeBar-docs/screenshots/workbench-preflight-light.png" alt="Content preflight with analysis stages across the top, sample text on the left and risk categories on the right." width={2080} height={1360} kind="screenshot" />
+<DocFigure src="/ClaudeBar-docs/screenshots/workbench-preflight-light.png" alt="Content preflight with analysis stages from S0 tokenization to S3 semantics and a verdict across the top, sample text with rewrite and copy buttons on the left, and a risk field linking matched terms to risk categories on the right." width={2080} height={1360} kind="screenshot" />
