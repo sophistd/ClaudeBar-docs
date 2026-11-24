@@ -58,8 +58,9 @@ The export includes the explicitly listed product pages and UI Kit source in
 `designs/publication.mjs`; extra files in that directory are not published.
 All exported files retain their source bytes and SHA-256 hashes.
 Obtain the owner's authorization for that file set before the first public push.
-Enable GitHub Pages with **GitHub Actions** as the source. The workflow validates
-pull requests and publishes approved main changes. Its repository identity check
+Enable GitHub Pages with **GitHub Actions** as the source. Run the full gate locally
+with `npm run ci` (verify, browser and designs tests) before pushing; the workflow
+only builds and publishes main, and does not run on pull requests. Its repository identity check
 prevents accidental execution inside the private application repository.
 
 Site origin and base path live in `astro.config.mjs`; update and verify both if the

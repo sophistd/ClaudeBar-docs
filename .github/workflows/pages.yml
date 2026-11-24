@@ -1,12 +1,11 @@
 # [INPUT]: 独立文档仓库 main 的经批准内容、锁定依赖与 GitHub Pages。
-# [OUTPUT]: 验证后的静态站点部署，不访问私有应用仓库。
+# [OUTPUT]: 静态站点构建与部署，不访问私有应用仓库。
 # [POS]: 独立仓库唯一发布入口，仓库身份条件避免在应用仓库运行。
+#        测试门禁在本地执行（npm run ci），这里只构建与部署，不重复跑 Playwright，PR 不触发。
 # [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
 name: Documentation
 on:
   push:
-    branches: [main]
-  pull_request:
     branches: [main]
   workflow_dispatch:
 permissions:
@@ -28,16 +27,12 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npm run verify
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
-      - run: npm run designs:test
+      - run: npm run build
       - uses: actions/upload-pages-artifact@v3
-        if: github.event_name != 'pull_request'
         with:
           path: dist
   deploy:
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
