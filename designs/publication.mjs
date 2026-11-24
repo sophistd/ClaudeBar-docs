@@ -14,4 +14,4 @@ export const siteFiles = [
   'assets/home.bundle.js', 'assets/home.bundle.js.LEGAL.txt', 'assets/THREE-LICENSE.txt',
 ];
 export const publicationFiles = [...siteFiles, 'CLAUDE.md', 'README.md', 'assets/CLAUDE.md',
-  'build.mjs', 'assemble.mjs', 'home-source.mjs', 'home.mjs', 'home-scene.mjs', 'home-world.mjs', 'home-fx.mjs', 'release.mjs', 'publication.mjs', 'serve.mjs', 'playwright.config.ts', 'kit.spec.ts', 'states.spec.ts'];
+  'build.mjs', 'assemble.mjs', 'home-source.mjs', 'home.mjs', 'home-scene.mjs', 'home-world.mjs', 'home-ribbon.mjs', 'home-tokens.mjs', 'home-kit.mjs', 'home-sense.mjs', 'home-taste.mjs', 'release.mjs', 'publication.mjs', 'serve.mjs', 'playwright.config.ts', 'kit.spec.ts', 'states.spec.ts'];

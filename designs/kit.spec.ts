@@ -98,6 +98,7 @@ test('shared navigation connects product and docs without a kit entry',async({pa
  await expect(nav.getByRole('link',{name:'文档',exact:true})).toHaveAttribute('aria-current','location');
  await nav.getByRole('link',{name:'产品',exact:true}).click();
  await expect(page.locator('h1')).toContainText('掌握连接');
+ await goTo(page,'gate');   // 卷曲版的世界固定在视口，先像真人一样滚到这一章
  await page.getByRole('link',{name:'了解门禁路径',exact:true}).click();
  await expect(page).toHaveURL(/network.html$/);
  if(isMobile)await page.getByRole('button',{name:'打开菜单',exact:true}).click();
@@ -144,8 +145,11 @@ test('mobile menu waits for its behavior before accepting a click',async({page})
  await expect(page).toHaveURL(/\/ClaudeBar-docs\/zh\/$/);
 });
 
+// 纸带首页：卷曲版把世界固定在视口里，浏览器不会替它滚动；导航一律走章节索引（与真人点击同一条路径）
+const goTo=(page:any,id:string)=>page.evaluate(async(id:string)=>{const link=document.querySelector(`a[href="#${id}"]`) as HTMLAnchorElement|null;if(link)link.click();else document.getElementById(id)!.scrollIntoView();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));},id);
 // ---- 沉浸式首页：内容不依赖 WebGL；恢复三态与画廊可操作；动效只由事件触发，空闲时零帧 ----
 test('immersive homepage: content, recovery states, gallery and idle frames',async({page,request})=>{
+ test.setTimeout(120000);   // 无头浏览器用软件渲染跑全屏后期，比真机慢一个量级
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{const raf=window.requestAnimationFrame.bind(window);(window as any).__frames=0;window.requestAnimationFrame=(f:FrameRequestCallback)=>{(window as any).__frames++;return raf(f);};});
  await page.goto('/ClaudeBar-docs/');await page.evaluate(()=>document.fonts.ready);
@@ -154,12 +158,12 @@ test('immersive homepage: content, recovery states, gallery and idle frames',asy
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBeTruthy();
  expect(await page.evaluate(()=>document.getAnimations().filter(a=>a.effect?.getTiming().iterations===Infinity).length)).toBe(0);
  // 恢复三态：手动选择优先于滚动，文案随状态切换
- await page.locator('#recovery').scrollIntoViewIfNeeded();
+ await goTo(page,'recovery');
  await page.getByRole('button',{name:'隔离',exact:true}).click();
  await expect(page.locator('[data-recovery]')).toHaveAttribute('data-state','2');
  await expect(page.locator('[data-recovery-text]')).toContainText('拒绝新的握手');
  // 画廊：点击与方向键都切换同一组标签
- await page.locator('#product').scrollIntoViewIfNeeded();
+ await goTo(page,'product');
  await page.getByRole('tab',{name:'检查与修复',exact:true}).click();
  await expect(page.locator('#shot-repair')).toBeVisible();await expect(page.locator('#shot-launchpad')).toBeHidden();
  await page.keyboard.press('ArrowRight');await expect(page.getByRole('tab',{name:'内容预检',exact:true})).toHaveAttribute('aria-selected','true');
@@ -181,23 +185,73 @@ test('immersive homepage keeps all content under reduced motion and without WebG
  await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(this:HTMLCanvasElement,type:string,...rest:unknown[]){return /webgl/.test(type)?null:(get as any).call(this,type,...rest);} as any;});
  await page.goto('/ClaudeBar-docs/');
  await expect(page.locator('html')).not.toHaveClass(/has-webgl/);
- await expect(page.locator('.hero-poster')).toBeVisible();
+ // 平整纸带：同一份 HTML，首屏印在陶土纸上
+ await expect(page.locator('#top')).toHaveCSS('background-color','rgb(154, 67, 38)');
  await page.locator('#download').scrollIntoViewIfNeeded();
  await expect(page.locator('#download-title')).toBeVisible();
- await expect(page.locator('#download [data-reveal]')).toHaveCSS('opacity','1');
+ await expect(page.locator('#download .actions')).toHaveCSS('opacity','1');
+});
+// ---- 三界：滚动越过越界段后，页面强调色、状态栏与遥测一起换界；联动与声音开关不报错 ----
+test('homepage crosses the three realms and keeps telemetry honest',async({page,isMobile})=>{
+ test.setTimeout(120000);   // 无头浏览器用软件渲染跑全屏后期，比真机慢一个量级
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/ClaudeBar-docs/');await page.evaluate(()=>document.fonts.ready);
+ const html=page.locator('html'),current=page.locator('[data-realms] [aria-current]');
+ await expect(html).toHaveAttribute('data-realm','text');await expect(current).toContainText('TEXT');
+ for(const [id,realm,name] of [['gate','code','CODE'],['preflight','token','TOKEN'],['download','text','TEXT']]){
+  await page.evaluate(id=>{const el=document.getElementById(id)!;scrollTo({top:el.offsetTop+el.offsetHeight/2-innerHeight/2,behavior:'instant'});},id);
+  await expect(html).toHaveAttribute('data-realm',realm);await expect(current).toHaveCount(1);await expect(current).toContainText(name);
+ }
+ await expect(page.locator('[data-threshold]')).toHaveCount(3);
+ // 检查矩阵的读数由章节进度推出：被吸到最佳展示位时恰好走完
+ await goTo(page,'observe');
+ await expect(page.locator('[data-bind=checked]')).toHaveText('22');
+ if(!isMobile){await page.locator('.matrix i').nth(6).hover();await goTo(page,'sessions');await page.locator('.pair li').first().hover();}
+ // 声音与触感默认关闭，只由用户手势开启
+ const sense=page.getByRole('button',{name:'声音与触感'});
+ await expect(sense).toHaveAttribute('aria-pressed','false');await sense.click();await expect(sense).toHaveAttribute('aria-pressed','true');
+ await sense.click();await expect(sense).toHaveAttribute('aria-pressed','false');
+ // 有 WebGL 时帧数是真实读数：渲染过就大于 0，落定后显示静止
+ if(await html.evaluate(el=>el.classList.contains('has-webgl'))){
+  expect(Number((await page.locator('[data-bind=frames]').textContent())!.replace(/,/g,''))).toBeGreaterThan(0);
+  await page.mouse.move(0,0);await expect(page.locator('.telemetry-state')).toHaveAttribute('data-value','false',{timeout:25000});
+ }
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBeTruthy();
+ expect(errors).toEqual([]);
+});
+test('reduced motion still switches realm colours without mounting the scene',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/ClaudeBar-docs/');
+ await page.evaluate(()=>{const el=document.getElementById('preflight')!;scrollTo({top:el.offsetTop+el.offsetHeight/2-innerHeight/2,behavior:'instant'});});
+ await expect(page.locator('html')).toHaveAttribute('data-realm','token');
+ await expect(page.locator('html')).not.toHaveClass(/has-webgl/);
 });
 // ---- 减弱动态即使有 WebGL 也不挂载镜头穿越；脚本加载失败时内容不被隐藏 ----
-test('reduced motion keeps the static poster even when WebGL is available',async({page})=>{
+test('reduced motion keeps a flat sheet even when WebGL is available',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/ClaudeBar-docs/');
  await expect(page.locator('html')).toHaveClass(/motion/);
  await expect(page.locator('html')).not.toHaveClass(/has-webgl/);
- await expect(page.locator('.hero-poster')).toBeVisible();
+ await expect(page.locator('[data-world]')).toHaveCSS('position','relative');
+ await expect(page.locator('h1')).toBeInViewport();
+});
+// ---- 磁吸：停在离最佳展示位不远处，纸带被吸过去，读线处的章节进度恰好为 1 ----
+test('ribbon snaps a nearby resting position to the chapter\'s best display position',async({page,isMobile})=>{
+ test.skip(isMobile,'触控滚动的惯性由系统处理，磁吸只在桌面合成滚动下验收');
+ test.setTimeout(120000);
+ await page.goto('/ClaudeBar-docs/');
+ test.skip(!(await page.locator('html').evaluate(el=>el.classList.contains('has-webgl'))),'无 WebGL 时是平整纸带，不磁吸');
+ await goTo(page,'gate');
+ const best=await page.evaluate(()=>scrollY);
+ await page.evaluate(y=>scrollTo({top:y+innerHeight*0.2,behavior:'instant'}),best);
+ await expect.poll(()=>page.evaluate(()=>scrollY),{timeout:5000}).toBe(best);
+ await expect(page.locator('#gate')).toHaveAttribute('data-p','1.000');
+ await expect(page.locator('[data-chapter-link][href="#gate"]')).toHaveAttribute('aria-current','step');
 });
 test('homepage content stays visible when the script bundle fails to load',async({page})=>{
  await page.route('**/designs/assets/home.bundle.js',route=>route.abort());
  await page.goto('/ClaudeBar-docs/');
  await expect(page.locator('html')).not.toHaveClass(/motion/);
- for(const id of ['#gate','#recovery','#download'])await expect(page.locator(`${id} [data-reveal]`).first()).toHaveCSS('opacity','1');
+ for(const id of ['#gate','#recovery','#download'])await expect(page.locator(`${id} h2`)).toHaveCSS('opacity','1');
  await expect(page.locator('.hero .lead')).toHaveCSS('opacity','1');
 });

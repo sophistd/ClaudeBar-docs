@@ -4,7 +4,7 @@
 
 | 页面 | 负责回答的问题 | 入口 |
 | --- | --- | --- |
-| Landing / 产品首页 | 它是什么，对我有什么用？（Three.js 沉浸式穿越，源在 home-*.mjs） | [index.html](index.html) |
+| Landing / 产品首页 | 它是什么，对我有什么用？（Three.js 沉浸式穿越文、码、符三界；源在 home-*.mjs，自 home-tokens 起四层） | [index.html](index.html) |
 | Feature / 功能页 | 这个能力怎样工作，边界在哪？ | [network.html](network.html) |
 | Use case / 场景页 | 我的情况该选哪一种方式？ | [sessions.html](sessions.html) |
 | Access / 获取页 | 怎样获得，需要准备什么？ | [access.html](access.html) |
