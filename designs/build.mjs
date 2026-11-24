@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 已核对的 ClaudeBar 文档与 Vercel 页面结构、共享样式、ui-controls.js 行为和字体。
- * [OUTPUT]: 沉浸式首页（home-source.mjs + home.bundle.js）、三个静态页面、完整 UI Kit、原创 SVG 与按需加载的光学场景包。
+ * [OUTPUT]: 沉浸式首页（home-source.mjs + home.bundle.js，出包前先过 home-taste.mjs 的品味门禁）、三个静态页面、完整 UI Kit、原创 SVG 与按需加载的光学场景包。
  * [POS]: designs 的内容与组件组合源，与 Docs 同时构建并发布。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -9,6 +9,7 @@ import {build as bundle} from 'esbuild';
 import {kitButton,renderKit} from './kit-source.mjs';
 import {renderSiteNavigation} from '../public/scripts/site-navigation.mjs';
 import {renderHome} from './home-source.mjs';
+import {auditHome} from './home-taste.mjs';
 import {RELEASE} from './release.mjs';
 const root=new URL('./',import.meta.url);
 const arrow='<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -103,6 +104,8 @@ for(const [name,art] of Object.entries({'network':heroNetwork(),'gate':featureAr
  writeFileSync(new URL(`assets/${name}.svg`,root),art.replace('</svg>',style+'</svg>'));
 }
 writeFileSync(new URL('ui-kit.html',root),renderKit());
+// 品味门禁：首页源文件不过 Good/Bad 双向规则就不出包
+const taste=auditHome();if(taste.length){console.error(taste.join('\n'));process.exit(1);}
 writeFileSync(new URL('index.html',root),renderHome());
 await bundle({entryPoints:[new URL('optics-scene.mjs',root).pathname],outfile:new URL('assets/optics.bundle.js',root).pathname,bundle:true,format:'esm',minify:true,legalComments:'linked',target:'es2022'});
 await bundle({entryPoints:[new URL('home.mjs',root).pathname],outfile:new URL('assets/home.bundle.js',root).pathname,bundle:true,format:'esm',minify:true,legalComments:'linked',target:'es2022'});

@@ -3,117 +3,161 @@
      [OUTPUT]: ClaudeBar 沉浸式产品首页。
      [POS]: designs 的生成页面，请修改 home-source.mjs。
      [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md -->
-<html lang="zh-CN"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<html lang="zh-CN" data-realm="text"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="description" content="ClaudeBar：在 Mac 上配置网络出口、分开浏览器会话，并在异常发生时找到原因。"/>
 <meta name="theme-color" content="#0a0908"/><meta name="color-scheme" content="dark"/>
 <title>ClaudeBar · 掌握每一次连接</title><link rel="canonical" href="https://sophistd.github.io/ClaudeBar-docs/"/>
 <link rel="icon" href="../public/favicon.svg" type="image/svg+xml"/>
 <link rel="preload" href="../public/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin/>
-<link rel="stylesheet" href="home.css"/><script type="module" src="assets/home.bundle.js"></script></head>
+<style data-tokens>:root { --ink: #0a0908; --ink-rgb: 10, 9, 8; --ivory: #f6f0ea; --ivory-rgb: 246, 240, 234; --terracotta: #d97757; --terracotta-rgb: 217, 119, 87; --ember: #ffa07a; --ember-rgb: 255, 160, 122; --cool: #a9bfe3; --cool-rgb: 169, 191, 227; --amber: #f2b25c; --amber-rgb: 242, 178, 92; --alarm: #e5483a; --alarm-rgb: 229, 72, 58; --acid: #d4ff00; --acid-rgb: 212, 255, 0; --ink-2: #14110f; --text: #ece5de; --muted: #a89f97; --alarm: #ef6a55; --spring: linear(0, .114, .319, .514, .669, .781, .859, .91, .944, .965, .979, .987, .992, .995, .997, .998, 1); --snap: 240ms var(--spring); --glide: 320ms var(--spring); --settle: 480ms var(--spring); --fade: 140ms; --accent: #d97757; --accent-rgb: 217, 119, 87; --realm-index: 0; --realm-count: 3; --sheet-text: #9a4326; --sheet-code: #1d2c74; --sheet-token: #ede6dc; --sheet-w: min(1180px, 64vw); }
+@media (max-width: 900px) { :root { --sheet-w: calc(100vw - 32px); } }
+[data-realm='text'] { --accent: #d97757; --accent-rgb: 217, 119, 87; --realm-index: 0; --sheet: #9a4326; --on: #f6f0ea; --on-rgb: 246, 240, 234; --soft: #f0dbcf; }
+[data-realm='code'] { --accent: #a9bfe3; --accent-rgb: 169, 191, 227; --realm-index: 1; --sheet: #1d2c74; --on: #f6f0ea; --on-rgb: 246, 240, 234; --soft: #bfcaee; }
+[data-realm='token'] { --accent: #f6f0ea; --accent-rgb: 246, 240, 234; --realm-index: 2; --sheet: #ede6dc; --on: #14110f; --on-rgb: 20, 17, 15; --soft: #544c46; }</style><link rel="stylesheet" href="home.css"/><script type="module" src="assets/home.bundle.js"></script></head>
 <body class="home"><a class="skip" href="#main">跳至正文</a>
-<canvas class="stage" data-stage aria-hidden="true"></canvas><div class="grain" aria-hidden="true"></div>
+<canvas class="stage" data-stage aria-hidden="true"></canvas>
 <header class="bar"><div class="bar-inner">
   <a href="/ClaudeBar-docs/" class="brand" aria-label="ClaudeBar 首页"><svg class="mark" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M15.2 6v-.4a2.8 2.8 0 0 0-2.8-2.8H5.6a2.8 2.8 0 0 0-2.8 2.8v6.8a2.8 2.8 0 0 0 2.8 2.8h6.8a2.8 2.8 0 0 0 2.8-2.8V12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="9" r="1.2" fill="#d97757"/></svg><span>ClaudeBar</span></a>
   <a class="version" href="https://github.com/sophistd/ClaudeBar-docs/releases/tag/v0.6.2" aria-label="v0.6.2 发布说明">v0.6.2</a>
   <span class="bar-rule" aria-hidden="true"></span>
   <nav class="cb-site-nav cb-nav" aria-label="站点导航"><a href="/ClaudeBar-docs/" aria-current="location">产品</a><a href="/ClaudeBar-docs/zh/">文档</a></nav>
-  <a class="bar-cta" href="https://github.com/sophistd/ClaudeBar-docs/releases/download/v0.6.2/ClaudeBar-0.6.2.dmg"><svg class="icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.5v8m-3.5-3.5L8 10.5 11.5 7M3 13.5h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>下载</span></a>
+  <button class="bar-sense" type="button" data-sense aria-pressed="false" aria-label="声音与触感" title="声音与触感：现场合成，默认关闭"><svg class="icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 6.2h2.2L8 3.4v9.2L4.7 9.8H2.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path class="wave" d="M10.4 5.8a3.1 3.1 0 0 1 0 4.4M12.2 4a5.6 5.6 0 0 1 0 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path class="mute" d="M10.6 6.4l3 3.2m0-3.2l-3 3.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+  <a class="bar-cta" href="https://github.com/sophistd/ClaudeBar-docs/releases/download/v0.6.2/ClaudeBar-0.6.2.dmg" data-magnet><svg class="icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.5v8m-3.5-3.5L8 10.5 11.5 7M3 13.5h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>下载</span></a>
 </div><div class="progress" data-progress aria-hidden="true"></div></header>
-<nav class="rail" aria-label="章节"><a href="#gate" data-chapter-link><span>01</span><em>出口门禁</em></a><a href="#sessions" data-chapter-link><span>02</span><em>会话隔离</em></a><a href="#observe" data-chapter-link><span>03</span><em>检查与修复</em></a><a href="#recovery" data-chapter-link><span>04</span><em>恢复条件</em></a><a href="#preflight" data-chapter-link><span>05</span><em>发送前检查</em></a></nav>
+<nav class="rail" aria-label="章节"><a href="#gate" data-chapter-link data-magnet><i aria-hidden="true"></i><span>出口门禁</span><em>01</em></a><a href="#sessions" data-chapter-link data-magnet><i aria-hidden="true"></i><span>会话隔离</span><em>02</em></a><a href="#observe" data-chapter-link data-magnet><i aria-hidden="true"></i><span>检查与修复</span><em>03</em></a><a href="#recovery" data-chapter-link data-magnet><i aria-hidden="true"></i><span>恢复条件</span><em>04</em></a><a href="#preflight" data-chapter-link data-magnet><i aria-hidden="true"></i><span>发送前检查</span><em>05</em></a><a href="#product" data-chapter-link data-magnet><i aria-hidden="true"></i><span>工作台</span><em>06</em></a><a href="#download" data-chapter-link data-magnet><i aria-hidden="true"></i><span>下载</span><em>07</em></a></nav>
+<svg class="leaders" data-leaders aria-hidden="true"></svg>
+<div class="world" data-world><div class="track" data-track>
 <main id="main">
-<section class="hero" id="top" data-scene="hero" aria-labelledby="hero-title">
-  <div class="hero-poster" aria-hidden="true"><svg class="poster" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M15.2 6v-.4a2.8 2.8 0 0 0-2.8-2.8H5.6a2.8 2.8 0 0 0-2.8 2.8v6.8a2.8 2.8 0 0 0 2.8 2.8h6.8a2.8 2.8 0 0 0 2.8-2.8V12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="9" r="1.2" fill="#d97757"/></svg></div>
-  <div class="hero-copy">
-    <p class="badge" data-reveal><span class="pulse"></span>macOS 原生 · v0.6.2 · Apple 公证</p>
+<section class="sheet hero" id="top" data-scene="hero" data-realm="text" data-snap aria-labelledby="hero-title">
+  <div class="col">
+    <p class="badge"><span class="pulse"></span>macOS 原生 · v0.6.2 · Apple 公证</p>
     <h1 id="hero-title" data-split>掌握连接。<br/>看清边界。</h1>
-    <p class="lead" data-reveal>在 Mac 上配置网络出口、分开浏览器会话，<br class="wide"/>并在异常发生时找到原因。</p>
-    <div class="actions" data-reveal><a class="btn btn-primary" href="https://github.com/sophistd/ClaudeBar-docs/releases/download/v0.6.2/ClaudeBar-0.6.2.dmg"><span>下载 v0.6.2</span><svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a><a class="btn" href="#gate"><span>穿过这道门</span></a></div>
+    <p class="lead">在 Mac 上配置网络出口、分开浏览器会话，<br class="wide"/>并在异常发生时找到原因。</p>
+    <div class="actions"><a class="btn btn-primary" href="https://github.com/sophistd/ClaudeBar-docs/releases/download/v0.6.2/ClaudeBar-0.6.2.dmg" data-magnet><span>下载 v0.6.2</span><svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a><a class="btn" href="#gate"><span>穿过这道门</span></a></div>
   </div>
-  <a class="scroll-cue" href="#gate" aria-label="向下滚动，进入第一章"><span></span></a>
 </section>
 
-<section class="chapter align-left" id="gate" data-scene="gate" data-chapter aria-labelledby="gate-title">
-  <div class="chapter-inner"><span class="numeral" aria-hidden="true">01</span><div class="panel" data-reveal data-spot>
-    <p class="eyebrow"><span class="index">01</span><span class="rule"></span>出口门禁</p>
+<div class="sheet threshold" id="to-gate" data-threshold data-snap data-from="text" data-to="code" data-realm="code">
+  <div class="col">
+    <div class="fade" data-fade data-skip-rest aria-hidden="true" style="--from: var(--sheet-text); --to: var(--sheet-code)"></div>
+    <p class="threshold-route" aria-hidden="true"><span>文</span><i></i><span>码</span></p>
+    <p class="threshold-line">机器把这句话变成连接。</p>
+    <p class="threshold-meta">TEXT · 人 · 现实<span aria-hidden="true"> → </span><span class="sr">到</span>CODE · 机器 · 心智</p>
+  </div>
+</div>
+
+<section class="sheet chapter" id="gate" data-scene="gate" data-realm="code" data-chapter data-snap aria-labelledby="gate-title">
+  <div class="col">
+    <p class="eyebrow" data-anchor><span class="index">01</span><span class="rule"></span>出口门禁</p>
     
     <h2 id="gate-title">先核验出口，<br/>再放行连接。</h2>
-    <p>应用接入本机回环门禁，再由档案指定的上游代理转发。启动前核验出口身份，转发层只传递隧道字节，无需安装 TLS 拦截证书。</p>
-    <dl class="facts"><div><dt>127.0.0.1</dt><dd>本机回环门禁</dd></div><div><dt>0 张</dt><dd>需安装的拦截证书</dd></div></dl>
-    <a class="more" href="network.html">了解门禁路径<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-  </div></div></section>
+    <p class="body">应用接入本机回环门禁，再由档案指定的上游代理转发。启动前核验出口身份，转发层只传递隧道字节。</p>
+    <ol class="plate flow" data-anchor style="--n:4" aria-label="一条受管连接依次经过的四站"><li style="--i:0"><b>应用</b><span>发起连接</span></li><li style="--i:1"><b>127.0.0.1</b><span>回环门禁</span></li><li style="--i:2"><b>上游代理</b><span>档案指定</span></li><li style="--i:3"><b>出口</b><span>启动前核验</span></li></ol>
+    <p class="fact"><b>0 张</b>需要安装的 TLS 拦截证书</p>
+    <p class="more-row"><a class="more" href="network.html">了解门禁路径<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
+  </div></section>
 
-<section class="chapter align-right" id="sessions" data-scene="sessions" data-chapter aria-labelledby="sessions-title">
-  <div class="chapter-inner"><span class="numeral" aria-hidden="true">02</span><div class="panel" data-reveal data-spot>
-    <p class="eyebrow"><span class="index">02</span><span class="rule"></span>会话隔离</p>
+<section class="sheet chapter" id="sessions" data-scene="sessions" data-realm="code" data-chapter data-snap aria-labelledby="sessions-title">
+  <div class="col">
+    <p class="eyebrow" data-anchor><span class="index">02</span><span class="rule"></span>会话隔离</p>
     
     <h2 id="sessions-title">不同账号，<br/>各自的会话空间。</h2>
-    <p>工作与个人会话各自使用独立的浏览器数据目录。需要沿用登录时，也清楚地知道这次连接走哪条路。</p>
-    <ul class="pair"><li><b>单独打开</b><span>独立数据目录，注入门禁代理配置</span></li><li><b>用现有登录</b><span>沿用已有数据，不因检查而自动受管</span></li></ul>
-    <a class="more" href="sessions.html">选择会话模式<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-  </div></div></section>
+    <p class="body">工作与个人会话各自使用独立的浏览器数据目录。需要沿用登录时，也清楚地知道这次连接走哪条路。</p>
+    <ul class="plate pair" data-anchor><li data-kit="focus" data-focus="lane:0"><b>单独打开</b><span>独立数据目录，注入门禁代理配置</span></li><li data-kit="focus" data-focus="lane:1"><b>用现有登录</b><span>沿用已有数据，不因检查而自动受管</span></li></ul>
+    <p class="more-row"><a class="more" href="sessions.html">选择会话模式<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
+  </div></section>
 
-<section class="chapter align-left" id="observe" data-scene="observe" data-chapter aria-labelledby="observe-title">
-  <div class="chapter-inner"><span class="numeral" aria-hidden="true">03</span><div class="panel" data-reveal data-spot>
-    <p class="eyebrow"><span class="index">03</span><span class="rule"></span>检查与修复</p>
+<section class="sheet chapter" id="observe" data-scene="observe" data-realm="code" data-chapter data-snap aria-labelledby="observe-title">
+  <div class="col">
+    <p class="eyebrow" data-anchor><span class="index">03</span><span class="rule"></span>检查与修复</p>
     
     <h2 id="observe-title">从观测，<br/>追到原因。</h2>
-    <p>观测结果反映检查当时的情况。顺着它找到失败的那一环，再决定是否执行对应的修复。线路变了，就看新的观测。</p>
-    <ul class="tags" aria-label="工作台分区"><li>Launchpad</li><li>Channels</li><li>Incidents</li><li>Preflight</li><li>Settings</li></ul>
-    <a class="more" href="/ClaudeBar-docs/zh/guides/diagnostics/">阅读诊断指南<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-  </div></div></section>
-
-<section class="chapter recovery align-left" id="recovery" data-scene="recovery" data-chapter data-hold data-recovery data-state="0" aria-labelledby="recovery-title">
-  <div class="chapter-inner"><span class="numeral" aria-hidden="true">04</span><div class="panel" data-reveal data-spot>
-    <p class="eyebrow"><span class="index">04</span><span class="rule"></span>恢复条件</p>
-    <h2 id="recovery-title">中断之后，<br/>每一步都有条件。</h2>
-    <p>继续滚动，看门禁如何在三种状态之间切换；也可以直接选择。</p>
-    <div class="states" role="group" aria-label="选择门禁示意状态">
-      <button type="button" data-recovery-chip aria-pressed="true"><i></i>放行</button>
-      <button type="button" data-recovery-chip aria-pressed="false"><i></i>等待</button>
-      <button type="button" data-recovery-chip aria-pressed="false"><i></i>隔离</button>
+    <p class="body">观测结果反映检查当时的情况。顺着它找到失败的那一环，再决定是否执行对应的修复。线路变了，就看新的观测。</p>
+    <div class="plate checks" data-anchor>
+      <div class="matrix" style="--n:22" role="img" aria-label="示意：22 项检查逐项通过，其中 1 项待处理"><i style="--i:0" data-kit="focus" data-focus="node:0"></i><i style="--i:1" data-kit="focus" data-focus="node:4"></i><i style="--i:2" data-kit="focus" data-focus="node:8"></i><i style="--i:3" data-kit="focus" data-focus="node:12"></i><i style="--i:4" data-kit="focus" data-focus="node:16"></i><i style="--i:5" data-kit="focus" data-focus="node:20"></i><i style="--i:6" data-kit="focus" data-focus="node:24"></i><i style="--i:7" data-kit="focus" data-focus="node:28"></i><i style="--i:8" data-kit="focus" data-focus="node:32"></i><i style="--i:9" data-kit="focus" data-focus="node:36"></i><i style="--i:10" data-kit="focus" data-focus="node:40"></i><i style="--i:11" data-kit="focus" data-focus="node:44"></i><i style="--i:12" data-kit="focus" data-focus="node:48"></i><i style="--i:13" class="is-flagged" data-kit="focus" data-focus="node:52"></i><i style="--i:14" data-kit="focus" data-focus="node:56"></i><i style="--i:15" data-kit="focus" data-focus="node:60"></i><i style="--i:16" data-kit="focus" data-focus="node:64"></i><i style="--i:17" data-kit="focus" data-focus="node:68"></i><i style="--i:18" data-kit="focus" data-focus="node:72"></i><i style="--i:19" data-kit="focus" data-focus="node:76"></i><i style="--i:20" data-kit="focus" data-focus="node:80"></i><i style="--i:21" data-kit="focus" data-focus="node:84"></i></div>
+      <p class="viz-note"><b data-kit="readout" data-bind="checked">0</b> / 22 项已检查 · 演示数据，指向一项可在图中定位</p>
     </div>
-    <p class="state-text" data-recovery-text aria-live="polite">已有核验基线，允许新的受管连接握手。</p>
+    <p class="more-row"><a class="more" href="/ClaudeBar-docs/zh/guides/diagnostics/">阅读诊断指南<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
+  </div></section>
+
+<section class="sheet chapter recovery" id="recovery" data-scene="recovery" data-realm="code" data-chapter data-snap data-hold data-recovery data-state="0" aria-labelledby="recovery-title">
+  <div class="pin" data-pin><div class="col">
+    <p class="eyebrow" data-anchor><span class="index">04</span><span class="rule"></span>恢复条件</p>
+    <h2 id="recovery-title">中断之后，<br/>每一步都有条件。</h2>
+    <p class="body">继续滚动，看门禁如何在三种状态之间切换；也可以直接选择。</p>
+    <div class="plate states-plate" data-anchor>
+      <div class="states" role="group" aria-label="选择门禁示意状态">
+        <button type="button" data-recovery-chip aria-pressed="true"><i></i>放行</button>
+        <button type="button" data-recovery-chip aria-pressed="false"><i></i>等待</button>
+        <button type="button" data-recovery-chip aria-pressed="false"><i></i>隔离</button>
+      </div>
+      <p class="state-text" data-recovery-text aria-live="polite">已有核验基线，允许新的受管连接握手。</p>
+    </div>
     <p class="fine">教学示意，不连接真实网络。若到期时没有新观测、也没有探测拒绝，门禁沿用旧基线恢复，这一次没有重新核验出口。</p>
   </div></div>
 </section>
 
-<section class="chapter align-right" id="preflight" data-scene="preflight" data-chapter aria-labelledby="preflight-title">
-  <div class="chapter-inner"><span class="numeral" aria-hidden="true">05</span><div class="panel" data-reveal data-spot>
-    <p class="eyebrow"><span class="index">05</span><span class="rule"></span>发送前检查</p>
+<div class="sheet threshold" id="to-preflight" data-threshold data-snap data-from="code" data-to="token" data-realm="token">
+  <div class="col">
+    <div class="fade" data-fade data-skip-rest aria-hidden="true" style="--from: var(--sheet-code); --to: var(--sheet-token)"></div>
+    <p class="threshold-route" aria-hidden="true"><span>码</span><i></i><span>符</span></p>
+    <p class="threshold-line">模型读到的，只是符号。</p>
+    <p class="threshold-meta">CODE · 机器 · 心智<span aria-hidden="true"> → </span><span class="sr">到</span>TOKEN · AI · 符号</p>
+  </div>
+</div>
+
+<section class="sheet chapter" id="preflight" data-scene="preflight" data-realm="token" data-chapter data-snap aria-labelledby="preflight-title">
+  <div class="col">
+    <p class="eyebrow" data-anchor><span class="index">05</span><span class="rule"></span>发送前检查</p>
     
     <h2 id="preflight-title" data-decrypt>发出之前，<br/>再读一遍。</h2>
-    <p>发送前检查提示词是一项单独的流程，用来在提交前找出含混之处。配置云端处理步骤后，输入的文本可能会发给你选定的模型提供方；只管理网络会话时可以跳过它。</p>
-    <a class="more" href="/ClaudeBar-docs/zh/concepts/security/">查看保护边界<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-  </div></div></section>
-
-<section class="showcase" id="product" data-scene="product" aria-labelledby="product-title">
-  <div class="showcase-head" data-reveal>
-    <h2 id="product-title">状态就在菜单栏。<br/>细节留在工作台。</h2>
-    <a class="more" href="/ClaudeBar-docs/zh/concepts/visual-guide/">查看应用界面<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-  </div>
-  <div class="device" data-reveal data-gallery>
-    <div class="views" role="tablist" aria-label="工作台界面">
-      <button type="button" role="tab" id="tab-launchpad" aria-controls="shot-launchpad" aria-selected="true" tabindex="0">启动台</button><button type="button" role="tab" id="tab-repair" aria-controls="shot-repair" aria-selected="false" tabindex="-1">检查与修复</button><button type="button" role="tab" id="tab-preflight" aria-controls="shot-preflight" aria-selected="false" tabindex="-1">内容预检</button>
-      <span class="views-indicator" aria-hidden="true"></span>
+    <p class="body">发送前检查提示词是一项单独的流程，用来在提交前找出含混之处。配置云端处理步骤后，输入的文本可能会发给你选定的模型提供方；只管理网络会话时可以跳过它。</p>
+    <div class="plate tokenized" data-anchor>
+      <p class="tokens" style="--n:7" role="img" aria-label="示意：一句提示词被切成 7 块，其中“它”与“尽快”被标为含混"><span style="--i:0">把</span><span style="--i:1" class="is-flagged" data-note="指代不明">它</span><span style="--i:2">发给</span><span style="--i:3">他们</span><span style="--i:4">，</span><span style="--i:5" class="is-flagged" data-note="期限含混">尽快</span><span style="--i:6">。</span></p>
+      <p class="viz-note">示意切分，并非真实分词器的输出。</p>
     </div>
-    <div class="device-frame" data-tilt>
-      <figure class="shot" id="shot-launchpad" role="tabpanel" aria-labelledby="tab-launchpad"><img src="../public/screenshots/workbench-overview-dark.png" width="2080" height="1360" alt="ClaudeBar 启动台：主通道 US-Primary 已放行，下方列出五个受控入口及各自通道" loading="eager" decoding="async"/></figure><figure class="shot" id="shot-repair" role="tabpanel" aria-labelledby="tab-repair" hidden><img src="../public/screenshots/workbench-topology-dark.png" width="2080" height="1360" alt="ClaudeBar 检查与修复：出口、检查、同一出口与风险四项指标，左侧风险关系，右侧 22 项检查" loading="lazy" decoding="async"/></figure><figure class="shot" id="shot-preflight" role="tabpanel" aria-labelledby="tab-preflight" hidden><img src="../public/screenshots/workbench-preflight-dark.png" width="2080" height="1360" alt="ClaudeBar 内容预检：分阶段判定，左侧原文与改写结果，右侧风险分布" loading="lazy" decoding="async"/></figure>
-      <span class="glare" aria-hidden="true"></span>
+    <p class="more-row"><a class="more" href="/ClaudeBar-docs/zh/concepts/security/">查看保护边界<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
+  </div></section>
+
+<div class="sheet threshold" id="to-product" data-threshold data-snap data-from="token" data-to="text" data-realm="text">
+  <div class="col">
+    <div class="fade" data-fade data-skip-rest aria-hidden="true" style="--from: var(--sheet-token); --to: var(--sheet-text)"></div>
+    <p class="threshold-route" aria-hidden="true"><span>符</span><i></i><span>文</span></p>
+    <p class="threshold-line">回到现实，它就在你的 Mac 上。</p>
+    <p class="threshold-meta">TOKEN · AI · 符号<span aria-hidden="true"> → </span><span class="sr">到</span>TEXT · 人 · 现实</p>
+  </div>
+</div>
+
+<section class="sheet showcase" id="product" data-scene="product" data-realm="text" data-snap aria-labelledby="product-title">
+  <div class="col">
+    <p class="eyebrow" data-anchor><span class="index">06</span><span class="rule"></span>工作台</p>
+    <h2 id="product-title">状态就在菜单栏。<br/>细节留在工作台。</h2>
+    <p class="more-row"><a class="more" href="/ClaudeBar-docs/zh/concepts/visual-guide/">查看应用界面<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p>
+    <div class="device" data-gallery data-anchor>
+      <div class="views" role="tablist" aria-label="工作台界面">
+        <button type="button" role="tab" id="tab-launchpad" aria-controls="shot-launchpad" aria-selected="true" tabindex="0">启动台</button><button type="button" role="tab" id="tab-repair" aria-controls="shot-repair" aria-selected="false" tabindex="-1">检查与修复</button><button type="button" role="tab" id="tab-preflight" aria-controls="shot-preflight" aria-selected="false" tabindex="-1">内容预检</button>
+        <span class="views-indicator" aria-hidden="true"></span>
+      </div>
+      <div class="device-frame" data-tilt>
+        <figure class="shot" id="shot-launchpad" role="tabpanel" aria-labelledby="tab-launchpad"><img src="../public/screenshots/workbench-overview-dark.png" width="2080" height="1360" alt="ClaudeBar 启动台：主通道 US-Primary 已放行，下方列出五个受控入口及各自通道" loading="eager" decoding="async"/></figure><figure class="shot" id="shot-repair" role="tabpanel" aria-labelledby="tab-repair" hidden><img src="../public/screenshots/workbench-topology-dark.png" width="2080" height="1360" alt="ClaudeBar 检查与修复：出口、检查、同一出口与风险四项指标，左侧风险关系，右侧 22 项检查" loading="lazy" decoding="async"/></figure><figure class="shot" id="shot-preflight" role="tabpanel" aria-labelledby="tab-preflight" hidden><img src="../public/screenshots/workbench-preflight-dark.png" width="2080" height="1360" alt="ClaudeBar 内容预检：分阶段判定，左侧原文与改写结果，右侧风险分布" loading="lazy" decoding="async"/></figure>
+        <span class="glare" aria-hidden="true"></span>
+      </div>
     </div>
     <p class="device-note">界面为当前版本的离屏渲染，使用演示数据。</p>
   </div>
 </section>
 
-<section class="finale" id="download" data-scene="finale" aria-labelledby="download-title">
-  <div class="finale-copy" data-reveal>
+<section class="sheet finale" id="download" data-scene="finale" data-realm="text" data-snap aria-labelledby="download-title">
+  <div class="col">
+    <p class="eyebrow" data-anchor><span class="index">07</span><span class="rule"></span>下载</p>
     <h2 id="download-title">把连接边界，<br/>带回你的 Mac。</h2>
     <p class="lead">已通过 Developer ID 签名与 Apple 公证，下载后拖入「应用程序」即可使用。</p>
-    <div class="actions"><a class="btn btn-primary" href="https://github.com/sophistd/ClaudeBar-docs/releases/download/v0.6.2/ClaudeBar-0.6.2.dmg"><span>下载 ClaudeBar v0.6.2 (DMG)</span><svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a><a class="btn" href="/ClaudeBar-docs/zh/start/installation/"><span>阅读安装说明</span></a></div>
+    <div class="actions"><a class="btn btn-primary" href="https://github.com/sophistd/ClaudeBar-docs/releases/download/v0.6.2/ClaudeBar-0.6.2.dmg" data-magnet><span>下载 ClaudeBar v0.6.2 (DMG)</span><svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a><a class="btn" href="/ClaudeBar-docs/zh/start/installation/"><span>阅读安装说明</span></a></div>
     <p class="meta">macOS 14+ · Apple Silicon · SHA-256 前缀 <code>bb496217</code></p>
-    <p class="boundary">门禁只管理接入它的连接。它不接管所有应用，也不保证账号安全。</p>
+    <p class="boundary-row"><span class="boundary">门禁只管理接入它的连接。它不接管所有应用，也不保证账号安全。</span></p>
   </div>
 </section></main>
-<footer class="foot"><div class="foot-inner">
+<footer class="foot" data-slab><div class="foot-inner">
   <div class="foot-lead">
     <a href="/ClaudeBar-docs/" class="brand" aria-label="ClaudeBar 首页"><svg class="mark" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M15.2 6v-.4a2.8 2.8 0 0 0-2.8-2.8H5.6a2.8 2.8 0 0 0-2.8 2.8v6.8a2.8 2.8 0 0 0 2.8 2.8h6.8a2.8 2.8 0 0 0 2.8-2.8V12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="9" r="1.2" fill="#d97757"/></svg><span>ClaudeBar</span></a>
     <p>掌握连接，看清边界。macOS 原生的网络出口与浏览器会话工具。</p>
@@ -125,4 +169,15 @@
     <span class="foot-status"><i aria-hidden="true"></i>v0.6.2 · Developer ID 签名 · Apple 公证 · macOS 14+</span>
   </div>
 </div></footer>
+</div></div>
+<div class="spacer" data-spacer aria-hidden="true"></div>
+<aside class="status" aria-label="三界与本页遥测">
+  <ol class="realms" data-realms><li data-realm="text" aria-current="true"><b>文</b><span>TEXT</span><em>人 · 现实</em></li><li data-realm="code"><b>码</b><span>CODE</span><em>机器 · 心智</em></li><li data-realm="token"><b>符</b><span>TOKEN</span><em>AI · 符号</em></li></ol>
+  <dl class="telemetry" aria-hidden="true">
+    <div><dt>深度</dt><dd data-kit="readout" data-bind="depth" data-format="meters">0.0 m</dd></div>
+    <div><dt>速度</dt><dd><canvas data-kit="spark" data-bind="velocity"></canvas></dd></div>
+    <div><dt>帧</dt><dd data-kit="readout" data-bind="frames">0</dd></div>
+    <div class="telemetry-state" data-kit="state" data-bind="moving"><dt><i></i></dt><dd><span>渲染中</span><span>静止 · 零帧</span></dd></div>
+  </dl>
+</aside>
 </body></html>
