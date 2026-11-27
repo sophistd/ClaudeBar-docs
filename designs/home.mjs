@@ -1,302 +1,31 @@
 /**
- * [INPUT]: 依赖 ./home-kit.mjs 的 env/frame/spring/mountKit/reduced/clamp、./home-sense.mjs 的 sense、./home-scene.mjs 的 mountScene、
- *          ./home-ribbon.mjs 的 curve/rest/project/measure/pinShift/createRibbon/createLeaders、./home-tokens.mjs 的 RIBBON；
- *          读取 home-source.mjs 生成的 data-* 结构（data-world / data-track / data-spacer / data-snap / data-chapter / data-threshold /
- *          data-fade / data-hold / data-pin / data-recovery / data-gallery / data-tilt / data-split / data-magnet /
- *          data-chapter-link / data-leaders / data-sense）。
- * [OUTPUT]: 首页运行入口（无导出）：把滚动翻译成环境（全页进度、速度、当前章节、章节进度 --p、三界 from/to/mix、恢复三态），
- *           再把环境交给纸带（DOM 纸片卷曲）、3D（纸面/房间/线框）、引线、声音与触感。
- *           卷曲版把世界固定在视口，原生滚动只推动一根空杆，显示位置由弹簧跟随；停下时若离某节的最佳展示位不远，
- *           就被轻轻吸正（远一点不干预）；滚轮跟手速率取 Lenis 的 lerp 0.1。按钮与索引项带指针磁吸。所有动效由事件触发，落定即零帧。
- * [POS]: designs 首页的 DOM 编排层：不画微件、不算曲线（曲线归 home-ribbon），只把滚动与选择变成环境；
- *        无 WebGL 或减弱动态时退化为平整纸带，内容、三界配色与恢复三态照常可用。
+ * [INPUT]: 依赖 ./home-kit.mjs 的 env/frame/spring/reduced、./home-trail.mjs 的 chapterState/mixOrbit、./home-scene.mjs 的 createScene、
+ *          ./home-ribbon.mjs 的 createLeaders、./home-tokens.mjs 的 CAMERA/TRAIL/GATES/RIBBON；
+ *          home-source 生成的结构：[data-chapter] 章节、[data-stage] 画布、[data-bead] 珠子、[data-chip] 层标签、[data-leaders] 引线层、
+ *          [data-chapter-link] 索引、[data-mode] 2D/3D 开关、[data-gallery] 工作台画廊。
+ * [OUTPUT]: 首页 DOM 编排入口（打包为 assets/home.bundle.js）：
+ *           有 WebGL 才挂载空间层（html.has-webgl）；滚动换算成章节连续坐标 s，显示值以每秒 6 的速率跟随（Lenis lerp 0.1 的手感）；
+ *           s 决定镜头、路头、分层、珠子状态、卡片显隐、索引当前项与引线；停下时离停驻中心不到 0.12 屏才以 settle 档轻轻吸正。
+ *           2D/3D 是同一空间的一次变形（settle 档），选择记在本机；减弱动态强制 2D；触控窄屏默认 2D。
+ * [POS]: 首页的编排层。帧只经 home-kit 的调度器；视图没变不画，落定即零帧。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
-import { RIBBON, rate } from './home-tokens.mjs';
-import { env, frame, spring, mountKit, reduced, clamp } from './home-kit.mjs';
-import { sense } from './home-sense.mjs';
-import { mountScene } from './home-scene.mjs';
-import { curve, rest, project, measure, pinShift, createRibbon, createLeaders } from './home-ribbon.mjs';
+import { env, frame, spring, reduced } from './home-kit.mjs';
+import { chapterState, mixOrbit } from './home-trail.mjs';
+import { createLeaders } from './home-ribbon.mjs';
+import { CAMERA, TRAIL, GATES, RIBBON } from './home-tokens.mjs';
 
+const $ = (s, root = document) => root.querySelector(s);
+const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const root = document.documentElement;
-root.classList.add('motion');   // 脚本真正执行时才允许 CSS 隐藏待入场内容
-const fine = matchMedia('(pointer: fine)').matches;
-const $ = (selector) => document.querySelector(selector), $$ = (selector) => [...document.querySelectorAll(selector)];
-
-// ============================================================================
-//  标题逐字入场：拆分只改视觉层，整句仍由 aria-label 朗读
-// ============================================================================
-for (const heading of $$('[data-split]')) {
-  heading.setAttribute('aria-label', heading.textContent.replace(/\s+/g, ''));
-  let index = 0;
-  for (const node of [...heading.childNodes]) {
-    if (node.nodeType !== Node.TEXT_NODE) continue;
-    const fragment = document.createDocumentFragment();
-    for (const char of node.textContent) {
-      const span = document.createElement('span');
-      span.className = 'char'; span.textContent = char; span.style.setProperty('--i', index++); span.setAttribute('aria-hidden', 'true');
-      fragment.append(span);
-    }
-    node.replaceWith(fragment);
-  }
-}
-void root.offsetWidth;
-root.classList.add('is-ready');
-
-// ============================================================================
-//  3D 与纸带：有 WebGL 且未要求减弱动态才卷曲；失败即保留平整纸带
-// ============================================================================
-let scene = null;
-try {
-  const probe = document.createElement('canvas');
-  if (!reduced && (probe.getContext('webgl2') || probe.getContext('webgl'))) { scene = mountScene($('[data-stage]')); root.classList.add('has-webgl'); }
-} catch (error) {
-  scene = null; root.classList.remove('has-webgl');
-  console.warn('[ClaudeBar] 3D 场景不可用，保留平整纸带。', error);
-}
-// 2D / 3D：能卷曲时默认 3D，读者的选择记在本机；本机存储不可用时按默认走
-const canCurl = Boolean(scene), MODE_KEY = 'claudebar.home.mode';
-const stored = () => { try { return localStorage.getItem(MODE_KEY); } catch (error) { console.warn('[ClaudeBar] 读不到视图偏好，按默认显示。', error); return null; } };
-let curled = canCurl && stored() !== '2d';
-root.classList.toggle('has-webgl', curled);
-const track = $('[data-track]'), spacer = $('[data-spacer]');
-let leaders = curled ? createLeaders($('[data-leaders]')) : null;
-
-// ---- 版面：一次量完，滚动时只做算术。尺寸、字体、图片变化时重量 ----
-let c = curve(root.clientWidth, innerHeight), footTop = Infinity, layout = null, ribbon = null, snaps = [], stops = [], anchors = [], railDots = new Map(), graphBox = null;
-const sheetBox = () => { const first = $('main .sheet'), last = [...$$('main .sheet')].at(-1); return { top: first.offsetTop, bottom: last.offsetTop + last.offsetHeight }; };
-
-function relayout() {
-  c = curve(root.clientWidth, innerHeight);
-  layout = measure(track);
-  footTop = $('.foot').offsetTop;
-  for (const pin of layout.pins) pin.a = pin.top - (curled ? rest(pin.h, c) : c.vh * 0.18);
-  if (curled) { spacer.style.height = `${layout.height}px`; ribbon = createRibbon(layout); }
-  const max = Math.max(0, (curled ? layout.height : root.scrollHeight) - c.vh);
-  snaps = [];
-  for (const [id, box] of layout.sections) {
-    const pin = layout.pins.find((p) => box.el.contains(p.el));
-    if (pin) [0, 0.5, 1].forEach((f) => snaps.push({ id, s: pin.a + pin.H * f }));
-    else if (box.cH !== undefined) snaps.push({ id, s: id === 'top' ? 0 : box.cTop - rest(box.cH, c) });
-  }
-  snaps.forEach((snap) => { snap.s = clamp(snap.s, 0, max); });
-  stops = $$('[data-threshold]').map((el) => { const fade = layout.slabs.find((slab) => el.contains(slab.el) && slab.el.matches('[data-fade]')); const mid = fade.top + fade.h / 2; return { el, y0: mid, y1: mid + 1, from: el.dataset.from, to: el.dataset.to }; });   // 硬切：两界在 fade 片的中线交接
-  anchors = [...layout.sections].filter(([id]) => !id.startsWith('to-')).map(([id, box]) => ({ key: id, id: id === 'top' ? 'hero' : id === 'download' ? 'finale' : id, y: box.cTop + box.cH / 2, pin: layout.pins.find((p) => box.el.contains(p.el)) ?? null }));
-  const slot = layout.slabs.find((slab) => slab.el.matches('[data-graph]'));
-  graphBox = slot ? { top: slot.top, h: slot.h, w: slot.w } : null;   // 首屏图谱占的那块纸片：图在 WebGL 里画，DOM 只留位置
-  railDots = new Map($$('[data-chapter-link]').map((a) => { const r = a.querySelector('i').getBoundingClientRect(); return [a.getAttribute('href').slice(1), { x: r.right + 4, y: r.top + r.height / 2 }]; }));
-  frame.wake();
-}
-
-// ============================================================================
-//  滚动：卷曲版的显示位置由弹簧跟随原生滚动（滚轮跟手用 snap 档，磁吸归位用 glide 档）
-// ============================================================================
-const view = spring(scrollY, 'snap', 0.05).tune(RIBBON.lerp);   // 跟手手感取 Lenis 的 lerp 0.1（每秒 6）
-let expected = null;   // 磁吸或锚点发起的程序滚动目标：到达前保持 glide 档
-const goTo = (s, tier = 'settle') => { expected = Math.round(s); view.tune(tier); scrollTo({ top: s, behavior: 'instant' }); };
-const snapOf = (id) => snaps.find((snap) => snap.id === id)?.s;
-
-addEventListener('scroll', () => {
-  if (expected === null || Math.abs(scrollY - expected) > 1) { expected = null; view.tune(RIBBON.lerp); }
-  view.target = scrollY;
-  if (!fine && expected === null) view.value = scrollY;   // 触控：手指在哪纸就在哪，不加拖尾
-  frame.wake();
-}, { passive: true });
-
-// 磁吸：只在停得离最佳展示位很近（capture 屏以内）时轻轻吸正；远一点就不管，滚动手感交给用户
-addEventListener('scrollend', () => {
-  if (!curled || expected !== null || !snaps.length) return;
-  const nearest = snaps.reduce((a, b) => (Math.abs(b.s - scrollY) < Math.abs(a.s - scrollY) ? b : a));
-  const d = Math.abs(nearest.s - scrollY);
-  if (d > 1 && d < c.vh * RIBBON.capture) goTo(nearest.s);
-});
-
-// 锚点与键盘焦点：世界固定在视口里，浏览器不会替它滚动，这里换算成文档滚动
-document.addEventListener('click', (e) => {
-  const link = e.target.closest?.('a[href^="#"]');
-  const s = link && curled ? snapOf(link.getAttribute('href').slice(1)) : undefined;
-  if (s === undefined) return;
-  e.preventDefault(); history.replaceState(null, '', link.getAttribute('href')); goTo(s);
-});
-document.addEventListener('focusin', (e) => {
-  if (!curled || !track.contains(e.target)) return;
-  const slab = layout.slabs.find((item) => item.el.contains(e.target));
-  if (!slab) return;
-  const yv = slab.top + slab.h / 2 - scrollY + pinShift(slab.pin, scrollY);
-  if (yv < c.qAt(c.vh * 0.14) || yv > c.qAt(c.vh * 0.88)) goTo(Math.max(0, slab.top + slab.h / 2 - c.qAt(c.vh * 0.5)));
-});
-
-// ============================================================================
-//  恢复三态：滚动（驻留段进度）与手动选择共用一个出口；升级时图版边缘脉冲一次并出声，降级静默
-// ============================================================================
-const recovery = $('[data-recovery]'), recoveryText = $('[data-recovery-text]'), recoveryChips = $$('[data-recovery-chip]');
-const RECOVERY_COPY = [
-  '出口已核验。新的受管连接可以握手。',
-  '上游断了。新的握手先等恢复探测，默认等 4 秒。',
-  '出口变了，或探测被拒、到期没恢复。新的握手一律拒绝。',
-];
-let recoveryState = -1, pinnedState = null;
-const setRecovery = (state) => {
-  if (state === recoveryState) return;
-  if (recoveryState >= 0 && state > recoveryState) {
-    sense.state(state);
-    if (!reduced) {
-      const plate = recovery.querySelector('.states-plate');
-      plate.classList.remove('is-escalated'); void plate.offsetWidth; plate.classList.add('is-escalated');
-      plate.addEventListener('animationend', () => plate.classList.remove('is-escalated'), { once: true });
-    }
-  }
-  recoveryState = state;
-  recovery.dataset.state = String(state);
-  recoveryChips.forEach((chip, i) => chip.setAttribute('aria-pressed', String(i === state)));
-  recoveryText.textContent = RECOVERY_COPY[state];
-  env.set({ recovery: state });
-};
-recoveryChips.forEach((chip, i) => chip.addEventListener('click', () => { pinnedState = i; setRecovery(i); frame.wake(); }));
-
-// ============================================================================
-//  每帧：滚动位置 → 环境 → 纸带 / 3D / 引线。全部由共享调度器驱动，弹簧与速度落定即停
-// ============================================================================
-const progress = $('[data-progress]');
-const links = new Map($$('[data-chapter-link]').map((a) => [a.getAttribute('href').slice(1), a]));
-const setVar = (el, name, value, digits = 3) => {
-  const text = value.toFixed(digits);
-  if (el.dataset[name] !== text) { el.dataset[name] = text; el.style.setProperty(`--${name}`, text); }
-};
-let lastS = scrollY, velocity = 0;
-const phase = new Map();
-
-const update = (dt) => {
-  const moving = curled ? view.step(dt) : false;
-  const s = curled ? view.value : scrollY, vh = c.vh;
-  const max = Math.max(1, (curled ? layout.height : root.scrollHeight) - vh);
-  setVar(progress, 'p', clamp(s / max), 4);
-  root.classList.toggle('is-scrolled', s > 24);
-  root.classList.toggle('is-end', s + vh * 0.75 > footTop);   // 到页脚时收起索引与引线，不压住页脚文字
-
-  const instant = Math.abs(s - lastS) / vh / dt; lastS = s;
-  velocity += (instant - velocity) * (1 - Math.exp(-rate('snap') * dt));
-  if (velocity < 0.004) velocity = 0;
-
-  // 章节：内容框在视口里的顶边（驻留段要加上驻留位移）；到达最佳展示位时 --p 恰好为 1
-  const bottom = curled ? c.qBottom : vh, reading = curled ? c.qAt(vh * 0.5) : vh * 0.55;
-  const topOf = (id) => { const box = layout.sections.get(id), pin = layout.pins.find((p) => box.el.contains(p.el)); return box.cTop - s + (curled ? pinShift(pin, s) : 0); };
-  let active = null;
-  for (const [id, box] of layout.sections) {
-    if (id.startsWith('to-') || box.cH === undefined) continue;
-    const top = topOf(id);
-    if (top < reading) active = id;
-    const p = clamp((bottom - top) / Math.max(1, bottom - (curled ? rest(box.cH, c) : vh * 0.3)));
-    phase.set(id, p);   // 舞台素材的时间轴：p = 1 即本节停在最佳展示位，那一刻就是"最富包孕性的顷刻"
-    if (!box.el.matches('[data-chapter]')) continue;
-    setVar(box.el, 'p', p);
-  }
-  links.forEach((link, id) => (id === active ? link.setAttribute('aria-current', 'step') : link.removeAttribute('aria-current')));
-
-  const pin = layout.pins[0];
-  if (pin && pinnedState === null) { const local = pin.H ? clamp((s - pin.a) / pin.H) : 0; setRecovery(local < 0.25 ? 0 : local < 0.75 ? 1 : 2); }
-  if (pin && pinnedState !== null && (s < pin.a - vh * 0.5 || s > pin.a + pin.H + vh * 0.5)) pinnedState = null;   // 离开本章后交还给滚动
-
-  // 三界：读线处的纸色就是当前所在；越界段内两界混合
-  const line = s + (curled ? c.qAt(vh * 0.55) : vh * 0.6);
-  let from = stops[0]?.from ?? 'text', to = from, mix = 0;
-  for (const stop of stops) {
-    setVar(stop.el, 'p', clamp((line - stop.y0) / (stop.y1 - stop.y0 + vh * 0.2)));
-    if (line <= stop.y0) break;
-    if (line >= stop.y1) { from = to = stop.to; mix = 0; continue; }
-    from = stop.from; to = stop.to; mix = (line - stop.y0) / (stop.y1 - stop.y0); break;
-  }
-  env.set({ progress: clamp(s / max), velocity, chapter: active ?? '', from, to, mix, realm: mix < 0.5 ? from : to, depth: s / 1000 });
-
-  if (curled) {
-    ribbon.apply(s, c);
-    const sheet = { w: layout.sheetW, ...sheetBox() };
-    scene.render({ scroll: s, c, sheet, stops, anchors: anchors.map((a) => ({ id: a.id, y: a.y + pinShift(a.pin, s), p: phase.get(a.key) ?? 1 })), graph: graphBox, focus: env.get('focus'), recovery: recoveryState });
-    const dot = railDots.get(active), box = layout.sections.get(active);
-    leaders.draw(dot ?? { x: 0, y: 0 }, dot && box ? box.anchors.map((slab) => {
-      const yv = slab.top + Math.min(slab.h / 2, 24) - s + pinShift(slab.pin, s);
-      const [x, y, k] = project(-sheet.w / 2, yv, c);
-      return { x, y, alpha: k > 0 && y > 72 && y < vh - 40 ? 1 : 0 };
-    }) : []);
-  }
-  return moving || velocity > 0;
-};
-
-// ============================================================================
-//  指针磁吸：按钮与索引项在指针靠近时朝它偏一点（至多 8px），离开后以弹簧归位。只改位移，不改尺寸
-// ============================================================================
-const magnets = fine && !reduced ? $$('[data-magnet]').map((el) => ({ el, x: spring(0, 'snap'), y: spring(0, 'snap') })) : [];
-if (magnets.length) {
-  addEventListener('pointermove', (e) => {
-    for (const m of magnets) {
-      const r = m.el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-      const dx = e.clientX - cx, dy = e.clientY - cy, near = Math.abs(dx) < r.width / 2 + 36 && Math.abs(dy) < r.height / 2 + 28;
-      m.x.target = near ? clamp(dx * 0.22, -8, 8) : 0; m.y.target = near ? clamp(dy * 0.3, -6, 6) : 0;
-    }
-    frame.wake();
-  }, { passive: true });
-  frame.add((dt) => magnets.reduce((moving, m) => {
-    const a = m.x.step(dt), b = m.y.step(dt);
-    m.el.style.setProperty('--mx', `${m.x.value.toFixed(2)}px`); m.el.style.setProperty('--my', `${m.y.value.toFixed(2)}px`);
-    return a || b || moving;
-  }, false));
-}
-
-// ============================================================================
-//  2D / 3D 切换：同一份 DOM，切换只换"纸片写不写变换"。切换前记下当前章节，切换后回到同一章
-// ============================================================================
+const chapters = $$('[data-chapter]');
+const links = $$('[data-chapter-link]');
 const modeButtons = $$('[data-mode]');
-const showMode = () => modeButtons.forEach((button) => {
-  button.setAttribute('aria-pressed', String((button.dataset.mode === '3d') === curled));
-  if (button.dataset.mode === '3d' && !canCurl) { button.disabled = true; button.title = '3D 需要 WebGL，且系统未开启"减弱动态效果"'; }
-});
-function flatten() {
-  for (const slab of layout.slabs) {
-    slab.key = ''; slab.lit = ''; slab.grow = '';
-    const style = slab.el.style;
-    style.transform = ''; style.transformOrigin = ''; style.opacity = ''; style.setProperty('--lit', '1');
-  }
-  ribbon = null;
-}
-function setMode(next) {
-  if (next === curled || (next && !canCurl)) return;
-  const here = env.get('chapter') || 'top';
-  curled = next;
-  root.classList.toggle('has-webgl', curled);
-  if (curled) { leaders ??= createLeaders($('[data-leaders]')); scene.setRecovery(); } else flatten();
-  try { localStorage.setItem(MODE_KEY, curled ? '3d' : '2d'); } catch (error) { console.warn('[ClaudeBar] 记不住视图偏好，只在这一页生效。', error); }
-  relayout();
-  const flatTop = (document.getElementById(here)?.getBoundingClientRect().top ?? 0) + scrollY - c.vh * 0.12;
-  const target = Math.max(0, curled ? snapOf(here) ?? 0 : flatTop);
-  view.value = view.target = target; expected = null;
-  scrollTo({ top: target, behavior: 'instant' });
-  showMode(); frame.wake();
-}
-modeButtons.forEach((button) => button.addEventListener('click', () => setMode(button.dataset.mode === '3d')));
-showMode();
-
-frame.add(update);
-addEventListener('resize', relayout);
-new ResizeObserver(() => relayout()).observe(track);
-document.fonts?.ready.then(relayout);
-mountKit();
-relayout();
-if (curled && location.hash && snapOf(location.hash.slice(1)) !== undefined) { const s = snapOf(location.hash.slice(1)); view.value = view.target = s; scrollTo({ top: s, behavior: 'instant' }); }
-update(1 / 60);
+const vw = () => document.documentElement.clientWidth;   // 不含常驻滚动条，与 position:fixed 的画布同宽
+const phone = () => vw() < 760;
 
 // ============================================================================
-//  环境 → 页面与感官：界变了换强调色并响一次和弦；章节变了、联动命中了各轻点一下
-// ============================================================================
-env.on('realm', (id) => { root.dataset.realm = id; });
-env.on('realm', (id) => sense.cross(id), { immediate: false });
-env.on('chapter', () => sense.tick(), { immediate: false });
-env.on('focus', (focus) => { if (focus) sense.tick(); frame.wake(); }, { immediate: false });
-const senseButton = $('[data-sense]');
-senseButton?.addEventListener('click', () => sense.enable(!env.get('sense')));
-env.on('sense', (on) => senseButton?.setAttribute('aria-pressed', String(on)));
-
-// ============================================================================
-//  工作台画廊：选中态来自共享 cb-segmented（aria-selected）；方向键在标签间移动，符合 ARIA tabs 约定
+//  工作台画廊：与 WebGL 无关，先接上。方向键在标签间移动，符合 ARIA tabs 约定
 // ============================================================================
 for (const gallery of $$('[data-gallery]')) {
   const tabs = [...gallery.querySelectorAll('[role=tab]')];
@@ -306,7 +35,7 @@ for (const gallery of $$('[data-gallery]')) {
       other.setAttribute('aria-selected', String(on)); other.tabIndex = on ? 0 : -1;
       document.getElementById(other.getAttribute('aria-controls')).hidden = !on;
     }
-    sense.tick(); if (focus) tab.focus();
+    if (focus) tab.focus();
   };
   tabs.forEach((tab, i) => {
     tab.addEventListener('click', () => select(tab));
@@ -317,14 +46,198 @@ for (const gallery of $$('[data-gallery]')) {
   });
 }
 
-// ---- 截图倾斜：只改变换，不改尺寸；离开后由 CSS 弹簧落定 ----
-if (fine && !reduced) {
-  for (const el of $$('[data-tilt]')) {
-    el.addEventListener('pointermove', (e) => {
-      const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
-      el.style.setProperty('--rx', `${(-y * 5).toFixed(2)}deg`); el.style.setProperty('--ry', `${(x * 7).toFixed(2)}deg`);
-      el.style.setProperty('--gx', `${((x + 0.5) * 100).toFixed(1)}%`); el.style.setProperty('--gy', `${((y + 0.5) * 100).toFixed(1)}%`);
-    });
-    el.addEventListener('pointerleave', () => { el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg'); });
+// ============================================================================
+//  空间层：只在拿得到 WebGL2 时挂载；拿不到就保持一页黑底长文
+// ============================================================================
+function webgl() {
+  try { return Boolean(document.createElement('canvas').getContext('webgl2')); }
+  catch (error) { console.warn('ClaudeBar 首页：WebGL 不可用，退回平面长文', error); return false; }
+}
+const listening = new AbortController();   // 空间层的全部监听器；出错退回长文时一次撤掉
+if (webgl()) {
+  const { createScene } = await import('./home-scene.mjs');
+  try { mount(createScene($('[data-stage]'), { onRestore: () => frame.wake() })); }
+  catch (error) { fallback(error); }
+}
+
+/** 空间层任何一处出错：退回一页长文，内容不能因为画面失败而消失。 */
+function fallback(error) {
+  console.error('ClaudeBar 首页：空间层出错，退回平面长文', error);
+  listening.abort();   // 轻吸、滚动换算一并停掉：长文里不该再被拽动
+  root.classList.remove('has-webgl');
+  $$('[data-unfocusable]').forEach((el) => { el.removeAttribute('tabindex'); el.removeAttribute('data-unfocusable'); });
+}
+/** 看不见的卡片与索引：文字留在无障碍树里（读屏仍能顺读整篇），只让其中可交互的元素暂时不进 Tab 序列、不接点击。 */
+function quiet(el, hidden) {
+  if (!el || (el.dataset.hiddenNow === '1') === hidden) return;
+  el.dataset.hiddenNow = hidden ? '1' : '0';
+  el.style.pointerEvents = hidden ? 'none' : '';
+  for (const a of el.querySelectorAll('a, button')) {
+    if (hidden) { a.setAttribute('tabindex', '-1'); a.setAttribute('data-unfocusable', ''); }
+    else { a.removeAttribute('tabindex'); a.removeAttribute('data-unfocusable'); }
   }
+}
+
+function mount(scene) {
+  root.classList.add('has-webgl');
+  const beads = Object.fromEntries($$('[data-bead]').map((el) => [el.dataset.bead, el]));
+  const chips = $$('[data-chip]');
+  const cardOf = chapters.map((section) => $('.card, .hero-copy, .board', section));
+  const leaders = createLeaders($('[data-leaders]'));
+  const count = $('[data-count]');
+  const index = $('[data-index]');
+  let tr = null, cams = [], centers = [], lastChapter = -1, broken = false, quietRect = null, quietFor = -1;
+  /** 当前卡片在屏幕上的矩形（NDC），供着色器在卡片周围留出安静区；只在换章与尺寸变化时读一次布局。 */
+  const readQuiet = (k) => {
+    const r = cardOf[k]?.getBoundingClientRect();
+    quietRect = r && r.width ? [(r.left / vw()) * 2 - 1, 1 - (r.bottom / innerHeight) * 2, (r.right / vw()) * 2 - 1, 1 - (r.top / innerHeight) * 2].map((x) => +x.toFixed(3)) : null;
+    quietFor = k;
+  };
+
+  // ---- 2D / 3D：减弱动态强制 2D；否则本机记住的选择，默认触控窄屏 2D ----
+  const saved = (() => { try { return localStorage.getItem('cb-home-mode'); } catch (error) { console.warn('读取视图偏好失败', error); return null; } })();
+  const initial = reduced ? '2d' : saved ?? (matchMedia('(pointer: coarse)').matches && phone() ? '2d' : '3d');
+  const mode = spring(initial === '3d' ? 1 : 0, 'settle');
+  const show = (m) => modeButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+  modeButtons.forEach((b) => { b.disabled = reduced && b.dataset.mode === '3d'; });
+  show(initial);
+  modeButtons.forEach((b) => b.addEventListener('click', () => {
+    if (b.disabled) return;
+    show(b.dataset.mode); mode.target = b.dataset.mode === '3d' ? 1 : 0;
+    try { localStorage.setItem('cb-home-mode', b.dataset.mode); } catch (error) { console.warn('保存视图偏好失败', error); }
+    env.set({ mode: b.dataset.mode }); frame.wake();
+  }));
+
+  // ---- 滚动 → 章节连续坐标：视口中线在相邻两章中心之间的位置 ----
+  const s = spring(0, 'settle').tune(RIBBON.lerp);
+  const snap = spring(0, 'settle', 0.5);   // 单位是像素，半像素即落定
+  let snapping = false;
+  const measure = () => { centers = chapters.map((el) => el.offsetTop + el.offsetHeight / 2); };
+  const target = () => {
+    const mid = scrollY + innerHeight / 2, last = CAMERA.length - 1;
+    if (mid <= centers[0]) return 0;
+    for (let i = 0; i < Math.min(centers.length - 1, last); i++) {
+      if (mid < centers[i + 1]) return i + (mid - centers[i]) / (centers[i + 1] - centers[i]);
+    }
+    return last;
+  };
+  let pendingSnap = false, held = false;
+  const nativeEnd = 'onscrollend' in window, opts = { passive: true, signal: listening.signal };
+  // 手指或指针按住期间绝不吸附（Safari 回退路径没有 scrollend，只能靠这个判断「手已松开」）
+  for (const type of ['touchstart', 'pointerdown']) addEventListener(type, () => { held = true; }, opts);
+  for (const type of ['touchend', 'touchcancel', 'pointerup', 'pointercancel']) addEventListener(type, () => { held = false; frame.wake(); }, opts);
+  addEventListener('scroll', () => {
+    if (snapping && Math.abs(scrollY - snap.value) > 2) snapping = false;   // 别的来源改了滚动（拖滚动条、锚点、脚本），轻吸让位
+    if (!snapping) pendingSnap = true;
+    s.target = target(); frame.wake();
+  }, opts);
+  for (const type of ['wheel', 'touchstart', 'keydown', 'pointerdown']) addEventListener(type, () => { snapping = false; }, opts);
+  function trySnap() {
+    if (broken || held) return;
+    pendingSnap = false;
+    const mid = scrollY + innerHeight / 2, i = centers.reduce((best, c, k) => (Math.abs(c - mid) < Math.abs(centers[best] - mid) ? k : best), 0);
+    const gap = centers[i] - mid;
+    // 首章不吸（停在页顶就是停在页顶）；工作台是平常滚动，也不吸
+    if (reduced || i === 0 || i > CAMERA.length - 1 || Math.abs(gap) < 1 || Math.abs(gap) > innerHeight * RIBBON.capture) return;
+    snap.value = scrollY; snap.target = scrollY + gap; snapping = true; frame.wake();
+  }
+  // 有 scrollend 就在滚动停下的那一刻判断；没有（Safari）就等显示跟随落定再判断——仍是滚动事件驱动，不用时钟
+  if (nativeEnd) addEventListener('scrollend', trySnap, opts);
+
+  let first = true;
+  function resize() {
+    tr = scene.resize(vw(), innerHeight, phone());
+    cams = CAMERA.map((spec) => tr.cameraFor(spec));
+    measure();
+    if (first) {
+      // 深链进入：浏览器按平面布局滚过去，章节变高后要重新对准该章中心；然后直接落在当前章，不从第一章飞过去
+      const hashed = location.hash && document.getElementById(location.hash.slice(1));
+      const k = hashed ? chapters.indexOf(hashed.closest('[data-chapter]')) : -1;
+      if (k >= 0) scrollTo(0, centers[k] - innerHeight / 2);
+      s.target = target(); s.value = s.target; first = false;
+    } else s.target = target();
+    quietFor = -1;
+    frame.wake();
+  }
+  addEventListener('resize', resize, opts);
+
+  // ---- 珠子：起点、四道关、山顶。关卡色只表示核验结果 ----
+  const pinList = () => [{ key: 's', tau: 0, layer: 0 }, ...GATES.map((g, k) => ({ key: g.key, tau: TRAIL.gates[k], layer: g.layer, gate: g, chapter: k + 2 })), { key: 'flag', tau: tr.T, layer: 3 }];
+  const stateOf = (pin, st, sv) => {
+    if (pin.key === 's') return 'start';
+    if (pin.key === 'flag') return sv > 6.7 ? 'pass' : 'idle';
+    if (st.head < pin.tau - 0.01) return st.head > pin.tau - 1.15 ? 'next' : 'idle';
+    return sv < pin.chapter - 0.12 ? 'check' : pin.gate.result;
+  };
+  const place = (el, xy, alpha = 1) => {
+    if (!xy) { if (!el.hidden) el.hidden = true; return; }
+    if (el.hidden) el.hidden = false;
+    el.style.transform = `translate(${xy[0].toFixed(1)}px,${xy[1].toFixed(1)}px)`;
+    if (alpha !== 1) el.style.opacity = alpha.toFixed(3); else if (el.style.opacity) el.style.removeProperty('opacity');
+  };
+  const write = (el, key, value) => { if (el.dataset[key] !== value) el.dataset[key] = value; };
+
+  function draw() {
+    const sv = s.value, t = mode.value, st = chapterState(sv, tr.T);
+    // 卡片是 sticky 的：换章那一刻它还没吸顶。停驻段里每帧重读一次矩形（在本帧写 DOM 之前，单次读，不引起强制回流链）
+    if (quietFor !== Math.round(sv) || Math.abs(sv - Math.round(sv)) <= 0.3 || snapping) readQuiet(Math.round(sv));
+    const orbit3 = mixOrbit(cams[st.i].three, cams[st.j].three, st.w), orbit2 = mixOrbit(cams[st.i].flat, cams[st.j].flat, st.w);
+    const plate = Math.min(1, Math.max(0, (sv - 6.4) / 0.4));
+    const near = Math.round(sv), quietOn = Number(cardOf[near]?.style.getPropertyValue('--o') || 0) * (quietRect && near >= 1 && near <= 6 ? 1 : 0);
+    const view = { t, ex: st.ex * t, head: st.head, route: st.route, plate, quiet: quietRect, quietOn: +quietOn.toFixed(2), orbit: mixOrbit(orbit2, orbit3, t) };
+    const pins = pinList(), screen = scene.render(view, pins);
+    // 卡片：停驻中心前后 ±0.3 章全显，±0.48 章外全隐；只写 opacity
+    chapters.forEach((_, i) => {
+      const card = cardOf[i]; if (!card) return;
+      const near = i > CAMERA.length - 1 ? 1 : 1 - Math.min(1, Math.max(0, (Math.abs(sv - i) - 0.3) / 0.18));
+      const o = near.toFixed(3); if (card.style.getPropertyValue('--o') !== o) card.style.setProperty('--o', o);
+      quiet(card, near === 0);
+    });
+    // 当前章按视口中线所在的章节算（工作台没有自己的镜头，但仍是一章）
+    const mid = scrollY + innerHeight / 2;
+    const current = centers.reduce((best, c, k) => (Math.abs(c - mid) < Math.abs(centers[best] - mid) ? k : best), 0);
+    if (current !== lastChapter) {
+      lastChapter = current; env.set({ chapter: current });
+      links.forEach((a, k) => (k === current ? a.setAttribute('aria-current', 'step') : a.removeAttribute('aria-current')));
+      if (count) count.textContent = String(current + 1).padStart(2, '0');
+    }
+    const showIndex = !(sv < 0.55 || sv > 6.6);
+    root.style.setProperty('--index-o', showIndex ? '1' : '0');
+    quiet(index, !showIndex);
+    // 珠子状态只取决于叙事位置；位置只在视图变化时重算（画面没变时沿用上一帧的投影）
+    pins.forEach((pin) => write(beads[pin.key], 'state', stateOf(pin, st, sv)));
+    if (!screen) return;
+    const xy = {};
+    const heroFlat = (1 - t) * Math.max(0, 1 - sv * 2);   // 平面首屏只看山，不放珠子
+    pins.forEach((pin, k) => { xy[pin.key] = screen[k]; place(beads[pin.key], screen[k], pin.key === 'flag' ? 1 - heroFlat : (1 - plate * 0.9) * (1 - heroFlat)); });
+    // 层标签：揭层时出现在每层纸的左缘
+    chips.forEach((chip, i) => {
+      const p = scene.project(tr.surface(tr.aRest - 0.4, -1.5, { t, ex: view.ex, layer: i, head: st.head }));
+      place(chip, view.ex > 0.02 ? p : null, view.ex);
+    });
+    // 引线：索引当前项 → 本章落点（关卡章连到珠子左缘，拆层章连到四张层标签）
+    const from = links[current]?.getBoundingClientRect();
+    const alpha = Number(cardOf[current]?.style.getPropertyValue('--o') || 0) * (phone() ? 0 : 1);
+    let targets = [];
+    if (from && current >= 1 && current <= 5) {
+      const key = current === 1 ? 's' : GATES[current - 2].key, p = xy[key];
+      if (p) targets = [{ x: p[0] - 16, y: p[1] - 13, alpha }];
+    } else if (from && current === 6) {
+      targets = chips.map((chip) => { const r = chip.getBoundingClientRect(); return { x: r.left, y: r.top + r.height / 2, alpha: alpha * view.ex }; });
+    }
+    leaders.draw({ x: (from?.right ?? 0) + 6, y: (from?.top ?? 0) + (from?.height ?? 0) / 2 }, targets);
+  }
+
+  frame.add((dt) => {
+    let moving = false;
+    if (broken) return false;
+    if (snapping) { moving = snap.step(dt) || moving; scrollTo(0, snap.value); if (!moving) snapping = false; }
+    const following = s.step(dt);
+    if (!following && pendingSnap && !snapping && !nativeEnd) trySnap();
+    moving = following || snapping || moving;
+    moving = mode.step(dt) || moving;
+    try { draw(); } catch (error) { broken = true; fallback(error); return false; }
+    return moving;
+  });
+  resize();
 }

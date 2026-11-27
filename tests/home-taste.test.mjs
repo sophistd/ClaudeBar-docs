@@ -31,14 +31,16 @@ test('each bad-taste rule fires on a deliberately bad sample', () => {
   assert.ok(page('<aside><b>码</b><span>CODE</span><em>机器 · 心智</em></aside>').includes('self-note'));
   assert.ok(page('<p>帧</p><p>静止 · 零帧</p>').includes('self-note'));
   assert.ok(page('<p>出口先核验，再放行连接到上游。</p><p>出口先核验，再放行连接到上游。</p>').includes('restated'));
-  assert.ok(ids({ files: files(), html: html.replace('<section class="sheet chapter" id="gate"', `<section class="sheet chapter" id="gate"><p>${'字'.repeat(200)}</p>`) }).includes('text-budget'));
+  assert.ok(ids({ files: files(), html: html.replace('<section class="chapter" id="gate"', `<section class="chapter" id="gate"><p>${'字'.repeat(200)}</p>`) }).includes('text-budget'));
 });
 
 test('each good-taste rule fires when what it requires is missing', () => {
   const html = renderHome(), all = files();
   assert.ok(ids({ files: { ...all, 'home.css': all['home.css'].replace(/@media \(prefers-reduced-motion: reduce\)[\s\S]*$/, '') }, html }).includes('reduced-motion'));
-  assert.ok(ids({ files: all, html: html.replace('</main>', '<i data-bind="altitude"></i></main>') }).includes('declarations-bound'));
-  assert.ok(ids({ files: all, html: html.replace('</main>', '<i data-kit="gauge"></i></main>') }).includes('declarations-bound'));
-  assert.ok(ids({ files: all, html: html.replace(/<div class="threshold"[\s\S]*?<\/div>/, '').replace('data-scene="gate" data-realm="code"', 'data-scene="gate" data-realm="token"') }).includes('scenes-mapped'));
+  assert.ok(ids({ files: all, html: html.replace('data-chapter data-shot="5"', 'data-chapter data-shot="99"') }).includes('chapter-has-shot'));
+  assert.ok(ids({ files: all, html: html.replace('data-chapter data-shot="6"', 'data-chapter data-shot="2"') }).includes('chapter-has-shot'));
+  assert.ok(ids({ files: all, html: html.replace('data-bead="leak"', 'data-bead="ghost"') }).includes('bead-has-gate'));
+  assert.ok(ids({ files: { ...all, 'home.css': all['home.css'].replace('.card{', '.card{border-radius:26px;') }, html }).includes('square-corners'));
+  assert.ok(ids({ files: { ...all, 'home.css': all['home.css'].replace('.card{', '.card{border-radius:999px;') }, html }).includes('square-corners'));
   assert.ok(ids({ files: { ...all, 'home.mjs': all['home.mjs'].replace('[POS]', '[WHERE]') }, html }).includes('fractal-header'));
 });

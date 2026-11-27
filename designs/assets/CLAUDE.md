@@ -8,11 +8,9 @@ sessions-studio.webp: 生成的独立会话材质面板主视觉。
 package-studio.webp: 生成的陶瓷、铝与玻璃安装包主视觉。
 optics.bundle.js: esbuild 输出的 Three.js 按需运行包，仅 UI Kit 按需加载，与静态站一同发布。
 optics.bundle.js.LEGAL.txt: 打包器保留的第三方许可。
-home.bundle.js: esbuild 输出的首页运行包（home.mjs + Three.js 后期管线），由首页以 module 脚本加载。
+home.bundle.js: esbuild 输出的首页运行包（home.mjs + home-scene 点阵山，Three.js 按需导入），由首页以 module 脚本加载。
 home.bundle.js.LEGAL.txt: 首页运行包保留的第三方许可。
 THREE-LICENSE.txt: Three.js 原始 MIT 许可。
-figures/: 首页五张场景图（drift/leak/recovery/sessions/locale.webp），由 ../figures/render.mjs 离线渲出，透明底；sizes.json 记每张实际宽高，构建时读。
-hdri/: Poly Haven 的 CC0 摄影棚 HDRI（studio_small_08_1k.hdr、photo_studio_01_1k.hdr，作者 Sergej Majboroda，polyhaven.com/license，2026-11-26 取）；只在离线出图时用；studio_small_08 随公开源码发布（CC0 允许再分发），不进站点运行文件；photo_studio_01 本地备选，未使用、不发布。
 network.svg: 可复用的平面受管路径示意，浏览器与应用接入门禁，出口证据参与判断。
 gate.svg: 可复用的平面门禁示意，稀疏点阵、中心门禁与进出连接。
 sessions.svg: 两份独立浏览器数据目录并列，无跨会话连接。
