@@ -1,21 +1,20 @@
 /**
- * [INPUT]: 依赖 ./home-tokens.mjs 的 REALMS/SCENE_REALM/CROSSINGS/ENV_DEFAULTS/MOTION、./home-source.mjs 的 renderHome，
+ * [INPUT]: 依赖 ./home-tokens.mjs 的 MOTION/CAMERA/GATES、./home-source.mjs 的 renderHome，
  *          以及 node:fs 读取本目录的首页源文件（只在 Node 里运行，不进浏览器运行包）。
  * [OUTPUT]: 对外提供 HOME_SOURCES 受审文件清单、visibleText 可见文字抽取、SELF_NOTES 自我标注词表、TEXT_BUDGET 每节字数上限、BAD / GOOD 两组规则、audit({files, html}) → 违规清单、
  *           auditHome() 读盘并审当前首页。
  * [POS]: 首页四层柔性编码的最上层（Taste Contract）。双向门禁：BAD 拦住不许出现的东西（印到页面上的自我标注、复述、超出字数预算的章节、时钟、无限循环、
- *        过冲、悬停改尺寸、散落的帧循环）；GOOD 要求必须存在的东西（减弱动态退路、三界定义完整、
- *        每个声明都有环境承接、分形文档头）。build.mjs 构建前审一次，tests/home-taste.test.mjs 再审一次。
+ *        过冲、悬停改尺寸、散落的帧循环、超长文件）；GOOD 要求必须存在的东西（减弱动态退路、每章有镜头、每道关有珠子、方角四档、分形文档头）。
+ *        build.mjs 构建前审一次，tests/home-taste.test.mjs 再审一次。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 import { readFileSync } from 'node:fs';
-import { REALMS, SCENE_REALM, CROSSINGS, ENV_DEFAULTS, MOTION } from './home-tokens.mjs';
+import { MOTION, CAMERA, GATES } from './home-tokens.mjs';
 import { renderHome } from './home-source.mjs';
 
 export const HOME_SOURCES = [
-  'home-tokens.mjs', 'home-kit.mjs', 'home-sense.mjs', 'home-ribbon.mjs', 'home-world.mjs', 'home-graph.mjs',
+  'home-tokens.mjs', 'home-kit.mjs', 'home-ribbon.mjs', 'home-terrain.mjs', 'home-trail.mjs',
   'home-scene.mjs', 'home-source.mjs', 'home.mjs', 'home-taste.mjs', 'home.css',
-  'figures/studio-kit.mjs', 'figures/studio-scenes.mjs', 'figures/render.mjs', 'figures/stage.mjs',
 ];
 
 const strip = (text) => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');   // 规则只看代码，不看注释
@@ -57,7 +56,8 @@ export const BAD = [
   { id: 'restated', why: '同一句话只说一次：八个字以上的句子在页面上重复出现即为复述',
     find: ({ html }) => {
       const seen = new Map();
-      for (const sentence of visibleText(html).join('').split(/[。！？]/).map((t) => t.trim()).filter((t) => t.length >= 8)) seen.set(sentence, (seen.get(sentence) ?? 0) + 1);
+      // 读数（dd）本来就会重复出现同一个值；其余文字按句号与行拆开，像句子的（含中文或空格）都算
+      for (const sentence of visibleText(html.replace(/<dd>[\s\S]*?<\/dd>/g, '')).join('\n').split(/[。！？\n]/).map((t) => t.trim()).filter((t) => t.length >= 8 && /[\u4e00-\u9fff\s]/.test(t))) seen.set(sentence, (seen.get(sentence) ?? 0) + 1);
       return [...seen].filter(([, n]) => n > 1).map(([sentence]) => `「${sentence.slice(0, 24)}」出现了不止一次`);
     } },
   { id: 'text-budget', why: `一节只讲一件事：每节可见文字不超过 ${TEXT_BUDGET} 字，多的交给入口逐层展开`,
@@ -75,25 +75,20 @@ export const GOOD = [
       const block = files['home.css'].match(/@media \(prefers-reduced-motion: reduce\) \{[\s\S]*$/)?.[0] ?? '';
       return block.includes(`${MOTION.fade * 1000}ms`) && /animation:\s*none/.test(block) ? [] : ['home.css 缺少减弱动态退路'];
     } },
-  { id: 'realms-complete', why: '每一界都同时规定纸面与纸上文字色、强调色、风声、和弦、震动与一句去处',
-    find: () => REALMS.filter((realm) => !['id', 'glyph', 'name', 'who', 'what', 'line', 'sheet', 'on', 'soft', 'accent', 'wind', 'chord', 'haptic'].every((key) => realm[key] !== undefined && realm[key] !== ''))
-      .map((realm) => `REALMS.${realm.id}`) },
-  { id: 'scenes-mapped', why: '每个章节都归属某一界，越界段两端与相邻章节一致',
+  { id: 'chapter-has-shot', why: '每一章都有镜头：data-shot 指向 CAMERA 里存在的机位，且按顺序不倒退',
     find: ({ html }) => {
-      const order = [...html.matchAll(/data-scene="([\w-]+)" data-realm="(\w+)"/g)].map(([, id, realm]) => ({ id, realm }));
-      const wrong = order.filter(({ id, realm }) => SCENE_REALM[id] !== realm).map(({ id }) => `章节 ${id} 的界与 SCENE_REALM 不符`);
-      const gaps = order.slice(1).filter((scene, i) => scene.realm !== order[i].realm
-        && !CROSSINGS.some(([before, from, to]) => before === scene.id && from === order[i].realm && to === scene.realm))
-        .map(({ id }) => `章节 ${id} 之前换了界却没有越界段`);
-      return [...wrong, ...gaps, ...(order.length ? [] : ['首页没有任何 data-scene 章节'])];
+      const shots = [...html.matchAll(/data-chapter data-shot="(\d+)"/g)].map(([, k]) => Number(k));
+      const bad = shots.flatMap((k, i) => (k >= CAMERA.length || (i && k < shots[i - 1]) ? [`第 ${i + 1} 章的镜头 ${k}`] : []));
+      return [...bad, ...(shots.length ? [] : ['首页没有任何 data-chapter 章节'])];
     } },
-  { id: 'declarations-bound', why: '视图声明的每个微件与环境键，都必须有环境承接',
-    find: ({ files, html }) => {
-      const registered = new Set([...files['home-kit.mjs'].matchAll(/register\('([\w-]+)'/g)].map(([, name]) => name));
-      const kits = [...new Set([...html.matchAll(/data-kit="([\w-]+)"/g)].map(([, name]) => name))].filter((name) => !registered.has(name));
-      const binds = [...new Set([...html.matchAll(/data-bind="([\w-]+)"/g)].map(([, key]) => key))].filter((key) => !(key in ENV_DEFAULTS));
-      return [...kits.map((name) => `未登记的微件 ${name}`), ...binds.map((key) => `未登记的环境键 ${key}`)];
+  { id: 'bead-has-gate', why: '每道关都有一颗珠子，每颗珠子都对应一道关或起点、山顶',
+    find: ({ html }) => {
+      const beads = [...html.matchAll(/data-bead="([\w-]+)"/g)].map(([, k]) => k), keys = ['s', ...GATES.map((g) => g.key), 'flag'];
+      return [...beads.filter((k) => !keys.includes(k)).map((k) => `多出的珠子 ${k}`), ...keys.filter((k) => !beads.includes(k)).map((k) => `缺少珠子 ${k}`)];
     } },
+  { id: 'square-corners', why: '圆角只取四档（var(--r1…r4)），没有胶囊形与大圆角',
+    find: ({ files }) => [...strip(files['home.css']).matchAll(/border-radius\s*:\s*([^;}]+)/g)]
+      .filter(([, value]) => !/^var\(--r[1-4]\)$/.test(value.trim()) && !/^(0|[12]px)$/.test(value.trim())).map(([rule]) => `home.css: ${rule.trim()}`) },
   { id: 'fractal-header', why: '每个文件开头都有 INPUT / OUTPUT / POS / PROTOCOL 契约',
     find: ({ files }) => Object.entries(files).filter(([, text]) => !['[INPUT]', '[OUTPUT]', '[POS]', '[PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md'].every((mark) => text.slice(0, 2400).includes(mark)))
       .map(([name]) => name) },

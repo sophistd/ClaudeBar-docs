@@ -1,9 +1,8 @@
 /**
- * [INPUT]: 依赖 ./home-tokens.mjs 的 ENV_DEFAULTS 与 rate()；读取带 data-kit / data-bind / data-focus 的元素。
+ * [INPUT]: 依赖 ./home-tokens.mjs 的 ENV_DEFAULTS 与 rate()。
  * [OUTPUT]: 对外提供 reduced、clamp、env（环境键值与订阅）、frame（全页唯一的事件唤醒帧调度器）、
- *           spring（三档临界阻尼跟随器，可换档、可设落定阈值）、register/mountKit 与内建微件 readout / meter / spark / state / focus。
- * [POS]: 首页四层柔性编码的第二层（Kit）：可感知的物理原语。视图只写 data-kit 声明"我是什么"、
- *        data-bind 声明"我读哪个环境键"，怎么动由这里统一决定；整页只有这里允许调用 requestAnimationFrame。
+ *           spring（三档临界阻尼跟随器，可换档、可设落定阈值）。
+ * [POS]: 首页四层柔性编码的第二层（Kit）：可感知的物理原语。怎么动由这里统一决定；整页只有这里允许调用 requestAnimationFrame。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 import { ENV_DEFAULTS, rate } from './home-tokens.mjs';
@@ -69,53 +68,3 @@ export function spring(value = 0, tier = 'settle', epsilon = 1e-4) {
   };
   return self;
 }
-
-// ============================================================================
-//  微件原语：每个都很小，只做一件事
-// ============================================================================
-const kits = new Map();
-export const register = (name, mount) => kits.set(name, mount);
-export function mountKit(root = document) {
-  for (const el of root.querySelectorAll('[data-kit]')) kits.get(el.dataset.kit)?.(el);
-}
-
-const FORMATS = {
-  int: (v) => Math.round(v).toLocaleString('en-US'),
-  meters: (v) => `${v.toFixed(1)} m`,
-};
-
-// 读数：把环境键写成文字。字符串没变就不碰 DOM
-register('readout', (el) => {
-  const format = FORMATS[el.dataset.format ?? 'int'];
-  env.on(el.dataset.bind, (value) => { const text = format(value); if (el.textContent !== text) el.textContent = text; });
-});
-
-// 比例条：把 0…1 写进 --v，粗细与颜色归 CSS
-register('meter', (el) => env.on(el.dataset.bind, (value) => el.style.setProperty('--v', clamp(value).toFixed(3))));
-
-// 状态：把环境键镜像成 data-value，样式按值切换
-register('state', (el) => env.on(el.dataset.bind, (value) => { el.dataset.value = String(value); }));
-
-// 联动源：指针或焦点落在它身上时，把 data-focus 写进环境；3D 与声音各自订阅
-register('focus', (el) => {
-  const on = () => env.set({ focus: el.dataset.focus }), off = () => { if (env.get('focus') === el.dataset.focus) env.set({ focus: '' }); };
-  el.addEventListener('pointerenter', on); el.addEventListener('pointerleave', off);
-  el.addEventListener('focus', on); el.addEventListener('blur', off);
-});
-
-// 走势线：只在绑定值变化时采样并重画，静止时保留最近一次穿越的曲线
-register('spark', (el) => {
-  const ctx = el.getContext('2d'), samples = new Array(64).fill(0);
-  const draw = () => {
-    const dpr = Math.min(devicePixelRatio, 2), w = el.clientWidth, h = el.clientHeight;
-    if (!w || !h) return;
-    if (el.width !== w * dpr) { el.width = w * dpr; el.height = h * dpr; }
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
-    const peak = Math.max(1.5, ...samples);
-    ctx.beginPath();
-    samples.forEach((v, i) => ctx[i ? 'lineTo' : 'moveTo']((i / (samples.length - 1)) * w, h - 1 - (v / peak) * (h - 2)));
-    ctx.strokeStyle = getComputedStyle(el).color; ctx.lineWidth = 1.25; ctx.lineJoin = 'round'; ctx.stroke();
-  };
-  env.on(el.dataset.bind, (value) => { samples.push(value); samples.shift(); draw(); });
-  env.on('realm', draw, { immediate: false });   // 强调色随界切换，线条跟着换色
-});

@@ -1,186 +1,271 @@
 /**
- * [INPUT]: 依赖 three 的 WebGLRenderer/PerspectiveCamera/ShaderMaterial；./home-tokens.mjs 的 PALETTE/REALMS；
- *          ./home-ribbon.mjs 的 bend（与 DOM 纸片同一条纸带）；./home-kit.mjs 的 env（写回帧数遥测）；
- *          ./home-world.mjs 的 createGround 程序化地面（网格与光脉冲）与 createCubes 翻滚方块；./home-graph.mjs 的首屏关系图谱；./figures/stage.mjs 的舞台物件（与场景配图同一套物理材质）；
- *          three addons 的 RoomEnvironment（舞台物件的环境光，程序生成、不下载贴图）。
- * [OUTPUT]: 对外提供 mountScene(canvas) → {render(view), setRecovery(state), dispose()}。
- *           view = {scroll, c, sheet:{w, top, bottom}, stops:[{y0, y1, from, to}], anchors:[{id, y, p}], graph:{top, h, w}, focus, recovery}，
- *           由 home.mjs 每帧给出；视图没变就不画，所以落定之后零帧。
- * [POS]: 首页 3D 的渲染器：相机就是纸带模型里的俯视镜头（放在原点、看向 −z，视场与 CSS perspective 相同），
- *        只画三样东西——与 DOM 纸片同形的连续纸面（顶点每帧按 bend 重算，按越界段换色）、
- *        随滚动后退的地面网格、按章节的行站到纸带两侧的舞台物件（近景贴纸边、中景在两侧地面），
- *        每件物件的时间轴取本节进度 p（p = 1 是顷刻，道闸在这一刻放平）。物件单独一遍渲染：保留深度、sRGB 输出加 ACES 色调映射，
- *        纸面与地面那一遍仍按原色值直出；物件与离线配图同一套材质，环境光不同（RoomEnvironment 对摄影棚 HDRI），颜色近似一致。不写文案与 DOM。
+ * [INPUT]: 依赖 three；./home-trail.mjs 的 trail 几何与 orbitPosition；./home-terrain.mjs 的 bakeHeight；./home-tokens.mjs 的 TRAIL。
+ * [OUTPUT]: 对外提供 createScene(canvas) → { resize(vw, vh, phone) → trail 几何, render(view, pins) → 珠子杆顶的屏幕坐标（视图未变为 null）, project([x,y,z]) → 屏幕 [x, y] }。
+ *           view = { t 3D 程度, ex 分层, head 路头 τ, route 路线终点 τ, orbit 镜头轨道 }。
+ *           画面：纸带上的十字像素点阵（四层纸共用一份几何），点阵跟着地形一起朝镜头流（路头每前进一个点距，整张点阵平移一格，
+ *           每个点始终贴着同一块地形）；网点式明暗（背光小而淡、受光大而亮）、近处淡出、当前卡片周围留安静区；闪点很少且不纯白；
+ *           白点路线沿中线、在前三道关处垂直穿层；地面稀疏点阵；t = 0 时纸带摊平成一张点画等高线地图。
+ * [POS]: 首页的空间层。不请求帧、不读滚动：home.mjs 在帧调度器里调用 render；视图没变就不画。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 import * as THREE from 'three';
-import { PALETTE, REALMS, RIBBON } from './home-tokens.mjs';
-import { bend } from './home-ribbon.mjs';
-import { env } from './home-kit.mjs';
-import { createGround, createCubes } from './home-world.mjs';
-import { createGraph } from './home-graph.mjs';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { STAGE } from './figures/stage.mjs';
-import { frame } from './home-kit.mjs';
+import { trail as buildTrail, orbitPosition } from './home-trail.mjs';
+import { bakeHeight, sampleBaked } from './home-terrain.mjs';
+import { TRAIL } from './home-tokens.mjs';
 
-// 颜色按 sRGB 原值进出：纸面渐变与 CSS linear-gradient 同一插值空间，两相颜色一致
-THREE.ColorManagement.enabled = false;
-const rgb = (hex) => new THREE.Vector3(((hex >> 16) & 255) / 255, ((hex >> 8) & 255) / 255, (hex & 255) / 255);
-const SHEET = Object.fromEntries(REALMS.map((realm) => [realm.id, rgb(realm.sheet)]));
-const MAX_STOPS = 4, ROWS = 220;
-
-const vertex = /* glsl */`
-attribute float aDoc;
-attribute float aLit;
-varying float vDoc;
-varying float vLit;
-void main() { vDoc = aDoc; vLit = aLit; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-const fragment = /* glsl */`
-uniform float uTop, uBottom; uniform vec3 uBase; uniform vec2 uSpan[${MAX_STOPS}]; uniform vec3 uTo[${MAX_STOPS}]; uniform int uCount;
-varying float vDoc;
-varying float vLit;
-void main() {
-  if (vDoc < uTop || vDoc > uBottom) discard;
-  vec3 color = uBase;
-  for (int i = 0; i < ${MAX_STOPS}; i++) {
-    if (i >= uCount) break;
-    color = mix(color, uTo[i], clamp((vDoc - uSpan[i].x) / max(1.0, uSpan[i].y - uSpan[i].x), 0.0, 1.0));
-  }
-  gl_FragColor = vec4(color * vLit, 1.0);
+const RAMP = /* glsl */`
+vec3 ramp(float h){
+  vec3 a = vec3(0.30,0.40,0.40), b = vec3(0.56,0.70,0.69), c = vec3(0.92,0.87,0.77), d = vec3(0.78,0.48,0.36), e = vec3(0.85,0.66,0.30);
+  if (h < 0.25) return mix(a, b, h / 0.25);
+  if (h < 0.6) return mix(b, c, (h - 0.25) / 0.35);
+  if (h < 0.85) return mix(c, d, (h - 0.6) / 0.25);
+  return mix(d, e, (h - 0.85) / 0.15);
 }`;
+const STRIP_VS = /* glsl */`
+attribute float aA, aV, aRel, aJ;
+attribute vec3 aPos3, aNrm, aPosPrev, aNrmPrev;
+uniform sampler2D uHeight;
+uniform float uHead, uRest, uT, uTau0, uTau1, uHalfW, uT3, uEx, uLayer, uGap, uL, uKeep, uPx, uDpr, uRefDist, uPlate, uStep, uQuietOn, uTail;
+uniform vec4 uQuiet;
+uniform vec2 uTexSize;
+uniform vec3 uLight;
+varying vec3 vCol; varying float vAlpha;
+${RAMP}
+float hash2(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+void main(){
+  // 点阵跟着地形走：路头每前进一个点距，整张点阵平移一格，每个点始终贴着同一块地形（不再原地抖动、原地变色）
+  float fr = fract(uHead / uStep);
+  float a = aA - fr * uStep;
+  float tau = uHead + a - uRest;
+  float ri = floor((tau - uTau0) / uStep + 0.5);
+  float rnd = hash2(vec2(ri, aJ)), rnd2 = hash2(vec2(aJ + 91.7, ri * 1.31));
+  vec3 baseP = mix(aPos3, aPosPrev, fr), baseN = normalize(mix(aNrm, aNrmPrev, fr));
 
-function sheetGeometry() {
-  const index = [];
-  for (let r = 0; r < ROWS; r++) { const a = r * 2; index.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array((ROWS + 1) * 6), 3));
-  g.setAttribute('aDoc', new THREE.Float32BufferAttribute(new Float32Array((ROWS + 1) * 2), 1));
-  g.setAttribute('aLit', new THREE.Float32BufferAttribute(new Float32Array((ROWS + 1) * 2), 1));
-  g.setIndex(index);
-  return g;
-}
+  // 纹素中心映射：烘焙时第 i 列放在 i/(w−1) 处，这里换算到 (i + 0.5)/w，与 JS 的 sampleBaked 一致
+  vec2 st = vec2((aV + 1.6) / 3.2, (tau - uTau0) / (uTau1 - uTau0)) * (uTexSize - 1.0) + 0.5;
+  vec4 tx = texture2D(uHeight, st / uTexSize);
+  float h = tx.r, dht = (tx.g * 255.0 - 128.0) / 64.0, dhv = (tx.b * 255.0 - 128.0) / 64.0;
+  vec3 nrm = normalize(mix(vec3(0.0, 1.0, 0.0), baseN, uT3));
+  vec3 pos = mix(vec3(aV * uHalfW, 0.0, -a), baseP, uT3);
+  float taper = 1.0 - smoothstep(uRest + 0.2, uL - 0.15, a);
+  pos += nrm * (aRel * h * uT3 + (3.0 - uLayer) * uGap * taper * uEx);
+  vec3 tang = normalize(vec3(0.0, nrm.z, -nrm.y));
+  float rel = aRel * uT3 + 0.05;
+  vec3 n2 = normalize(nrm - tang * dht * rel - vec3(1.0, 0.0, 0.0) * dhv * rel / uHalfW);
+  float shade = 0.18 + 0.82 * max(dot(n2, uLight), 0.0);
+  float tone = smoothstep(0.3, 0.85, clamp(0.2 + 0.7 * shade, 0.0, 1.0));
+  float alt = max(clamp(0.75 * tau / uT + 0.25 * h, 0.0, 1.0), smoothstep(0.62, 1.0, a / uL) * (0.82 + 0.18 * h));
+  float sparkle = step(0.9985, rnd);
+  vCol = mix(ramp(alt) * (0.2 + 0.7 * shade) * mix(1.1, 1.0, uT3), vec3(1.0), sparkle * 0.35);
 
-/** CSS 3D 落点 → 镜头坐标（相机在原点看 −z）：u = H/2 − Y，深度 g = P − Z。 */
-const cam = (c, x, Y, Z) => [x, c.vh / 2 - Y, Z - c.P];
+  float d = min(fract(h * 8.0), 1.0 - fract(h * 8.0)), major = min(fract(h * 2.0), 1.0 - fract(h * 2.0));
+  float contour = max(1.0 - smoothstep(0.11, 0.19, d), 1.0 - smoothstep(0.03, 0.07, major));
+  float hach = step(0.9, length(vec2(dht, dhv))) * step(rnd, 0.45);
+  float flatA = max(max(contour, hach * 0.7), 0.14);
+  float sub = step(mod(ri, 2.0) + mod(aJ, 2.0), 0.5);   // 平面每 2×2 留 1，等高线上的点全留
+  // 山麓边缘散逸（随地形走，不随屏幕格子走）
+  float av = abs(aV);
+  float edge = av <= 0.78 ? 1.0 : av <= 1.0 ? step((av - 0.78) / 0.22 * 0.85, rnd2) : step(rnd2, 0.35 * (1.6 - av) / 0.6);
+  float sky = (1.0 - step(uT + 0.02, tau)) * step(a, uL) * step(-uTail, a);
+  float plate = step(uL - 1.15, a) * step(a, uL - 0.2) * step(abs(aV), 0.85) * step(0.08, rnd) * uPlate;
+  vAlpha = sky * edge * step(rnd, uKeep) * mix(flatA * max(sub, contour), 1.0, uT3) * (1.0 - plate * 0.92) * (uLayer < 2.5 ? 0.75 : 1.0 - 0.45 * uEx);   // 揭层时底层退后，四张纸读得出层次
+  vAlpha *= mix(0.4, 1.0, tone);                       // 网点：背光又小又淡，受光大而亮
 
-export function mountScene(canvas) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
-  renderer.setClearColor(PALETTE.ink, 1);
+  vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+  gl_Position = projectionMatrix * mv;
+  vAlpha *= mix(0.45, 1.0, smoothstep(0.55, 0.95, -mv.z / uRefDist));   // 近处淡出：最快、最粗的那一带退后
+  vec2 ndc = gl_Position.xy / gl_Position.w;
+  vec2 dq = max(max(uQuiet.xy - ndc, ndc - uQuiet.zw), 0.0);
+  vAlpha *= 1.0 - 0.65 * uQuietOn * (1.0 - smoothstep(0.0, 0.12, length(dq)));   // 卡片周围留出安静区
+  gl_PointSize = vAlpha < 0.01 ? 0.0 : uPx * uDpr * (1.0 + sparkle * 0.25) * clamp(uRefDist / -mv.z, 0.7, 1.0) * mix(0.75, 1.1, tone);
+}`;
+const PLUS_FS = /* glsl */`
+varying vec3 vCol; varying float vAlpha;
+void main(){
+  vec2 c = abs(gl_PointCoord - 0.5);
+  float plus = max(1.0 - smoothstep(0.10, 0.24, c.x), 1.0 - smoothstep(0.10, 0.24, c.y)) * (1.0 - smoothstep(0.44, 0.5, max(c.x, c.y)));
+  if (plus * vAlpha < 0.02) discard;
+  gl_FragColor = vec4(vCol, plus * vAlpha);
+}`;
+const DOT_VS = /* glsl */`
+attribute float aBright;
+uniform float uSize, uDpr, uRefDist;
+varying vec3 vCol; varying float vAlpha;
+void main(){
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  gl_Position = projectionMatrix * mv;
+  vCol = vec3(0.96, 0.96, 0.94); vAlpha = aBright;
+  gl_PointSize = aBright < 0.01 ? 0.0 : uSize * uDpr * clamp(uRefDist / -mv.z, 0.5, 1.8);
+}`;
+const DOT_FS = /* glsl */`
+varying vec3 vCol; varying float vAlpha;
+void main(){ vec2 c = gl_PointCoord - 0.5; if (dot(c, c) > 0.25) discard; gl_FragColor = vec4(vCol, vAlpha); }`;
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(RIBBON.fov, 1, 1, 1e5);
+const ROUTE_N = 640, DROP_N = 36;
 
-  const uniforms = {
-    uTop: { value: 0 }, uBottom: { value: 0 }, uBase: { value: SHEET.text }, uCount: { value: 0 },
-    uSpan: { value: Array.from({ length: MAX_STOPS }, () => new THREE.Vector2()) },
-    uTo: { value: Array.from({ length: MAX_STOPS }, () => new THREE.Vector3()) },
-  };
-  const geometry = sheetGeometry();
-  const sheet = new THREE.Mesh(geometry, new THREE.ShaderMaterial({ uniforms, vertexShader: vertex, fragmentShader: fragment, side: THREE.DoubleSide }));
-  sheet.frustumCulled = false;
-  geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e6);   // 顶点每帧重算：给一个恒定包围球，渲染排序不再去算它
-  scene.add(sheet);
+export function createScene(canvas, { onRestore } = {}) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(2, devicePixelRatio));
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(45, 1, 0.05, 200);
+  const light = new THREE.Vector3(...TRAIL.light).normalize();
+  let geo = null, tr = null, heightTex = null, baked = null, builtW = 0, builtCols = 0, w = 1, h = 1, last = '';
+  canvas.addEventListener('webglcontextrestored', () => { last = ''; onRestore?.(); });
 
-  let ground = null;
-  const cubes = createCubes(), graph = createGraph();
-  scene.add(cubes.object, graph.object);
-  // 舞台物件是物理材质，单独一层：环境光取 three 自带的 RoomEnvironment（不下载贴图），主光从左上前方来，与配图同向
-  const props = new THREE.Scene();
-  const pmrem = new THREE.PMREMGenerator(renderer), room = new RoomEnvironment();
-  const environment = pmrem.fromScene(room, 0.04);
-  props.environment = environment.texture; props.environmentIntensity = 0.9; room.dispose(); pmrem.dispose();
-  const key = new THREE.DirectionalLight(0xfff6ec, 2.2); key.color.convertSRGBToLinear(); key.position.set(-0.6, 1, 0.5); props.add(key);   // 本页关了色彩管理：手动换成线性值，与离线配图的主光同色
-  const stage = [];
-  const build = (library) => Object.entries(library).forEach(([id, spec]) => {
-    const made = spec.make();
-    stage.push({ id, ...spec, made, p: -1 });
-    props.add(made.group);
+  const stripUniforms = () => ({
+    uHeight: { value: null }, uHead: { value: 0 }, uRest: { value: 0 }, uT: { value: 1 }, uTau0: { value: TRAIL.tau0 }, uTau1: { value: 1 },
+    uHalfW: { value: 1 }, uT3: { value: 1 }, uEx: { value: 0 }, uLayer: { value: 3 }, uGap: { value: TRAIL.gap }, uL: { value: 5 },
+    uKeep: { value: 1 }, uPx: { value: 3 }, uDpr: { value: 1 }, uRefDist: { value: 2 }, uPlate: { value: 0 }, uStep: { value: 0.02 }, uTail: { value: 3 },
+    uQuiet: { value: new THREE.Vector4(2, 2, 2, 2) }, uQuietOn: { value: 0 }, uTexSize: { value: new THREE.Vector2(128, 1024) }, uLight: { value: light },
   });
-  build(STAGE);
-  // 图谱标签画在画布上：等 Geist Mono 到位再画，免得先用系统字体画一遍
-  document.fonts.load('500 96px "Geist Mono"').finally(() => { graph.useFont('"Geist Mono", ui-monospace, monospace'); seen = ''; frame.wake(); });
-  let seen = '', size = '';
+  const plies = [0, 1, 2, 3].map((layer) => {
+    const mat = new THREE.ShaderMaterial({ vertexShader: STRIP_VS, fragmentShader: PLUS_FS, uniforms: stripUniforms(), transparent: true, depthWrite: false });
+    mat.uniforms.uLayer.value = layer; mat.uniforms.uKeep.value = layer === 3 ? 1 : 0.28;
+    const pts = new THREE.Points(new THREE.BufferGeometry(), mat); pts.frustumCulled = false; pts.renderOrder = layer === 3 ? 0 : 4 - layer;
+    scene.add(pts); return pts;
+  });
 
-  const resize = (c) => {
-    const next = `${c.vw}x${c.vh}`;
-    if (next === size) return;
-    size = next;
-    renderer.setSize(c.vw, c.vh, false);
-    camera.aspect = c.vw / c.vh; camera.far = c.P * 40; camera.updateProjectionMatrix();
-    if (ground) { scene.remove(ground.object); ground.object.geometry.dispose(); ground.object.material.dispose(); }
-    ground = createGround(c); scene.add(ground.object);
-  };
+  /* 路线与穿层竖线：动态点 */
+  const rPos = new Float32Array((ROUTE_N + 3 * DROP_N) * 3), rBright = new Float32Array(ROUTE_N + 3 * DROP_N);
+  const rGeo = new THREE.BufferGeometry();
+  rGeo.setAttribute('position', new THREE.BufferAttribute(rPos, 3)); rGeo.setAttribute('aBright', new THREE.BufferAttribute(rBright, 1));
+  const dotUniforms = (size) => ({ uSize: { value: size }, uDpr: { value: 1 }, uRefDist: { value: 2 } });
+  const route = new THREE.Points(rGeo, new THREE.ShaderMaterial({ vertexShader: DOT_VS, fragmentShader: DOT_FS, uniforms: dotUniforms(3.4), transparent: true, depthWrite: false }));
+  route.frustumCulled = false; route.renderOrder = 20; scene.add(route);
 
-  return {
-    render(view) {
-      const { c, scroll, sheet: s } = view;
-      const next = `${scroll.toFixed(1)}|${c.vw}|${c.vh}|${s.w}|${s.top}|${s.bottom}|${view.focus}|${view.recovery}|${view.anchors.map((a) => `${a.y.toFixed(0)}:${(a.p ?? 1).toFixed(3)}`).join()}`;
-      if (next === seen) return;
-      seen = next;
-      resize(c);
+  /* 地面：稀疏点阵 */
+  const ground = new THREE.Points(new THREE.BufferGeometry(), new THREE.ShaderMaterial({ vertexShader: DOT_VS, fragmentShader: DOT_FS, uniforms: dotUniforms(1.6), transparent: true, depthWrite: false }));
+  ground.frustumCulled = false; scene.add(ground);
 
-      // ---- 纸面：从远端到屏幕底边外，逐行按同一条纸带落点重算顶点 ----
-      const pos = geometry.getAttribute('position'), doc = geometry.getAttribute('aDoc'), lit = geometry.getAttribute('aLit');
-      const q0 = -c.vh * 0.2, q1 = c.qBottom + c.vh * 0.1, half = (s.w / 2) * c.m;
-      for (let r = 0; r <= ROWS; r++) {
-        const q = q0 + ((q1 - q0) * r) / ROWS, [Y, Z, , , light] = bend(q, c);
-        const [, u, z] = cam(c, 0, Y, Z);
-        pos.setXYZ(r * 2, -half, u, z); pos.setXYZ(r * 2 + 1, half, u, z);
-        doc.setX(r * 2, q + scroll); doc.setX(r * 2 + 1, q + scroll);
-        lit.setX(r * 2, light); lit.setX(r * 2 + 1, light);
+  /* 图钉杆 */
+  const stickGeo = new THREE.BufferGeometry(); stickGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6 * 6), 3));
+  const sticks = new THREE.LineSegments(stickGeo, new THREE.LineBasicMaterial({ color: 0x8a8d90, transparent: true, opacity: 0.6 }));
+  sticks.frustumCulled = false; scene.add(sticks);
+
+  /** 纸带上的点位：完整网格（边缘散逸与抽稀在着色器里按地形格子决定），多出一行墙顶以便整体平移时不露缝。
+   *  每个点位同时存自己与「近一格」处的位置与法线，着色器按路头的小数部分在两者之间平移。 */
+  function buildStrip(cols) {
+    const step = (2 * tr.halfW) / cols, A = [], V = [], J = [], REL = [], P = [], NR = [], PP = [], NP = [];
+    const half = Math.round(1.6 * cols / 2);
+    for (let a = -tr.tail - step; a <= tr.L + step; a += step) {
+      const p = tr.at(Math.min(a, tr.L)), q = tr.at(Math.min(a - step, tr.L - step));
+      for (let vi = -half; vi <= half; vi++) {
+        const v = vi / (cols / 2);
+        A.push(a); V.push(v); J.push(vi); REL.push(TRAIL.relief * Math.max(0.2, Math.cos(p.th)));
+        P.push(v * tr.halfW, p.y, p.z); NR.push(0, p.ny, p.nz);
+        PP.push(v * tr.halfW, q.y, q.z); NP.push(0, q.ny, q.nz);
       }
-      pos.needsUpdate = true; doc.needsUpdate = true; lit.needsUpdate = true;
-      uniforms.uTop.value = s.top; uniforms.uBottom.value = s.bottom;
-      uniforms.uBase.value = SHEET[view.stops[0]?.from ?? 'text'];
-      uniforms.uCount.value = Math.min(MAX_STOPS, view.stops.length);
-      view.stops.slice(0, MAX_STOPS).forEach((stop, i) => { uniforms.uSpan.value[i].set(stop.y0, stop.y1); uniforms.uTo.value[i].copy(SHEET[stop.to]); });
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+    g.setAttribute('aPos3', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('aNrm', new THREE.Float32BufferAttribute(NR, 3));
+    g.setAttribute('aPosPrev', new THREE.Float32BufferAttribute(PP, 3)); g.setAttribute('aNrmPrev', new THREE.Float32BufferAttribute(NP, 3));
+    for (const [name, data] of [['aA', A], ['aV', V], ['aJ', J], ['aRel', REL]]) g.setAttribute(name, new THREE.Float32BufferAttribute(data, 1));
+    g.userData.step = step;
+    return g;
+  }
+  function buildGround() {
+    const P = [], B = [];
+    for (let x = -7; x <= 7; x += 0.12) for (let z = -9; z <= 3; z += 0.12) {
+      if (Math.abs(x) < tr.halfW * 1.7) continue;
+      P.push(x, -0.01, z); B.push(0.07 * Math.max(0, 1 - Math.hypot(x, z - 0.5) / 9));
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('aBright', new THREE.Float32BufferAttribute(B, 1));
+    return g;
+  }
 
-      // ---- 地面网格随滚动向远处退：纸带近端就躺在这片地面上 ----
-      ground.move(scroll * c.m);
-      ground.column(half / 2);
-      cubes.place(view, c, half);
-      graph.place(view, c);
+  function resize(vw, vh, phone) {
+    w = vw; h = vh;
+    renderer.setPixelRatio(Math.min(2, devicePixelRatio));
+    renderer.setSize(vw, vh, false);
+    tr = buildTrail(vw, vh, phone);
+    tr.height = (tau, v) => sampleBaked(baked, tau, v);
+    // 高度图只取决于山顶 T；手机地址栏收放不改 T，就不重烘（一次约 85ms）
+    if (!baked || Math.abs(baked.T - tr.T) > 1e-3) {
+      baked = { ...bakeHeight(tr.T, 128, 1024, TRAIL.tau0), T: tr.T };
+      heightTex?.dispose();
+      heightTex = new THREE.DataTexture(baked.data, baked.w, baked.h, THREE.RGBAFormat);
+      heightTex.magFilter = heightTex.minFilter = THREE.LinearFilter; heightTex.needsUpdate = true;
+    }
+    // 点阵几何只取决于纸宽；变化不到 2% 时沿用
+    const cols = phone ? 48 : 72;   // 手机点距放大 1.5 倍，点数减半以上
+    if (!geo || cols !== builtCols || Math.abs(tr.halfW - builtW) / builtW > 0.02) {
+      builtW = tr.halfW; builtCols = cols;
+      geo?.dispose(); geo = buildStrip(cols);
+      ground.geometry.dispose(); ground.geometry = buildGround();
+    }
+    const px = Math.max(2.2, Math.min(3.6, vw / 400)), dpr = renderer.getPixelRatio();
+    for (const ply of plies) {
+      ply.geometry = geo;
+      const u = ply.material.uniforms;
+      u.uHeight.value = heightTex; u.uRest.value = tr.aRest; u.uT.value = tr.T; u.uTau1.value = baked.tau1; u.uHalfW.value = tr.halfW;
+      u.uHalfW.value = builtW; u.uStep.value = geo.userData.step; u.uTail.value = tr.tail; u.uL.value = tr.L; u.uPx.value = px; u.uDpr.value = dpr; u.uRefDist.value = tr.ref.dist;
+    }
+    for (const m of [route.material, ground.material]) { m.uniforms.uDpr.value = dpr; m.uniforms.uRefDist.value = tr.ref.dist; }
+    route.material.uniforms.uSize.value = px * 0.9;
+    last = '';
+    return tr;
+  }
 
-      // ---- 舞台素材：按章节的行站到纸带旁。近景贴着纸边、中景是两侧的建筑、远景在地平线上空、纸面层贴着纸带外缘 ----
-      const H = c.vh, anchor = new Map(view.anchors.map((a) => [a.id, a]));
-      // 素材按旧章节造：观测的电缆缠斗归"流量绕路"，预检的巴别塔与红笔归"时区错位"（语言错位）
-      for (const item of stage) {
-        const a = anchor.get(item.chapter) ?? { y: scroll + H * 0.9, p: 1 };
-        const q = item.chapter === 'any' ? H * 0.5 : a.y - scroll, far = item.layer === 'far';
-        const g = item.made.group;
-        g.visible = c.vw >= 720 && q > (far ? -H * 0.9 : -H * 0.3) && q < c.qBottom + (far ? H : H * 0.35);
-        if (!g.visible) continue;
-        const row = q * c.m, side = item.side || 1;
-        if (item.layer === 'sheet') {
-          // 纸面批注：顺着纸带此处的倾角，躺在纸带外缘
-          const [Y, Z, tilt] = bend(q, c), [x, u, z] = cam(c, side * (half + H * 0.04) + (side > 0 ? 0 : -H * 0.5), Y, Z);
-          g.position.set(x, u, z); g.rotation.set(-tilt, 0, 0); g.scale.setScalar(H * 0.32);
-        } else {
-          const PLACE = { near: [H * 0.16, 0.1, H * 0.26], mid: [H * 0.7, -0.25, H * 0.62], far: [H * 1.7, -3.2, H * 1.1] }[item.layer];
-          const [, f] = c.world(row + PLACE[1] * H);
-          const [u, depth] = c.toCam(far ? H * (0.9 + (stage.indexOf(item) % 3) * 0.22) : 0, f);
-          const x = item.side === 0 ? 0 : side * (half + PLACE[0]);
-          g.position.set(x, u, -depth);
-          // 先绕世界竖轴转出轴测角，再整体俯仰到镜头坐标（世界的"上"在镜头里朝观者倾 30°）
-          g.rotation.set(-c.pitch, item.layer === 'near' ? side * -0.35 : side * -0.62, 0, 'XYZ');
-          g.scale.setScalar(PLACE[2]);
-        }
-        const p = item.chapter === 'any' ? 1 : a.p ?? 1;
-        if (Math.abs(p - item.p) > 1e-3) { item.p = p; item.made.scrub?.(p); }
-        item.made.focus?.(view.focus);
-        item.made.set?.(view.recovery);
+  const gateTaus = TRAIL.gates.slice(0, 3);
+  const layerOf = (tau) => gateTaus.filter((g) => tau >= g).length;
+
+  /** 画一帧；返回珠子杆顶的屏幕坐标（视图没变则返回 null，什么也不画）。 */
+  function render(view, pinList = []) {
+    const key = JSON.stringify([view.t, view.ex, view.head, view.route, view.plate, view.quiet, view.quietOn, view.orbit, w, h].map((x) => (typeof x === 'number' ? +x.toFixed(4) : x)));
+    if (key === last || !tr) return null;
+    last = key;
+    const { t, ex, head } = view;
+    for (const ply of plies) {
+      const u = ply.material.uniforms; u.uHead.value = head; u.uT3.value = t; u.uEx.value = ex; u.uPlate.value = view.plate ?? 0;
+      if (view.quiet) u.uQuiet.value.set(...view.quiet); u.uQuietOn.value = view.quietOn ?? 0;
+      ply.visible = ply.material.uniforms.uLayer.value === 3 || ex > 0.002;
+    }
+    // 路线：τ ∈ [起点可见处, route]
+    const lo = Math.max(0, head - tr.aRest - tr.tail), hi = Math.min(view.route, head + tr.L - tr.aRest);
+    for (let k = 0; k < ROUTE_N; k++) {
+      const tau = lo + ((hi - lo) * k) / (ROUTE_N - 1), a = tr.aRest + tau - head;
+      const p = tr.surface(a, 0, { t, ex, layer: layerOf(tau), head, lift: 0.03 });
+      rPos.set(p, k * 3); rBright[k] = hi > lo ? 1 - 0.85 * (view.plate ?? 0) : 0;
+    }
+    gateTaus.forEach((g, j) => {
+      const a = tr.aRest + g - head, show = ex > 0.01 && g <= view.route && a >= -tr.tail && a <= tr.L;
+      const top = tr.surface(a, 0, { t, ex, layer: j, head, lift: 0.03 }), bottom = tr.surface(a, 0, { t, ex, layer: j + 1, head, lift: 0.03 });
+      for (let d = 0; d < DROP_N; d++) {
+        const f = d / (DROP_N - 1), o = (ROUTE_N + j * DROP_N + d) * 3;
+        rPos.set([top[0] + (bottom[0] - top[0]) * f, top[1] + (bottom[1] - top[1]) * f, top[2] + (bottom[2] - top[2]) * f], o);
+        rBright[ROUTE_N + j * DROP_N + d] = show && d % 2 === 0 ? 0.9 : 0;
       }
+    });
+    rGeo.attributes.position.needsUpdate = true; rGeo.attributes.aBright.needsUpdate = true;
 
-      renderer.render(scene, camera);
-      // 第二遍画物理材质的舞台物件：保留第一遍的深度，纸带照常遮挡；只有这一遍做 sRGB 输出与色调映射
-      renderer.autoClear = false; renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.render(props, camera);
-      renderer.autoClear = true; renderer.outputColorSpace = THREE.LinearSRGBColorSpace; renderer.toneMapping = THREE.NoToneMapping;
-      env.set({ frames: env.get('frames') + 1 });
-    },
-    setRecovery() { seen = ''; },
-    dispose() { environment.dispose(); renderer.dispose(); },
-  };
+    const o = view.orbit, [cx, cy, cz] = orbitPosition(o);
+    camera.fov = o.fov; camera.aspect = w / h;
+    camera.setViewOffset(w, h, (0.5 - o.shift[0]) * w, (0.5 - o.shift[1]) * h, w, h);
+    camera.position.set(cx, cy, cz); camera.lookAt(...o.pivot); camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+    const screen = pins(pinList, view);
+    renderer.render(scene, camera);
+    return screen;
+  }
+
+  /** 珠子与杆：pin = {tau, layer}；写杆的几何，返回杆顶的屏幕坐标（不在纸带上则为 null）。 */
+  function pins(list, view) {
+    const sp = sticks.geometry.attributes.position.array, out = [];
+    list.forEach((pin, i) => {
+      const a = tr.aRest + pin.tau - view.head, inside = a >= -tr.tail && a <= tr.L;
+      const base = tr.surface(a, 0, { t: view.t, ex: view.ex, layer: pin.layer, head: view.head, lift: 0.02 });
+      const len = 0.06 + 0.07 * view.t, top = [base[0], base[1] + len, base[2]];
+      sp.set(inside ? [...base, ...top] : [0, 0, 0, 0, 0, 0], i * 6);
+      out.push(inside ? project(top) : null);
+    });
+    sticks.geometry.attributes.position.needsUpdate = true;
+    return out;
+  }
+  const v3 = new THREE.Vector3();
+  function project(p) {
+    v3.set(p[0], p[1], p[2]).project(camera);
+    if (v3.z > 1) return null;
+    return [(v3.x * 0.5 + 0.5) * w, (-v3.y * 0.5 + 0.5) * h];
+  }
+  return { resize, render, project };
 }

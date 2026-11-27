@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 实际静态页、Axe 与原生浏览器交互。
- * [OUTPUT]: 沉浸式首页内容/恢复三态/画廊/空闲零帧与降级、营销页与 Docs 导航往返、响应式/对比度、单选展开/确认、表单验证、浮层焦点与光学调参证据。
+ * [OUTPUT]: 山路首页的文案/画廊/链接/Axe/空闲零帧、滚动推进与珠子结果、2D/3D 与减弱动态、轻吸、无 WebGL 与脚本失败降级、营销页与 Docs 导航往返、响应式/对比度、单选展开/确认、表单验证、浮层焦点与光学调参证据。
  * [POS]: UI Kit 的行为验收；不把 DOM 存在视为美术质量通过。
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -97,8 +97,8 @@ test('shared navigation connects product and docs without a kit entry',async({pa
  const nav=page.getByRole('navigation',{name:'站点导航',exact:true});
  await expect(nav.getByRole('link',{name:'文档',exact:true})).toHaveAttribute('aria-current','location');
  await nav.getByRole('link',{name:'产品',exact:true}).click();
- await expect(page.locator('h1')).toContainText('网络一抖');
- await goTo(page,'gate');   // 卷曲版的世界固定在视口，先像真人一样滚到这一章
+ await expect(page.locator('h1')).toContainText('出口不对');
+ await goTo(page,'gate');
  await page.getByRole('link',{name:'看门禁路径',exact:true}).click();
  await expect(page).toHaveURL(/network.html$/);
  if(isMobile)await page.getByRole('button',{name:'打开菜单',exact:true}).click();
@@ -145,133 +145,110 @@ test('mobile menu waits for its behavior before accepting a click',async({page})
  await expect(page).toHaveURL(/\/ClaudeBar-docs\/zh\/$/);
 });
 
-// 纸带首页：卷曲版把世界固定在视口里，浏览器不会替它滚动；导航一律走章节索引（与真人点击同一条路径）
-const goTo=(page:any,id:string)=>page.evaluate(async(id:string)=>{const link=document.querySelector(`a[href="#${id}"]`) as HTMLAnchorElement|null;if(link)link.click();else document.getElementById(id)!.scrollIntoView();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));},id);
-// ---- 沉浸式首页：内容不依赖 WebGL；恢复三态与画廊可操作；动效只由事件触发，空闲时零帧 ----
-test('immersive homepage: content, recovery states, gallery and idle frames',async({page,request})=>{
- test.setTimeout(120000);   // 无头浏览器用软件渲染跑全屏后期，比真机慢一个量级
+// 山路首页：章节在正常文档流里，索引是原生锚点；滚到章节中心与真人点击同一路径
+const goTo=(page:any,id:string)=>page.evaluate(async(id:string)=>{const el=document.getElementById(id)!;scrollTo({top:el.offsetTop+el.offsetHeight/2-innerHeight/2,behavior:'instant'});await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));},id);
+const settle=(page:any)=>page.waitForFunction(()=>{const w=window as any;const n=w.__frames;return new Promise(r=>setTimeout(()=>r(w.__frames===n),400));},null,{timeout:20000});
+const countFrames=async(page:any)=>page.addInitScript(()=>{const raf=window.requestAnimationFrame.bind(window);(window as any).__frames=0;window.requestAnimationFrame=(f:FrameRequestCallback)=>{(window as any).__frames++;return raf(f);};});
+// ---- 山路首页：文案、画廊、链接、Axe 与空闲零帧 ----
+test('trail homepage: copy, gallery, links, accessibility and idle frames',async({page,request})=>{
+ test.setTimeout(120000);   // 无头浏览器用软件渲染画十余万个点，比真机慢一个量级
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.addInitScript(()=>{const raf=window.requestAnimationFrame.bind(window);(window as any).__frames=0;window.requestAnimationFrame=(f:FrameRequestCallback)=>{(window as any).__frames++;return raf(f);};});
+ await countFrames(page);
  await page.goto('/ClaudeBar-docs/');await page.evaluate(()=>document.fonts.ready);
- await expect(page.locator('h1')).toHaveCount(1);await expect(page.locator('h1')).toHaveAttribute('aria-label',/网络一抖/);
+ await expect(page.locator('h1')).toHaveCount(1);await expect(page.locator('h1')).toContainText('出口不对');
  await expect(page.locator('.cb-site-nav a[aria-current]')).toHaveText('产品');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBeTruthy();
  expect(await page.evaluate(()=>document.getAnimations().filter(a=>a.effect?.getTiming().iterations===Infinity).length)).toBe(0);
- // 恢复三态：手动选择优先于滚动，文案随状态切换
- await goTo(page,'recovery');
- await page.getByRole('button',{name:'隔离',exact:true}).click();
- await expect(page.locator('[data-recovery]')).toHaveAttribute('data-state','2');
- await expect(page.locator('[data-recovery-text]')).toContainText('新的握手一律拒绝');
+ // 示意只说一次，且不出现防封承诺
+ const text=await page.locator('body').innerText();
+ expect(text.split('示意').length-1).toBe(1);
+ for(const word of ['防封保证','零泄漏','干净 IP'])expect(text).not.toContain(word);
  // 画廊：点击与方向键都切换同一组标签
- await goTo(page,'product');
+ await goTo(page,'workbench');
  await page.getByRole('tab',{name:'检查与修复',exact:true}).click();
  await expect(page.locator('#shot-repair')).toBeVisible();await expect(page.locator('#shot-launchpad')).toBeHidden();
  await page.keyboard.press('ArrowRight');await expect(page.getByRole('tab',{name:'发前预检',exact:true})).toHaveAttribute('aria-selected','true');
  for(const img of await page.locator('img:visible').all())await img.evaluate((el:HTMLImageElement)=>el.decode());
- // 弹簧过渡（≤480ms）落定后再审计，避免在选中态颜色渐变的半途取样
- await page.evaluate(()=>Promise.all(document.getAnimations().map(a=>a.finished.catch(()=>{}))));
+ await settle(page);
  expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations).toEqual([]);
  const hrefs=await page.locator('a[href]').evaluateAll(es=>[...new Set(es.map(e=>(e as HTMLAnchorElement).href))]);
- // 站外下载只核对发布地址可达（HEAD、不跟随跳转），不拉取整个安装包
  for(const href of hrefs.filter(h=>!h.includes('#'))){const external=!href.startsWith(new URL(page.url()).origin);const r=external?await request.head(href,{maxRedirects:0}):await request.get(href);expect(r.status(),href).toBeLessThan(400);}
  // 空闲：落定之后整窗不再请求任何一帧
- await page.mouse.move(0,0);await page.waitForTimeout(3000);
+ await page.mouse.move(0,0);await settle(page);
  const before=await page.evaluate(()=>(window as any).__frames);await page.waitForTimeout(1000);
  expect(await page.evaluate(()=>(window as any).__frames)).toBe(before);
  expect(errors).toEqual([]);
 });
-test('immersive homepage keeps all content under reduced motion and without WebGL',async({page})=>{
+// ---- 滚动推进叙事：每章停稳后，当前关的珠子给出结果，索引指向本章 ----
+test('scrolling advances the climb: bead results and index follow the chapter',async({page,isMobile})=>{
+ test.setTimeout(120000);
+ await page.goto('/ClaudeBar-docs/');
+ // 桌面项目强制要求 WebGL：否则这组用例会在没有 GPU 的环境里静默跳过
+ if(!isMobile)await expect(page.locator('html')).toHaveClass(/has-webgl/);
+ test.skip(!(await page.locator('html').evaluate(el=>el.classList.contains('has-webgl'))),'无 WebGL 时是一页长文');
+ await goTo(page,'leak');
+ await expect(page.locator('[data-bead="leak"]')).toHaveAttribute('data-state','mitigated',{timeout:15000});
+ await expect(page.locator('[data-bead="session"]')).toHaveAttribute('data-state','pass');
+ await expect(page.locator('[data-bead="gate"]')).not.toHaveAttribute('data-state','pass');
+ if(!isMobile)await expect(page.locator('[data-chapter-link][href="#leak"]')).toHaveAttribute('aria-current','step');
+ await goTo(page,'gate');
+ await expect(page.locator('[data-bead="gate"]')).toHaveAttribute('data-state','pass',{timeout:15000});
+ await expect(page.locator('#gate .card')).toHaveCSS('opacity','1');
+ await expect(page.locator('#leak .card')).toHaveCSS('opacity','0');
+ // 看不见的卡片仍在无障碍树里（读屏能顺读整篇），但其中的链接不进 Tab 序列
+ await expect(page.getByRole('heading',{name:'各用各的抽屉。'})).toHaveCount(1);
+ await expect(page.locator('#session .text-link')).toHaveAttribute('tabindex','-1');
+ await expect(page.locator('#gate .text-link')).not.toHaveAttribute('tabindex','-1');
+});
+// ---- 2D / 3D：切换后停在同一章，选择在重新载入后保留；减弱动态强制 2D ----
+test('2D/3D switch keeps the chapter and the choice',async({page})=>{
+ test.setTimeout(120000);
+ await page.goto('/ClaudeBar-docs/');
+ test.skip(!(await page.locator('html').evaluate(el=>el.classList.contains('has-webgl'))),'无 WebGL 时没有视图开关');
+ await goTo(page,'env');
+ const flat=page.locator('[data-mode="2d"]'),curl=page.locator('[data-mode="3d"]');
+ const y=await page.evaluate(()=>scrollY);
+ await flat.click();await expect(flat).toHaveAttribute('aria-pressed','true');
+ expect(Math.abs(await page.evaluate(()=>scrollY)-y)).toBeLessThan(2);
+ await expect(page.locator('#env .card')).toHaveCSS('opacity','1');
+ await expect(page.locator('[data-bead="env"]')).toHaveAttribute('data-state','pass');
+ await page.reload();await expect(page.locator('[data-mode="2d"]')).toHaveAttribute('aria-pressed','true');
+ await page.locator('[data-mode="3d"]').click();await expect(curl).toHaveAttribute('aria-pressed','true');
+});
+test('reduced motion forces the flat map and disables 3D',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/ClaudeBar-docs/');
+ test.skip(!(await page.locator('html').evaluate(el=>el.classList.contains('has-webgl'))),'无 WebGL 时没有视图开关');
+ await expect(page.locator('[data-mode="3d"]')).toBeDisabled();
+ await expect(page.locator('[data-mode="2d"]')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('h1')).toBeInViewport();
+});
+// ---- 轻吸：只在停得离章节中心很近时吸正；远一点不干预 ----
+test('the trail gently snaps only a very near resting position',async({page,isMobile})=>{
+ test.skip(isMobile,'触控滚动的惯性由系统处理，轻吸只在桌面合成滚动下验收');
+ test.setTimeout(120000);
+ await page.goto('/ClaudeBar-docs/');
+ test.skip(!(await page.locator('html').evaluate(el=>el.classList.contains('has-webgl'))),'无 WebGL 时不吸');
+ await goTo(page,'gate');
+ const best=await page.evaluate(()=>scrollY);
+ await page.evaluate(y=>scrollTo({top:y+Math.round(innerHeight*0.06),behavior:'instant'}),best);
+ await expect.poll(async()=>Math.abs(await page.evaluate(()=>scrollY)-best),{timeout:6000}).toBeLessThanOrEqual(1);
+ await expect(page.locator('[data-chapter-link][href="#gate"]')).toHaveAttribute('aria-current','step');
+ const far=await page.evaluate(y=>{const t=Math.round(y+innerHeight*0.3);scrollTo({top:t,behavior:'instant'});return t;},best);
+ await page.waitForTimeout(1500);
+ expect(await page.evaluate(()=>scrollY)).toBe(far);
+});
+// ---- 没有 WebGL 或脚本加载失败时，同一份 HTML 是一页可读的长文 ----
+test('homepage reads as a long page without WebGL',async({page})=>{
  await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(this:HTMLCanvasElement,type:string,...rest:unknown[]){return /webgl/.test(type)?null:(get as any).call(this,type,...rest);} as any;});
  await page.goto('/ClaudeBar-docs/');
  await expect(page.locator('html')).not.toHaveClass(/has-webgl/);
- // 平整纸带：同一份 HTML，首屏印在陶土纸上
- await expect(page.locator('#top')).toHaveCSS('background-color','rgb(168, 58, 12)');
- await page.locator('#download').scrollIntoViewIfNeeded();
- await expect(page.locator('#download-title')).toBeVisible();
- await expect(page.locator('#download .actions')).toHaveCSS('opacity','1');
-});
-// ---- 三界：滚动越过越界段后，纸色与强调色换界；三界只驱动环境，不印成文字；联动与声音开关不报错 ----
-test('homepage crosses the three realms without printing design notes',async({page,isMobile})=>{
- test.setTimeout(120000);   // 无头浏览器用软件渲染跑全屏后期，比真机慢一个量级
- const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/ClaudeBar-docs/');await page.evaluate(()=>document.fonts.ready);
- const html=page.locator('html');
- await expect(html).toHaveAttribute('data-realm','text');
- for(const [id,realm] of [['gate','code'],['locale','token'],['download','text']]){
-  await page.evaluate(id=>{const el=document.getElementById(id)!;scrollTo({top:el.offsetTop+el.offsetHeight/2-innerHeight/2,behavior:'instant'});},id);
-  await expect(html).toHaveAttribute('data-realm',realm);
- }
- await expect(page.locator('[data-threshold]')).toHaveCount(3);
- // 自我标注不出现在页面上：三界名、遥测、刻度、引注
- const text=await page.locator('body').innerText();
- for(const word of ['TEXT','CODE','TOKEN','零帧','机器 · 心智','[1]'])expect(text).not.toContain(word);
- await expect(page.locator('.tick, .status, .note')).toHaveCount(0);
- // 场景图：五张图都在，每张都有读屏说明，图里不放文字
- await expect(page.locator('img.fig')).toHaveCount(5);
- for(const label of await page.locator('img.fig').evaluateAll(els=>els.map(el=>el.getAttribute('alt')??'')))expect(label).toMatch(/^示意：/);
- // 声音与触感默认关闭，只由用户手势开启
- const sense=page.getByRole('button',{name:'声音与触感'});
- await expect(sense).toHaveAttribute('aria-pressed','false');await sense.click();await expect(sense).toHaveAttribute('aria-pressed','true');
- await sense.click();await expect(sense).toHaveAttribute('aria-pressed','false');
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBeTruthy();
- expect(errors).toEqual([]);
-});
-test('reduced motion still switches realm colours without mounting the scene',async({page})=>{
- await page.emulateMedia({reducedMotion:'reduce'});
- await page.goto('/ClaudeBar-docs/');
- await page.evaluate(()=>{const el=document.getElementById('locale')!;scrollTo({top:el.offsetTop+el.offsetHeight/2-innerHeight/2,behavior:'instant'});});
- await expect(page.locator('html')).toHaveAttribute('data-realm','token');
- await expect(page.locator('html')).not.toHaveClass(/has-webgl/);
-});
-// ---- 减弱动态即使有 WebGL 也不挂载镜头穿越；脚本加载失败时内容不被隐藏 ----
-test('reduced motion keeps a flat sheet even when WebGL is available',async({page})=>{
- await page.emulateMedia({reducedMotion:'reduce'});
- await page.goto('/ClaudeBar-docs/');
- await expect(page.locator('html')).toHaveClass(/motion/);
- await expect(page.locator('html')).not.toHaveClass(/has-webgl/);
- await expect(page.locator('[data-world]')).toHaveCSS('position','relative');
- await expect(page.locator('h1')).toBeInViewport();
- await expect(page.locator('[data-mode="3d"]')).toBeDisabled();
-});
-// ---- 2D / 3D：切换后停在同一章，选择在重新载入后保留 ----
-test('2D/3D switch flattens and re-curls the ribbon, keeping the chapter and the choice',async({page,isMobile})=>{
- test.skip(isMobile,'手机宽度下页头只放主要入口');
- test.setTimeout(120000);
- await page.goto('/ClaudeBar-docs/');await page.evaluate(()=>document.fonts.ready);
- const html=page.locator('html'),flat=page.locator('[data-mode="2d"]'),curl=page.locator('[data-mode="3d"]');
- await expect(html).toHaveClass(/has-webgl/);await expect(curl).toHaveAttribute('aria-pressed','true');
- await goTo(page,'leak');await page.waitForTimeout(1500);
- await flat.click();
- await expect(html).not.toHaveClass(/has-webgl/);await expect(flat).toHaveAttribute('aria-pressed','true');
- await expect(page.locator('[data-world]')).toHaveCSS('position','relative');
- await expect(page.locator('#leak-title')).toBeInViewport();
- expect(await page.locator('#leak-title').evaluate((el)=>el.style.transform)).toBe('');
- await page.reload();await expect(html).not.toHaveClass(/has-webgl/);
- await page.locator('[data-mode="3d"]').click();
- await expect(html).toHaveClass(/has-webgl/);await expect(page.locator('[data-world]')).toHaveCSS('position','fixed');
-});
-// ---- 磁吸：只在停得离最佳展示位很近时吸正（章节进度恰好为 1）；远一点不干预 ----
-test('ribbon gently snaps only a very near resting position to the chapter\'s best display position',async({page,isMobile})=>{
- test.skip(isMobile,'触控滚动的惯性由系统处理，磁吸只在桌面合成滚动下验收');
- test.setTimeout(120000);
- await page.goto('/ClaudeBar-docs/');
- test.skip(!(await page.locator('html').evaluate(el=>el.classList.contains('has-webgl'))),'无 WebGL 时是平整纸带，不磁吸');
- await goTo(page,'gate');
- const best=await page.evaluate(()=>scrollY);
- await page.evaluate(y=>scrollTo({top:y+innerHeight*0.06,behavior:'instant'}),best);
- await expect.poll(()=>page.evaluate(()=>scrollY),{timeout:5000}).toBe(best);
- await expect(page.locator('#gate')).toHaveAttribute('data-p','1.000');
- await expect(page.locator('[data-chapter-link][href="#gate"]')).toHaveAttribute('aria-current','step');
- // 停得远一些就不吸：自由滚动的手感优先
- const far=await page.evaluate(y=>{const t=Math.round(y+innerHeight*0.3);scrollTo({top:t,behavior:'instant'});return t;},best);
- await page.waitForTimeout(1200);
- expect(await page.evaluate(()=>scrollY)).toBe(far);
+ for(const id of ['#gate .card','#layers .card','#summit .board'])await expect(page.locator(id)).toHaveCSS('opacity','1');
+ await page.locator('#summit').scrollIntoViewIfNeeded();await expect(page.locator('#summit-title')).toBeVisible();
 });
 test('homepage content stays visible when the script bundle fails to load',async({page})=>{
  await page.route('**/designs/assets/home.bundle.js',route=>route.abort());
  await page.goto('/ClaudeBar-docs/');
- await expect(page.locator('html')).not.toHaveClass(/motion/);
- for(const id of ['#gate','#recovery','#download'])await expect(page.locator(`${id} h2`)).toHaveCSS('opacity','1');
- await expect(page.locator('.hero .lead')).toHaveCSS('opacity','1');
+ await expect(page.locator('html')).not.toHaveClass(/has-webgl/);
+ for(const id of ['#gate .card','#summit .board','.hero-copy'])await expect(page.locator(id)).toHaveCSS('opacity','1');
 });
