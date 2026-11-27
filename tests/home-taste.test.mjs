@@ -27,13 +27,18 @@ test('each bad-taste rule fires on a deliberately bad sample', () => {
   assert.ok(ids({ files: { ...files(), 'home.css': files()['home.css'].replace('@media (prefers-reduced-motion', '.x { transition: opacity 400ms cubic-bezier(.4, 0, .2, 1); }\n@media (prefers-reduced-motion') }, html }).includes('bezier'));
   assert.ok(broken('home.css', '\n.x:hover { transform: scale(1.05); }').includes('hover-resize'));
   assert.ok(broken('home.mjs', '\n'.repeat(801)).includes('file-size'));
+  const page = (extra) => ids({ files: files(), html: html.replace('</main>', `${extra}</main>`) });
+  assert.ok(page('<aside><b>码</b><span>CODE</span><em>机器 · 心智</em></aside>').includes('self-note'));
+  assert.ok(page('<p>帧</p><p>静止 · 零帧</p>').includes('self-note'));
+  assert.ok(page('<p>出口先核验，再放行连接到上游。</p><p>出口先核验，再放行连接到上游。</p>').includes('restated'));
+  assert.ok(ids({ files: files(), html: html.replace('<section class="sheet chapter" id="gate"', `<section class="sheet chapter" id="gate"><p>${'字'.repeat(200)}</p>`) }).includes('text-budget'));
 });
 
 test('each good-taste rule fires when what it requires is missing', () => {
   const html = renderHome(), all = files();
   assert.ok(ids({ files: { ...all, 'home.css': all['home.css'].replace(/@media \(prefers-reduced-motion: reduce\)[\s\S]*$/, '') }, html }).includes('reduced-motion'));
-  assert.ok(ids({ files: all, html: html.replace('data-bind="depth"', 'data-bind="altitude"') }).includes('declarations-bound'));
-  assert.ok(ids({ files: all, html: html.replace('data-kit="spark"', 'data-kit="gauge"') }).includes('declarations-bound'));
+  assert.ok(ids({ files: all, html: html.replace('</main>', '<i data-bind="altitude"></i></main>') }).includes('declarations-bound'));
+  assert.ok(ids({ files: all, html: html.replace('</main>', '<i data-kit="gauge"></i></main>') }).includes('declarations-bound'));
   assert.ok(ids({ files: all, html: html.replace(/<div class="threshold"[\s\S]*?<\/div>/, '').replace('data-scene="gate" data-realm="code"', 'data-scene="gate" data-realm="token"') }).includes('scenes-mapped'));
   assert.ok(ids({ files: { ...all, 'home.mjs': all['home.mjs'].replace('[POS]', '[WHERE]') }, html }).includes('fractal-header'));
 });

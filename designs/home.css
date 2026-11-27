@@ -2,7 +2,7 @@
  *          首页内联的 <style data-tokens>（home-tokens.mjs 的 cssText）：色板、三界的 --sheet/--on/--soft 纸面与 --accent、
  *          --sheet-w 纸宽、--snap/--glide/--settle 弹簧。
  * [OUTPUT]: 纸带首页的排版：黑色蓝图房间里的一条纸带（每界一种纸色），纸上依次印着首屏、五章、越界渐变段、工作台与下载；
- *           左侧章节索引与引线层、与 Docs 同几何的页头（下边线即进度）、三列页脚与底部状态栏。
+ *           左侧章节索引与引线层、与 Docs 同几何的页头（下边线即进度）、三列页脚与唯一的示意图例（虚线框）。
  *           .col 的每个直接子元素是一块"纸片"：铺满纸宽、自带纸色，由 home-ribbon 写入卷曲变换；
  *           无 WebGL / 减弱动态时，同一份 HTML 退化为居中的平整纸带，内容与配色不变。
  *           小图只读环境变量 --p（章节进度）与自己的 --i；动效只取三档弹簧，无无限循环，减弱动态退化为 140ms 淡入淡出。
@@ -23,7 +23,6 @@
   --page-max: var(--geist-page-width-with-margin); --page-pad: var(--geist-page-margin);
   /* 统一左右对齐线：与页头/页脚版心的内容边缘重合 */
   --edge: max(var(--page-pad), calc((100vw - var(--geist-page-width)) / 2));
-  --status-h: 32px;   /* 底部状态栏的高度：页脚与贴底面板据此让位 */
   color-scheme: dark;
 }
 *, *::before, *::after { box-sizing: border-box; }
@@ -63,20 +62,8 @@ code { font: 500 .92em var(--font-mono); color: var(--ivory); }
 .bar .cb-site-nav { display: flex; gap: 4px; }
 .bar .cb-site-nav a { padding: 8px 12px; border-radius: var(--r-sm); font: 500 14px/1.5 var(--font-sans); color: var(--muted); transition: color var(--snap), background-color var(--snap); }
 .bar .cb-site-nav a:hover, .bar .cb-site-nav a[aria-current] { color: var(--ivory); background-color: rgba(246, 240, 234, .07); }
-.bar-sense {
-  margin-left: auto; display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid var(--line); border-radius: var(--r-md);
-  color: var(--muted); background: transparent; cursor: pointer; transition: color var(--snap), border-color var(--snap), background-color var(--snap);
-}
-.bar-sense:hover { color: var(--ivory); border-color: rgba(var(--ivory-rgb), .3); }
-.bar-sense[aria-pressed='true'] { color: var(--ivory); border-color: rgba(var(--accent-rgb), .6); background-color: rgba(var(--accent-rgb), .12); }
+/* 2D / 3D：页头里的分段开关，选中的一段是实底；3D 不可用（无 WebGL 或减弱动态）时那一段置灰 */
 .bar-sense .wave, .bar-sense .mute { transition: opacity var(--snap); }
-.bar-sense[aria-pressed='false'] .wave, .bar-sense[aria-pressed='true'] .mute { opacity: 0; }
-.bar-cta {
-  margin-left: 4px; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px;
-  border-radius: var(--r-md); font: 500 14px var(--font-sans); color: var(--ink); background-color: var(--ivory);
-  box-shadow: inset 0 1px 0 #fff; transition: background-color var(--snap), box-shadow var(--snap);
-}
-.bar-cta:hover { background-color: #fff; box-shadow: inset 0 1px 0 #fff, 0 0 20px rgba(217, 119, 87, .45); }
 .icon { width: 16px; height: 16px; flex: none; }
 .progress {
   position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; transform-origin: 0 50%; transform: scaleX(var(--p, 0));
@@ -86,20 +73,7 @@ code { font: 500 .92em var(--font-mono); color: var(--ivory); }
 
 /* ---- 按钮：象牙主按钮 + 玻璃次按钮；悬停只改填充与光，不改尺寸与位置 -------- */
 .actions { display: flex; flex-wrap: wrap; gap: 12px; }
-.btn {
-  position: relative; display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 20px;
-  border-radius: var(--r-md); font-size: 15px; font-weight: 550; color: var(--ivory); isolation: isolate;
-  border: 1px solid rgba(246, 240, 234, .22); background: rgba(246, 240, 234, .04);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  transition: border-color var(--snap), background var(--snap), box-shadow var(--snap);
-}
-.btn:hover { border-color: rgba(246, 240, 234, .5); background: rgba(246, 240, 234, .09); }
-.btn-primary { color: var(--ink); border-color: transparent; background: linear-gradient(180deg, #fffaf5, #e9ded4); box-shadow: inset 0 1px 0 #fff, 0 8px 30px -8px rgba(217, 119, 87, .7); }
-.btn-primary:hover { background: linear-gradient(180deg, #fff, #f2e8de); box-shadow: inset 0 1px 0 #fff, 0 10px 40px -6px rgba(217, 119, 87, .9); }
 .arrow { width: 16px; height: 16px; }
-.btn-small { height: 32px; padding: 0 12px; gap: 6px; font-size: 14px; }
-.more:hover { border-color: var(--on); }
-.more { transition: color var(--snap), border-color var(--snap); display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 550; color: var(--on); border-bottom: 1px solid rgba(var(--on-rgb), .4); padding-bottom: 2px; }
 
 
 /* ---- 舞台：黑色蓝图房间（WebGL）；纸带在它前面 ------------------------------ */
@@ -111,7 +85,9 @@ body { background: var(--ink); }
 .world { position: relative; z-index: 2; }
 .track { position: relative; padding-top: 22vh; }
 .sheet { position: relative; width: var(--sheet-w); margin: 0 auto; background: var(--sheet); color: var(--on); }
-.col > * { position: relative; padding-inline: clamp(20px, 5.2%, 64px); background: var(--sheet); }   /* 纸片：铺满纸宽、自带纸色 */
+.sheet { --cell: calc(var(--sheet-w) / 40); }   /* 细格：纸宽 / 40，与地面细格同一把尺；版心、栏、面板边都落在它上面 */
+.col > * { position: relative; padding-inline: calc(var(--cell) * 2); background: color-mix(in srgb, var(--sheet) calc(var(--lit, 1) * 100%), #000);
+  background-image: linear-gradient(90deg, rgba(var(--on-rgb), .1) 1px, transparent 1px); background-size: 25% 100%; }   /* 四条栏线：与地面粗格同一套线，出了纸边就接上地面 */   /* 纸片：铺满纸宽、自带纸色；--lit 是纸面此处的光照（越立起越暗） */
 .spacer { display: none; }
 
 /* 卷曲版：世界固定在视口里，文档只剩一根等高的空杆负责原生滚动；每块纸片由 home-ribbon 逐块写入变换 */
@@ -119,59 +95,94 @@ body { background: var(--ink); }
 .has-webgl .world .col > *, .has-webgl .world [data-slab] { pointer-events: auto; backface-visibility: hidden; }
 .has-webgl .sheet { background: transparent; }      /* 纸片之间的缝由 WebGL 纸面补齐，两边同一种颜色 */
 .has-webgl .spacer { display: block; }
-.has-webgl .world::after { /* 远方的雾：卷走的纸面与文字一起没入黑暗 */
-  content: ''; position: fixed; inset: 0 0 auto; height: 34vh; pointer-events: none;
-  background: linear-gradient(to bottom, rgba(10, 9, 8, .82), rgba(10, 9, 8, 0));
+/* 立体层：立起或浮起的纸片离开了纸面，纸色留给下面的 WebGL 纸面；标题的字有厚度（下沿一层层压暗的侧壁） */
+.has-webgl .world [data-stand] { background: transparent; }
+.has-webgl .world h1[data-stand], .has-webgl .world h2[data-stand] {
+  --wall: color-mix(in srgb, var(--sheet) 62%, #000);
+  text-shadow: 0 .02em 0 var(--wall), 0 .04em 0 var(--wall), 0 .06em 0 var(--wall), 0 .08em 0 var(--wall), 0 .1em 0 var(--wall), 0 .12em 0 var(--wall), 0 .3em .3em rgba(0, 0, 0, .3);   /* 字的厚度随字号走（参考稿 raise = 34/120 字高） */
+}
+.has-webgl .track { padding-top: 36vh; }   /* 首屏内容落在阅读线附近，纸带远端从画面上方立起 */
+.has-webgl .world::after { /* 远方的雾：立到远端的纸面与文字一起没入黑暗 */
+  content: ''; position: fixed; inset: 0 0 auto; height: 18vh; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(10, 9, 8, .7), rgba(10, 9, 8, 0));
 }
 
 /* ---- 纸面上的字：标题大而紧，正文用 --soft（各界都过 AA） -------------------------------------- */
 .col h1, .col h2 { color: var(--on); text-wrap: balance; }
-h2 { font-size: clamp(34px, 4.6vw, 64px); line-height: 1.04; font-weight: 600; letter-spacing: -.045em; padding-top: 12px; }
-.body { max-width: 34em; padding-top: 18px; font-size: 17px; line-height: 1.75; color: var(--soft); }
+.col h1, .col h2 { line-break: strict; }
+h2 { font-size: clamp(32px, calc(var(--sheet-w) * .064), 72px); line-height: 1.14; font-weight: 600; letter-spacing: -.015em; padding-top: 12px; }   /* 中文是满格方块：不吃拉丁那种负字距 */
+.body { max-width: 28em; padding-top: 24px; font-size: 16px; line-height: 1.8; color: var(--soft); }
+/* 短条目：参考稿每节下面那一排小点短句，一条只说一件事，按纸宽排成 2–4 列 */
+.points { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 0; padding: 28px 0 4px; font-size: 15px; line-height: 1.8; color: var(--soft); }
+.points li { position: relative; padding: 0 var(--cell) 0 calc(var(--cell) * 2); text-wrap: pretty; }   /* 每栏的字与标题同一条起始线：栏线 + 两个细格 */
+.points li::before { content: ''; position: absolute; left: -3px; top: .62em; width: 7px; height: 7px; background: var(--on); }   /* 每条短句占一栏，方点钉在栏线上 */
+.points b { font-weight: 600; font-family: var(--font-mono); color: var(--on); }
+@media (max-width: 900px) { .points { grid-template-columns: minmax(0, 1fr); padding-inline: calc(var(--cell) * 2); } .points li::before { left: 0; } }
+/* 卷曲版里，短句中的关键读数离开纸面浮起一小块（参考稿 inspect 层；浮高收到 10px，免得挡住同一行的字），纸上留一块投影 */
+.has-webgl .world .points, .has-webgl .world .flow-plate { transform-style: preserve-3d; }
+.has-webgl .world .points li, .has-webgl .world .flow, .has-webgl .world .flow li { transform-style: preserve-3d; }
+.has-webgl .world .points b, .has-webgl .world .flow b { position: relative; display: inline-block; width: fit-content; padding: 0 5px; transform: translateZ(10px); transform-style: preserve-3d;
+  color: var(--sheet); background: var(--on); box-shadow: 0 3px 0 color-mix(in srgb, var(--on) 55%, #000); }
+.has-webgl .world .points b::after, .has-webgl .world .flow b::after { content: ''; position: absolute; inset: 0; transform: translateZ(-10px) translate(5px, -4px); background: rgba(0, 0, 0, .28); filter: blur(2px); }
 .chapter .col, .showcase .col, .finale .col { padding-block: 72px 88px; }
+.col { position: relative; }
+  font: 500 11px/1.6 var(--font-mono); color: rgba(var(--ivory-rgb), .78); background: rgba(10, 9, 8, .72) !important; border: 1px solid rgba(var(--ivory-rgb), .22); }
 .chapter .col > :first-child, .showcase .col > :first-child, .finale .col > :first-child { padding-top: 40px; }
 .chapter .col > :last-child, .showcase .col > :last-child, .finale .col > :last-child { padding-bottom: 48px; }
-.eyebrow { display: flex; align-items: center; gap: 12px; padding-bottom: 6px; font: 500 12px var(--font-mono); letter-spacing: .08em; color: var(--soft); }
-.eyebrow .index { color: var(--on); }
-.eyebrow .rule { width: 28px; height: 1px; background: rgba(var(--on-rgb), .5); }
-.more-row { padding-top: 26px; }
-.fact { padding-top: 16px; font-size: 14px; color: var(--soft); }
-.fact b { margin-right: 8px; font: 600 15px var(--font-mono); color: var(--on); }
-.viz-note { margin-top: 12px; font-size: 13px; color: var(--soft); }
-.viz-note b { font: 600 13px var(--font-mono); color: var(--on); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /* 内嵌图版：纸上再压一块浅色的版，细线框；按版宽（而非视口）自适应 */
-.plate { margin-top: 30px; padding-block: 22px; container-type: inline-size; }
-.plate::before { content: ''; position: absolute; inset: 0 clamp(12px, 3.4%, 44px); z-index: 0; pointer-events: none; border-radius: var(--r-lg);
-  border: 1px solid rgba(var(--on-rgb), .18); background: rgba(var(--on-rgb), .05); }
+.plate { margin-top: 48px; padding-block: 24px; container-type: inline-size; }
+/* 面板头：标题 + 说明 + 右上角深色小按钮；窄面板里按钮落到说明下面 */
+.plate-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 8px 24px; padding-bottom: 20px; }
+.plate-head h3 { margin: 0; font: 500 18px/1.45 var(--font-sans); color: var(--on); }
+.plate-head p { grid-column: 1; max-width: 32em; font-size: 14px; line-height: 1.75; color: var(--soft); }
+.pill { grid-column: 2; grid-row: 1 / span 2; }   /* 位置归面板头；材质来自共享 .cb-button */
+.pill .arrow { width: 12px; height: 12px; }
+@container (max-width: 480px) { .plate-head { grid-template-columns: minmax(0, 1fr); } .pill { grid-column: 2; grid-row: 1 / span 2; }   /* 位置归面板头；材质来自共享 .cb-button */ }
+.plate::before { content: ''; position: absolute; inset: 0 var(--cell); z-index: 0; pointer-events: none;
+  border: 1px solid rgba(var(--on-rgb), .14); background: rgba(var(--on-rgb), .08);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .22), 10px -12px 0 rgba(0, 0, 0, .16); }   /* 方角浅版，像纸上挤出的一块低台：近侧一道侧壁，主光从左前方来，影子落向右后 */
+
+/* 首屏图谱的位置：图本身由 WebGL 画在纸面上方，平整版没有图，这块纸片也不占地方 */
+.graph-slot { display: none; }
+.has-webgl .world .graph-slot { background: transparent; }
+.has-webgl .graph-slot { display: block; height: clamp(320px, 46vh, 460px); margin-top: 24px; }
+
+/* 界面截图：斜立在纸上的一块屏，下沿是它的厚度 */
+.stand-shot { margin-top: 72px; padding-block: 8px 30px; }
+.stand-shot img { max-width: 84%; margin-inline: auto; }
+.stand-shot img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .14);
+  box-shadow: 0 var(--depth, 14px) 0 #050506, 0 calc(var(--depth, 14px) + 18px) 36px rgba(0, 0, 0, .45); }
+.stand-shot.is-panel { max-width: 420px; }
 .plate > * { position: relative; }
-.plate { padding-inline: calc(clamp(20px, 5.2%, 64px) + 4px); }
+.plate { padding-inline: calc(var(--cell) * 2); }
+/* 卷曲版：面板是从纸上挤出来的低台（参考稿 city 层）——顶面与内容抬高 --rise，下沿立一面前壁，纸上留投影 */
+.has-webgl .world .plate { --rise: calc(10px * var(--grow, 1)); transform-style: preserve-3d; }   /* 低台高度由 home-ribbon 按远近写入 --grow */
+.has-webgl .world .plate::before { transform: translateZ(var(--rise)); box-shadow: calc(var(--light-x) * 3) calc(var(--light-y) * 3) 18px rgba(0, 0, 0, .22); }
+.has-webgl .world .plate > * { transform: translateZ(var(--rise)); }
+.has-webgl .world .plate::after { content: ''; position: absolute; left: var(--cell); right: var(--cell); top: 100%; height: var(--rise); pointer-events: none;
+  transform-origin: 50% 0; transform: rotateX(90deg); background: color-mix(in srgb, var(--sheet) 55%, #000); border-top: 1px solid rgba(var(--on-rgb), .25); }
 
 /* ---- 首屏：一行大字压在纸带最上沿 ---------------------------------------------- */
 .hero .col { padding-block: 0 96px; }
 .hero .col > :first-child { padding-top: 56px; }
-.badge { display: flex; align-items: center; gap: 10px; font: 500 12px var(--font-mono); letter-spacing: .04em; color: var(--soft); }
+.badge { display: flex; align-items: center; gap: 10px; padding-top: 18px; font: 500 12px var(--font-mono); letter-spacing: .04em; color: var(--soft); }
 .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--on); }
-h1 { padding-top: 22px; font-size: clamp(52px, 9.4vw, 148px); line-height: .96; font-weight: 650; letter-spacing: -.06em; }
+h1 { padding-top: 22px; font-size: clamp(34px, calc(var(--sheet-w) * .125), 136px); line-height: 1.04; font-weight: 650; letter-spacing: -.02em; }
 h1 .char { display: inline-block; }
 .motion h1 .char { opacity: 0; transform: translateY(.35em); filter: blur(8px); }
 .is-ready h1 .char { opacity: 1; transform: none; filter: none; transition: opacity var(--settle), transform var(--settle), filter var(--settle); transition-delay: calc(var(--i) * 32ms + 120ms); }
-.lead { padding-top: 26px; max-width: 34em; font-size: clamp(17px, 1.6vw, 21px); line-height: 1.7; color: var(--soft); }
+.lead { padding-top: 24px; max-width: 28em; font-size: clamp(17px, calc(var(--sheet-w) * .02), 21px); line-height: 1.8; color: var(--soft); }
 .hero .actions, .finale .actions { padding-top: 36px; }
 
 /* ---- 越界：纸面在这一段换色。渐变片与 WebGL 纸面读同一段文档坐标 ---------------------------- */
 .threshold .col { text-align: center; padding-bottom: 12vh; }
-.fade { height: 26vh; background: linear-gradient(to bottom, var(--from), var(--to)) !important; }
-.threshold-route { display: flex; justify-content: center; align-items: center; gap: 18px; padding-top: 8vh; font: 500 clamp(28px, 4vw, 44px)/1 var(--font-sans); color: var(--on); }
-.threshold-route span:first-child { opacity: .45; }
-.threshold-route i { position: relative; width: clamp(96px, 22vw, 280px); height: 1px; background: rgba(var(--on-rgb), .25); }
-.threshold-route i::after { content: ''; position: absolute; inset: 0; background: var(--on); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); }
-.threshold-line { padding-top: 22px; font-size: clamp(26px, 3.6vw, 52px); line-height: 1.15; font-weight: 600; letter-spacing: -.04em; color: var(--on); text-wrap: balance; }
-.threshold-meta { padding-top: 16px; font: 500 12px var(--font-mono); letter-spacing: .06em; color: var(--soft); }
+.fade { height: 26vh; background: linear-gradient(to bottom, var(--from) 50%, var(--to) 50%) !important; }   /* 与参考稿一样硬切：两界在一条线上交接，不做大片渐变 */
 
 /* ---- 左侧章节索引与引线：当前项用一条三次曲线连到纸面左缘本章的落点 ---------------------- */
-.rail { position: fixed; left: var(--page-pad); top: 50%; z-index: 15; transform: translateY(-50%); display: grid; gap: 6px; transition: opacity var(--glide); }
+.rail { position: fixed; left: var(--page-pad); top: 50%; z-index: 15; transform: translateY(-50%); display: grid; gap: 6px; padding: 10px 14px 10px 12px; margin-left: -12px; border-radius: var(--r-lg);
+  background: rgba(10, 9, 8, .62); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: opacity var(--glide); }   /* 索引压在舞台素材之上：给它一层暗底，字才读得清 */
 .is-end .rail, .is-end .leaders { opacity: 0; pointer-events: none; }
 .leaders { transition: opacity var(--glide); }
 .rail a { display: flex; align-items: center; gap: 12px; padding: 4px 0; font: 500 13px var(--font-mono); color: var(--muted); transition: color var(--snap); }
@@ -184,9 +195,6 @@ h1 .char { display: inline-block; }
 .leaders path { fill: none; stroke: rgba(var(--ivory-rgb), .7); stroke-width: 1; }
 .leaders circle { fill: var(--ivory); }
 .leaders g { transition: opacity var(--snap); }
-.ticks { position: absolute; inset: 0; pointer-events: none; }
-.tick { position: absolute; width: 64px; font: 500 11px var(--font-mono); color: rgba(var(--ivory-rgb), .55); border-top: 1px solid rgba(var(--ivory-rgb), .4); padding-top: 4px; }
-.tick.l { text-align: right; } .tick.r { text-align: left; }
 
 /* ---- 磁吸：data-magnet 的元素由 home.mjs 以弹簧写入 --mx/--my，悬停不改尺寸 -------------------- */
 [data-magnet] { translate: var(--mx, 0) var(--my, 0); }
@@ -195,7 +203,8 @@ h1 .char { display: inline-block; }
 
 /* 路径：四站连成一条线，线的填充长度就是进度 */
 .flow { list-style: none; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 8px; padding-top: 40px; }
-.flow::after { content: ''; position: absolute; left: calc(clamp(20px, 5.2%, 64px) + 8px); right: calc(clamp(20px, 5.2%, 64px) + 8px); top: 26px; height: 1px; background: rgba(var(--on-rgb), .2); }
+.flow { position: relative; }
+.flow::after { content: ''; position: absolute; left: 8px; right: 8px; top: 26px; height: 1px; background: rgba(var(--on-rgb), .2); }
 .flow::after { background: var(--on); transform-origin: 0 50%; transform: scaleX(clamp(0, calc(var(--p, 0) * 1.25), 1)); box-shadow: 0 0 8px rgba(var(--on-rgb), .7); }
 .flow li { --lit: clamp(0, calc(var(--p, 0) * (var(--n) + 1) - var(--i)), 1); position: relative; display: grid; gap: 2px; opacity: calc(.4 + .6 * var(--lit)); }
 .flow li::before { content: ''; position: absolute; left: 0; top: -18px; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--on); background: color-mix(in srgb, var(--on) calc(var(--lit) * 100%), var(--sheet)); }
@@ -204,31 +213,15 @@ h1 .char { display: inline-block; }
 @container (max-width: 380px) { .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; } .flow::before, .flow::after { display: none; } }
 
 /* 检查矩阵：一格一项，按进度逐格点亮；待处理的一格是暖色。指向一格，3D 超图里对应的节点亮起 */
-.matrix { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 4px; }
-@container (max-width: 340px) { .matrix { grid-template-columns: repeat(11, minmax(0, 1fr)); } }
-.matrix i { --lit: clamp(0, calc(var(--p, 0) * (var(--n) + 1) - var(--i)), 1); aspect-ratio: 1; border-radius: calc(var(--geist-space) / 2); border: 1px solid rgba(var(--on-rgb), .35); background: rgba(var(--on-rgb), calc(.06 + .6 * var(--lit))); transition: box-shadow var(--snap), border-color var(--snap); }
-.matrix i.is-flagged { border-color: rgba(var(--ember-rgb), .6); background: rgba(var(--ember-rgb), calc(.08 + .9 * var(--lit))); }
-.matrix i:hover { border-color: var(--on); box-shadow: 0 0 0 2px rgba(var(--on-rgb), .18), 0 0 14px rgba(var(--on-rgb), .8); }
 
 /* 符号块：一句话被切开，逐块亮起；含混的两块带暖色下注 */
-.tokens { display: flex; flex-wrap: wrap; gap: 24px 4px; padding-bottom: 20px; font: 500 17px/1 var(--font-mono); }
-.tokens span { --lit: clamp(0, calc(var(--p, 0) * (var(--n) + 1) - var(--i)), 1); position: relative; padding: 9px 10px; border-radius: var(--r-sm); border: 1px solid rgba(var(--on-rgb), .22); color: rgba(var(--on-rgb), calc(.35 + .65 * var(--lit))); background: rgba(var(--on-rgb), calc(.03 + .09 * var(--lit))); }
-.tokens .is-flagged { border-color: rgba(154, 67, 38, calc(.3 + .6 * var(--lit))); color: color-mix(in srgb, var(--sheet-text) calc(var(--lit) * 100%), var(--soft)); }   /* 符界是象牙纸：含混处用陶土墨色标出，过 AA */
-.tokens .is-flagged::after { content: attr(data-note); position: absolute; left: 0; top: calc(100% + 6px); font: 500 11px/1 var(--font-sans); white-space: nowrap; color: var(--sheet-text); opacity: var(--lit); }
 
 
 /* ---- 恢复三态：在纸上驻留一段（平整版用 sticky，卷曲版由 home-ribbon 的驻留段模拟） ---------------- */
-.recovery { padding-bottom: 90vh; }
-.pin { position: sticky; top: 18vh; }
+.recovery .col { padding-bottom: 90vh; }   /* 驻留段：只有状态图停住，标题、短句与场景图照常滚过去，手机上不会把按钮挤出屏幕 */
+.pin { position: sticky; top: 18vh; padding-inline: 0 !important; }
 .has-webgl .pin { position: relative; top: auto; }
-.states { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid rgba(var(--on-rgb), .2); border-radius: var(--r-seg); background: rgba(0, 0, 0, .22); }
-.states button {
-  display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px; border: 0; border-radius: var(--r-sm);
-  font: 500 14px var(--font-sans); color: var(--soft); background: transparent; cursor: pointer; transition: color var(--snap), background var(--snap);
-}
 .states button i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .5; transition: background var(--glide), box-shadow var(--glide); }
-.states button[aria-pressed='true'] { color: var(--ink); background: var(--ivory); }
-.states button[aria-pressed='true'] i { opacity: 1; }
 .recovery[data-state='0'] .states button[aria-pressed='true'] i { background: var(--terracotta); }
 .recovery[data-state='1'] .states button[aria-pressed='true'] i { background: var(--amber); }
 .recovery[data-state='2'] .states button[aria-pressed='true'] i { background: var(--acid); box-shadow: 0 0 8px var(--acid); }
@@ -239,7 +232,29 @@ h1 .char { display: inline-block; }
 .recovery[data-state='2'] .is-escalated { --pulse: rgba(212, 255, 0, .7); }
 @keyframes escalate { 40% { border-color: var(--pulse); box-shadow: inset 0 0 0 1px var(--pulse), 0 0 40px -8px var(--pulse); } }
 .state-text { min-height: 3.4em; padding-top: 18px; font-size: 17px; color: var(--on); transition: color var(--glide); }
-.fine { padding-top: 22px; font-size: 13px; color: var(--soft); max-width: 44em; }
+.fine { padding-top: 22px; max-width: 44em; }
+
+/* 会话：两只存储框对照——斜线纹是新建的独立目录，点纹加虚线外框是沿用的那一份（比窗口大、伸出框外） */
+.lanes { list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 32px; }
+.lane { display: grid; grid-template-columns: 88px minmax(0, 1fr); column-gap: 16px; row-gap: 4px; align-items: center; }
+.lane-store { grid-row: 1 / span 2; position: relative; height: 64px; border: 1px solid var(--on); }
+.lane-store i { position: absolute; inset: 14px 18px; border: 1px solid var(--on); background: var(--sheet); }
+.lane.is-own .lane-store { background: repeating-linear-gradient(45deg, rgba(var(--on-rgb), .3) 0 1px, transparent 1px 6px); }
+.lane.is-shared .lane-store { background: radial-gradient(rgba(var(--on-rgb), .45) 1px, transparent 1.5px) 0 0 / 6px 6px; outline: 1px dashed rgba(var(--on-rgb), .55); outline-offset: 6px; }
+.lane b { font: 600 15px/1.4 var(--font-sans); color: var(--on); }
+.lane > span:last-child { font-size: 13px; line-height: 1.7; color: var(--soft); }
+@container (max-width: 420px) { .lanes { grid-template-columns: minmax(0, 1fr); } }
+
+/* 恢复：三态之间是有向边，边下写切换条件；走过的边长出实线。例外（等待 → 放行）写在图下的虚线说明里 */
+.machine { display: grid; grid-template-columns: auto minmax(56px, 1fr) auto minmax(56px, 1fr) auto; align-items: center; width: 100%; border: 0; background: none; padding: 0; }
+.machine .edge { position: relative; height: 1px; margin: 0 8px; background: rgba(var(--on-rgb), .3); }
+.machine .edge::before { content: ''; position: absolute; inset: 0; background: var(--on); transform-origin: 0 50%; transform: scaleX(0); transition: transform var(--glide); }
+.machine .edge::after { content: ''; position: absolute; right: -2px; top: -4px; border: 4px solid transparent; border-left-color: rgba(var(--on-rgb), .6); }
+.machine .edge em { position: absolute; left: 0; right: 0; top: 10px; font: 500 11px/1.4 var(--font-sans); font-style: normal; text-align: center; color: var(--soft); }
+.recovery[data-state='1'] .edge:nth-of-type(1)::before, .recovery[data-state='2'] .edge::before { transform: scaleX(1); }
+.machine-exception { padding-top: 28px; font-size: 13px; line-height: 1.7; color: var(--soft); }
+.machine-exception i { display: inline-block; width: 28px; margin-right: 8px; vertical-align: middle; border-top: 1px dashed var(--on); }
+@container (max-width: 420px) { .machine { grid-template-columns: minmax(0, 1fr); justify-items: start; } .machine .edge { width: 1px; height: 28px; margin: 6px 16px; } .machine .edge em { left: 12px; top: 4px; right: auto; white-space: nowrap; } }
 
 /* ---- 工作台：截图压在纸上，标签与指示条复用同一几何 ------------------------------ */
 .device { padding-top: 40px; }
@@ -251,23 +266,16 @@ h1 .char { display: inline-block; }
 .device-frame img { border-radius: var(--r-md); }
 .glare { position: absolute; inset: var(--geist-space); border-radius: var(--r-md); pointer-events: none; mix-blend-mode: soft-light;
   background: radial-gradient(600px circle at var(--gx, 30%) var(--gy, 0%), rgba(255, 255, 255, .4), transparent 55%); }
-.device-note { padding-top: 16px; font-size: 13px; color: var(--soft); }
-.views { position: relative; display: flex; width: max-content; max-width: 100%; margin-bottom: 20px; padding: 4px; border: 1px solid rgba(var(--on-rgb), .2); border-radius: var(--r-seg); background: rgba(10, 9, 8, .28); }
-.views button { position: relative; z-index: 1; height: 32px; padding: 0 14px; border: 0; border-radius: var(--r-sm); font: 500 14px var(--font-sans); color: var(--soft); background: transparent; cursor: pointer; transition: color var(--snap); }
-.views button:hover { color: var(--on); }
-.views button[aria-selected='true'] { color: var(--ink); }
-.views-indicator { position: absolute; top: 4px; bottom: 4px; left: 0; width: var(--iw, 0); border-radius: var(--r-sm); background: var(--ivory); transform: translateX(var(--ix, 0)); transition: transform var(--glide), width var(--glide); }
-.views-indicator.is-static { transition: none; }
 .shot { margin: 0; }
 .shot:not([hidden]) { animation: shot-in var(--glide) 1; }
 @keyframes shot-in { from { opacity: 0; } }
 
 /* ---- 终章 ----------------------------------------------------------------- */
-.finale h2 { font-size: clamp(44px, 7vw, 104px); }
+.finale h2 { font-size: clamp(36px, calc(var(--sheet-w) * .08), 88px); line-height: 1.12; }
 .meta { padding-top: 22px; font: 500 12px var(--font-mono); color: var(--soft); }
 .meta code { color: var(--on); }
 .boundary-row { padding-top: 30px; }
-.boundary { display: inline-block; padding: 12px 16px; border: 1px solid rgba(var(--on-rgb), .3); border-radius: var(--r-md); font-size: 14px; color: var(--on); }
+.boundary { display: inline-block; padding: 12px 16px; border: 1px solid rgba(var(--on-rgb), .3); border-radius: 0; font-size: 14px; line-height: 1.75; color: var(--on); }
 
 /* ---- 页脚：定位一行 + 三列去处 + 发布状态；与页头同版心，实底压住 3D 舞台 --------------------------- */
 .foot { border-top: 1px solid var(--line); background-color: var(--ink); }
@@ -284,38 +292,33 @@ h1 .char { display: inline-block; }
 .foot-col ul { list-style: none; display: grid; gap: 12px; margin-top: 16px; padding: 0; }
 .foot-col a { font-size: 14px; color: var(--muted); transition: color var(--snap); }
 .foot-col a:hover { color: var(--ivory); }
+/* 时区：三行对照，划掉的是对齐前，实底的是对齐后；出口那一行是基准，不变 */
+.align { display: grid; gap: 8px; margin: 0; }
+.align div { display: grid; grid-template-columns: 5em minmax(0, 1fr); align-items: center; gap: 16px; }
+.align dt { font: 500 12px var(--font-mono); color: var(--soft); }
+.align dd { display: flex; align-items: center; gap: 14px; margin: 0; font: 600 14px var(--font-mono); }
+.align s { color: rgba(var(--on-rgb), .45); text-decoration-thickness: 1px; }
+.align b { padding: 2px 8px; color: var(--sheet); background: var(--on); }
+.align .is-anchor s { display: none; }
+.align .is-anchor b { color: var(--on); background: transparent; outline: 1px solid var(--on); }
+
+/* ---- 场景图：形状套件的笔墨。实线 = 已发生，虚线 = 被截住或将要发生；--mark 全图只给出事的那一处 ---- */
+[data-realm='text'] { --mark: #ffd166; } [data-realm='code'] { --mark: #ff9e7a; } [data-realm='token'] { --mark: #b3360a; }
+.fig { display: block; width: 100%; height: auto; margin: 0 auto; object-fit: contain; }
+.figure-plate .fig { max-height: 260px; }
+.hero-figure { padding-top: 28px; }
+.hero-figure .fig { max-height: 300px; }
+
+/* 示意的形状约定：虚线框里的东西是示意，全页只在页脚说一次 */
+.plate.is-specimen::before { border-style: dashed; border-color: rgba(var(--on-rgb), .4); }
+.legend { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 22px; height: 12px; border: 1px dashed currentColor; }
 .foot-base {
   grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px;
   padding-top: 24px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted);
 }
-.foot-status { display: inline-flex; align-items: center; gap: 8px; font: 500 12px var(--font-mono); }
-.foot-status i { width: 8px; height: 8px; border-radius: 50%; background: var(--terracotta); box-shadow: 0 0 8px rgba(217, 119, 87, .7); }
 
-/* ---- 状态栏：左边三界（当前所在亮起，指示条是同一个几何体在三格间滑动），右边本页遥测 ---------------- */
-.foot-inner { padding-bottom: calc(32px + var(--status-h)); }
-.status {
-  position: fixed; inset: auto 0 0; z-index: 18; height: var(--status-h); display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 0 var(--page-pad); border-top: 1px solid var(--line); background-color: rgba(10, 9, 8, .78);
-  backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); font: 500 11px/1 var(--font-mono); color: var(--muted);
-}
-.realms { position: relative; list-style: none; display: grid; grid-template-columns: repeat(var(--realm-count), minmax(0, 1fr)); margin: 0; padding: 0; height: 100%; }
-.realms::before { content: ''; position: absolute; top: -1px; left: 0; width: calc(100% / var(--realm-count)); height: 1px; background: var(--accent); box-shadow: 0 0 10px rgba(var(--accent-rgb), .9); transform: translateX(calc(var(--realm-index) * 100%)); transition: transform var(--glide), background-color var(--glide); }
-.realms li { display: flex; align-items: center; gap: 8px; padding: 0 14px; white-space: nowrap; transition: color var(--snap); }
-.realms b { font: 600 13px var(--font-sans); }
-.realms em { font-style: normal; font-family: var(--font-sans); }
-.realms li[aria-current] { color: var(--ivory); }
-.realms li[aria-current] b { color: var(--accent); }
-.realms li:not([aria-current]) em { display: none; }
-.telemetry { display: flex; align-items: center; gap: 20px; margin: 0; white-space: nowrap; }
-.telemetry div { display: flex; align-items: center; gap: 8px; }
-.telemetry dt { color: var(--muted); }
-.telemetry dd { min-width: 4ch; color: var(--ivory); font-variant-numeric: tabular-nums; }
-.telemetry canvas { display: block; width: 72px; height: 16px; color: var(--accent); }
-.telemetry-state i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: background-color var(--snap), box-shadow var(--snap); }
-.telemetry-state[data-value='true'] i { background: var(--accent); box-shadow: 0 0 8px rgba(var(--accent-rgb), .9); }
-.telemetry-state[data-value='true'] span:last-child, .telemetry-state:not([data-value='true']) span:first-child { display: none; }
-@media (max-width: 900px) { .telemetry div:nth-child(-n+2) { display: none; } }
-@media (max-width: 520px) { .realms li { padding: 0 10px; } .realms span { display: none; } .telemetry { gap: 10px; } .telemetry dt, .telemetry-state dd { display: none; } .telemetry-state dt { display: block; } }
+.foot-inner { padding-bottom: 32px; }
 
 /* ---- 响应式：窄屏纸带几乎铺满，索引与引线收起 ---------------------------------- */
 @media (max-width: 1100px) { .rail, .has-webgl .leaders { display: none; } }
@@ -341,3 +344,10 @@ h1 .char { display: inline-block; }
   .device-frame { transform: none !important; }
   [data-magnet] { translate: none; }
 }
+
+/* ---- 共享控件在首页里的位置：材质、尺寸与状态全部来自 public/styles/ui-kit.css，这里只摆放 ---- */
+.bar-mode { margin: 0 0 0 auto; }
+.bar-sense { margin-left: 8px; }
+.bar-cta { margin-left: 4px; }
+.views { margin: 0 0 20px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }

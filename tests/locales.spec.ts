@@ -80,7 +80,7 @@ test('Chinese code tabs retain runnable commands and copy labels', async ({ page
 // ---- 根入口只展示产品；中英文文档首页互切不回到产品 ----
 test('product root and documentation home navigation stay separate', async ({page,isMobile}) => {
   await page.goto(base);
-  await expect(page.locator('h1')).toContainText('掌握连接');
+  await expect(page.locator('h1')).toContainText('网络一抖');
   await expect(page.locator('a').filter({hasText:'UI Kit'})).toHaveCount(0);
   // 沉浸式首页在手机上也直接露出「产品 / 文档」两个链接，不再折叠进菜单
   await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'文档',exact:true}).click();
@@ -93,7 +93,7 @@ test('product root and documentation home navigation stay separate', async ({pag
   if(isMobile)await page.getByRole('button',{name:'菜单',exact:true}).click();
   await page.getByRole('navigation',{name:'站点导航',exact:true}).getByRole('link',{name:'产品',exact:true}).click();
   await expect(page).toHaveURL(base);
-  await expect(page.locator('h1')).toContainText('掌握连接');
+  await expect(page.locator('h1')).toContainText('网络一抖');
 });
 
 test('legacy English links and Markdown retain their content', async ({page,request}) => {
@@ -104,6 +104,6 @@ test('legacy English links and Markdown retain their content', async ({page,requ
   expect(oldMarkdown.ok()).toBe(true);
   expect(await oldMarkdown.text()).toContain('# Network egress');
   await page.goto(`${base}designs/index.html`);
-  await expect(page.locator('h1')).toContainText('掌握连接');
+  await expect(page.locator('h1')).toContainText('网络一抖');
   await expect(page.locator('a').filter({hasText:'UI Kit'})).toHaveCount(0);
 });
