@@ -59,8 +59,8 @@ export function spring(value = 0, tier = 'settle', epsilon = 1e-4) {
   let k = reduced ? 1e3 : rate(tier);
   const self = {
     value, target: value,
-    /** 换档：同一个跟随器在不同场合用不同的弹簧（滚轮跟手用 snap，磁吸归位用 glide）。 */
-    tune(next) { k = reduced ? 1e3 : rate(next); return self; },
+    /** 换档：同一个跟随器在不同场合用不同的弹簧（三档之一，或滚轮跟手这类按每秒速率给定的跟随）。 */
+    tune(next) { k = reduced ? 1e3 : typeof next === 'number' ? next : rate(next); return self; },
     step(dt) {
       self.value += (self.target - self.value) * (1 - Math.exp(-k * dt));
       if (Math.abs(self.target - self.value) > epsilon) return true;

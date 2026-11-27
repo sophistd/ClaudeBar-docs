@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 无依赖；纯数据，Node（构建、品味门禁）与浏览器（运行时）都能直接导入。
- * [OUTPUT]: 对外提供 PALETTE 色板、MOTION 三档弹簧标尺与 rate()、REALMS 三界定义（含纸面与纸上文字色）、RIBBON 纸带几何、SCENE_REALM 章节归属、
+ * [OUTPUT]: 对外提供 PALETTE 色板、MOTION 三档弹簧标尺与 rate()、REALMS 三界定义（含纸面与纸上文字色）、RIBBON 纸带几何（地面—立面纸带、俯视镜头、阅读线、磁吸与跟手速率、光照与立体层）、GROUND 地面网格·脉冲·翻滚方块、GRAPH 首屏关系图谱、SCENE_REALM 章节归属、
  *           CROSSINGS 越界顺序、ENV_DEFAULTS 环境键表、cssText() 把同一份常数写成 :root 变量。
  * [POS]: 首页四层柔性编码的最底层（Token）：CSS、GLSL、WebAudio、震动都从这里取常数，
  *        视图不再各自硬编码颜色与时长；上面依次是 home-kit（原语）、home-source（组件）、home-taste（门禁）。
@@ -31,13 +31,13 @@ const SPRING = 'linear(0, .114, .319, .514, .669, .781, .859, .91, .944, .965, .
 //  纸面与文字的组合都过了 WCAG AA：正文 ≥ 4.5:1，次级文字 soft 同样 ≥ 4.5:1。
 // ============================================================================
 export const REALMS = [
-  { id: 'text', glyph: '文', name: 'TEXT', who: '人', what: '现实', line: '回到现实，它就在你的 Mac 上。',
-    sheet: 0x9a4326, on: 0xf6f0ea, soft: 0xf0dbcf,
+  { id: 'text', glyph: '文', name: 'TEXT', who: '人', what: '现实', line: '回到现实：这些都在菜单栏里。',
+    sheet: 0xa83a0c, on: 0xf6f0ea, soft: 0xf0dbcf,
     accent: PALETTE.terracotta, wind: 420, chord: [196, 246.94, 293.66], haptic: [10] },
-  { id: 'code', glyph: '码', name: 'CODE', who: '机器', what: '心智', line: '机器把这句话变成连接。',
-    sheet: 0x1d2c74, on: 0xf6f0ea, soft: 0xbfcaee,
+  { id: 'code', glyph: '码', name: 'CODE', who: '机器', what: '心智', line: '受管连接，先过门禁。',
+    sheet: 0x1430b0, on: 0xf6f0ea, soft: 0xbfcaee,
     accent: PALETTE.cool, wind: 1150, chord: [220, 329.63, 440], haptic: [8, 36, 8] },
-  { id: 'token', glyph: '符', name: 'TOKEN', who: 'AI', what: '符号', line: '模型读到的，只是符号。',
+  { id: 'token', glyph: '符', name: 'TOKEN', who: 'AI', what: '符号', line: '模型读到的，只是一串符号。',
     sheet: 0xede6dc, on: 0x14110f, soft: 0x544c46,
     accent: PALETTE.ivory, wind: 2400, chord: [261.63, 392, 587.33], haptic: [5, 24, 5, 24, 5] },
 ];
@@ -45,24 +45,53 @@ export const realmIndex = (id) => Math.max(0, REALMS.findIndex((realm) => realm.
 
 /** 每个 data-scene 章节属于哪一界：现实 → 心智 → 符号 → 回到现实。 */
 export const SCENE_REALM = {
-  hero: 'text', gate: 'code', sessions: 'code', observe: 'code', recovery: 'code',
-  preflight: 'token', product: 'text', finale: 'text',
+  hero: 'text', gate: 'code', leak: 'code', recovery: 'code',   // 网络这一侧：出口漂移、流量绕路、断网之后
+  sessions: 'token', locale: 'token',                            // 服务方看到的你：同机多号的指纹、时区与语言
+  product: 'text', finale: 'text',
 };
 /** 越界发生在哪个章节之前：[章节, 来处, 去处]。 */
-export const CROSSINGS = [['gate', 'text', 'code'], ['preflight', 'code', 'token'], ['product', 'token', 'text']];
+export const CROSSINGS = [['gate', 'text', 'code'], ['sessions', 'code', 'token'], ['product', 'token', 'text']];
 
 // ============================================================================
-//  纸带：整页内容印在一条纸带上，越过"折线"后卷向远方。DOM 的 CSS 3D 与 WebGL 纸面读同一组常数，
-//  两相同构才能严丝合缝。长度单位是视口高度（vh 的倍数），角度是弧度。
+//  纸带：整页内容印在一条长纸上——近处平铺在地面（低、大），远处立起来正对镜头（高、小），
+//  镜头俯视 30°。形态复刻 Shopify Editions Fall ’26 的"New Dimension"纸带（同一组几何常数，实现原创）。
+//  DOM 的 CSS 3D、WebGL 纸面、线框与引线都读同一条曲线。长度以视口高度 H 为单位，角度为度。
 // ============================================================================
 export const RIBBON = {
-  bend: 0.3,          // 折线：视口高度 30% 以上的纸面开始卷起；以下是平整的阅读区
-  radius: 0.55,       // 卷曲半径
-  arc: 1.05,          // 卷过约 60° 后沿切线直奔远方（不翻过头，远处的内容仍可见）
-  perspective: 1.15,  // CSS perspective 与 WebGL 视场共用的视距
-  fade: 2.4,          // 纸面退到这么深时，DOM 文字完全淡出
-  capture: 0.42,      // 磁吸半径：停下时离最佳展示位不到这么远，就被吸过去
-  width: 1180, ratio: 0.64, gutter: 16,   // 纸宽：宽屏取视口 64% 且不超过 1180px，窄屏两侧各留 16px
+  length: 5,          // 纸带全长 = 5H，自近端（地面）向远端
+  sharpness: 6.54,    // 立起的集中程度：expm1(k·u)/expm1(k)，越大越集中在远端
+  height: 1.015,      // 镜头离地高度（H）
+  back: 1,            // 镜头基准位置在纸带起点前方多远（H）
+  pitch: -30.2,       // 镜头俯角
+  fov: 45,            // 竖直视场
+  focus: 0.77,        // 镜头对准的纸带行（H），决定纸带在屏幕上的上下位置
+  reading: 0.45,      // 阅读线：屏幕高度 45% 处的内容按 1:1 显示，其余处近大远小
+  rest: 0.5,          // 最佳展示位：内容中线落在屏幕高度 50%
+  capture: 0.12,      // 磁吸半径（H）：只在停得很近时轻轻吸正，不打断自由滚动
+  lerp: 6,            // 滚轮跟手速率（每秒），即 Lenis lerp 0.1 × 60
+  width: 1180, ratio: 0.64, gutter: 16,   // 平整版纸宽
+  curled: 0.5,        // 卷曲版纸宽（视口宽度的比例）：近处放大后约占八成宽
+  shade: 0.215,       // 纸面越立起越暗：亮度 = 1 − shade·sin(立起角)，近端平铺处不暗
+  // 立体层：纸上的东西不全是印上去的。data-stand 的块绕自己的下沿从纸面立起，data-float 的块离开纸面悬起（版面像素）
+  stand: { heading: 90, float: 60, shot: 35, depth: 14, button: 42, lift: 22 },
+};
+
+// ============================================================================
+//  地面与图谱：照参考稿 grid / pulses / cubes / graph 四层的同名参数。参考稿的强度是黑色受光地面上的发光量，
+//  这里画在黑底上的半透明线，强度按画面对过一遍；脉冲与翻滚由滚动距离推动（run、step），不走时钟
+// ============================================================================
+// 光环境：全页只有一盏主光，从左前上方来；面板投影、场景图投影都从这里取方向（版面像素，y 向下为正）
+export const LIGHT = { x: 4, y: -5 };
+
+export const GROUND = {
+  columns: 6, every: 10,                       // 一屏宽 = 6 个粗格 = 60 个细格
+  minor: 0.05, major: 0.15, diagonal: 0.045,   // 细格 / 粗格 / 对角线的线强
+  pulse: { amount: 0.5, length: 300, bright: 0.6, run: 1.6 },   // 一半的粗格纵线带脉冲；拖尾 300 版面像素；脉冲跑得比地面后退快 1.6 倍
+  cubes: { count: 12, cols: 5, rows: 4, apart: 0.85, alpha: 0.24, edge: 0.8, step: 150 },   // 每 0.85 屏一片格子、左右交替；格线淡、方块的棱亮；每滚 150px 翻一格
+};
+export const GRAPH = {
+  hubs: 9, leaves: [10, 18], cross: 36,        // 枢纽数、每个枢纽的叶子数区间、跨枢纽的弱连接数
+  lift: 46, hubLift: 92, spread: 0.17,         // 叶子与枢纽离开纸面的高度（版面像素）；叶子散开半径（占图宽）
 };
 
 // ============================================================================
@@ -87,5 +116,5 @@ export function cssText() {
   const realms = REALMS.map((realm, i) =>
     `[data-realm='${realm.id}'] { --accent: ${hex(realm.accent)}; --accent-rgb: ${rgb(realm.accent)}; --realm-index: ${i}; --sheet: ${hex(realm.sheet)}; --on: ${hex(realm.on)}; --on-rgb: ${rgb(realm.on)}; --soft: ${hex(realm.soft)}; }`).join('\n');
   const sheets = REALMS.map((realm) => `--sheet-${realm.id}: ${hex(realm.sheet)};`).join(' ');
-  return `:root { ${palette} ${surface} --spring: ${SPRING}; ${motion} --fade: ${MOTION.fade * 1000}ms; --accent: ${hex(REALMS[0].accent)}; --accent-rgb: ${rgb(REALMS[0].accent)}; --realm-index: 0; --realm-count: ${REALMS.length}; ${sheets} --sheet-w: min(${RIBBON.width}px, ${RIBBON.ratio * 100}vw); }\n@media (max-width: 900px) { :root { --sheet-w: calc(100vw - ${RIBBON.gutter * 2}px); } }\n${realms}`;
+  return `:root { ${palette} ${surface} --spring: ${SPRING}; ${motion} --fade: ${MOTION.fade * 1000}ms; --light-x: ${LIGHT.x}px; --light-y: ${LIGHT.y}px; --accent: ${hex(REALMS[0].accent)}; --accent-rgb: ${rgb(REALMS[0].accent)}; --realm-index: 0; --realm-count: ${REALMS.length}; ${sheets} --sheet-w: min(${RIBBON.width}px, ${RIBBON.ratio * 100}vw); }\n.has-webgl { --sheet-w: min(${RIBBON.width}px, ${RIBBON.curled * 100}vw); }\n@media (max-width: 900px) { :root { --sheet-w: calc(100vw - ${RIBBON.gutter * 2}px); } .has-webgl { --sheet-w: calc(100vw - ${RIBBON.gutter * 5}px); } }\n${realms}`;
 }
