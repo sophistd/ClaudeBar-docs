@@ -1,5 +1,27 @@
 [
   {
+    "tag_name": "v0.6.4",
+    "name": "ClaudeBar 0.6.4",
+    "body": "波动掉线全自动自愈与多通道闭环加固：网络恢复与合盖唤醒立即唤醒超时退避重连（冲刷 Mihomo 陈旧连接后秒级重探，无需干等 1–5 分钟）；开启机房 ASN 拦截时不再因单源波动缺 ASN 误判为永久违规；冷启动/改配置/手动预检撞上瞬时代理超时自动有限次退避重试，不再撤销已有自动恢复；补齐副通道动态配置探针、自动恢复通知与修改上游后自动核验；包含 Sprint 8 自动驾驶收口与全链路状态机加固。",
+    "html_url": "https://github.com/sophistd/ClaudeBar-docs/releases/tag/v0.6.4",
+    "dmg_url": "https://github.com/sophistd/ClaudeBar-docs/releases/download/v0.6.4/ClaudeBar-0.6.4.dmg",
+    "sha256": "0857381436a2ee825bd90be47cae8353d0cd388526f9e6da90fe9c882d801b30",
+    "published_at": "2026-11-28T15:00:00Z",
+    "prerelease": false,
+    "draft": false
+  },
+  {
+    "tag_name": "v0.6.3",
+    "name": "ClaudeBar 0.6.3",
+    "body": "修复 Claude Desktop 冻结与看门狗收割、系统扩展先入扩展模式再监听控制通道、SIGTERM 正常退出不误入安全模式、详情区可复制与界面音效开关。",
+    "html_url": "https://github.com/sophistd/ClaudeBar-docs/releases/tag/v0.6.3",
+    "dmg_url": "https://github.com/sophistd/ClaudeBar-docs/releases/download/v0.6.3/ClaudeBar-0.6.3.dmg",
+    "sha256": "07ec23ac5e28aa3098fb6c2f8f46d9ddfbe5e2b7ec6c6ebf877f649cbd12900e",
+    "published_at": "2026-11-24T03:00:00Z",
+    "prerelease": false,
+    "draft": false
+  },
+  {
     "tag_name": "v0.6.2",
     "name": "ClaudeBar 0.6.2",
     "body": "改完配置不用再手动点核验：接入代理、切换档案、修改主通道上游后自动核验一次，碰上正在进行的核验会顺延；超时熔断后的自动恢复（只认与原基线完全一致的出口）新增开关，熔断提示写明是否会自动探测原出口，恢复后发「已恢复」通知；修复宽限期内手动断联可能被当作门禁熔断并被改写成可自动恢复、手动核验判定不安全后仍可能自动恢复、停用的主通道可能被自动重新放行。",
